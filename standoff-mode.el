@@ -1,10 +1,10 @@
-;; standoff.el -- An Emacs mode for producing stand-off markup
+;; standoff.el -- An Emacs mode for stand-off markup
 
-(defcustom standoff-markup-function 'standoff-markup-function-dummy
-  "The function that makes the markup persistent in some backend.
-The default value is `standoff-markup-function-dummy' which does
-not persist anything. Use this variable to choose an elaborate
-backend.
+(defcustom standoff-markup-write-range-function 'standoff-dummy-write-range
+  "The function that writes a range of a markup element to some
+backend (which should be persistent).  The default value is
+`standoff-dummy-write-range' which does not persist
+anything. Use this variable to choose an elaborate backend.
 
 The function must take the following arguments:
 
@@ -13,7 +13,8 @@ BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
 where MARKUP-ID can ether be an integer value or a single
 character key signalling how to handle the ID:
 
-`i': auto-increment the id; the backend has to take control over
+`n': new, which requires automatic handling of the id,
+     e.g. auto-incrementing. The backend has to take control over
      the ID.
 
 The function is expected to return an integer ID of the markup
@@ -23,23 +24,47 @@ successfull it is expected to return `nil'.
   :group 'standoff-mode
   :type 'function)
 
-(defcustom standoff-get-markup-function 'standoff-get-markup-function-dummy
-  "The function that get the markup elements from some persistent backend.
+(defcustom standoff-markup-read-ranges-function 'standoff-dummy-read-ranges
+  "The function that gets markup ranges from some backend--which
+should be persistent.
 
 The function must take the following arguments:
 
 BUFFER &optional STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
 
+If STARTCHAR *and* ENDCHAR are numerical values, the function
+should return only markup elements that overlap this portion of
+BUFFER. If MARKUP-NAME is given, only markup elements of this
+type should be returned. If MARKUP-ID is given, only the ranges
+of the markup-element with this id should be returned. So, if
+none of STARTCHAR, ENDCHAR, MARKUP-NAME and MARKUP-ID is given,
+the function should return all markup element ranges for the
+buffer.
+
+The function is expected to return a list markup ranges which are
+again represented as lists, as follows:
+
+'('(STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID) (...))
+
+So, if a markup element consists of more than one
+range (discontinous markup), the same values for MARKUP-NAME and
+MARKUP-ID must occur in more than one of those lists.
+
 "
   :group 'standoff
   :type 'function)
 
+(defcustom standoff-markup-names-function 'standoff-dummy-markup-element-names
+  "A function that returns names of defined (or already used)
+markup elements. The function ist expected to return a list of
+strings."
+  :group 'standoff
+  :type 'function)
+
 (defcustom standoff-markup-post-functions nil
-  "A hook for handlers called when a region was markupd und the
-markup was successfully stored to the backend--i.e. none of
-the functions hooked to `standoff-markup-functions' did
-returned `nil'. This hook should be used for highlightning and
-notifications.
+  "A hook for handlers called when a region was marked up und the
+markup was successfully stored to the backend. This hook should
+be used for highlightning and notifications.
 
 This is a so called `abnormal' hook, i.e. the hooked
 functions (aka handlers) must take the following arguments:
@@ -58,13 +83,49 @@ choosen persistent layer."
   :group 'standoff-mode
   :type 'function)
 
-(defun standoff-markup-function-dummy (buf startchar endchar markup-name markup-type)
+;;
+;; Dummy backend
+;;
+
+(defun standoff-dummy-write-range (buf startchar endchar markup-name markup-id)
   "A dummy function that does nothing but fullfill the function
 definition. The user should definitively replace it with a
 function that persists the markup in some backend."
-  (cond
-   ((equal markup-id "i") -1);; silly, but visible 
-   (t (string-to-number markup-id))))
+  (let ((markup-identifier (cond
+			    ((equal markup-id "n") (+ (standoff-dummy-markup-element-last-id) 1))
+			    (t (string-to-number markup-id)))))
+    (setq standoff-dummy-backend
+	  (cons (list startchar endchar markup-name markup-identifier) 
+		standoff-dummy-backend))
+    markup-identifier))
+
+(defun standoff-dummy-read-ranges (buf &optional startchar endchar markup-name markup-id)
+  "Return the dummy backend, but for this dummy thing we don't
+filter for portion of buffer or for name or id of markup
+element."
+standoff-dummy-backend)
+
+(defun standoff-dummy-markup-element-names ()
+  "Return the names of markup elements stored in the dummy backend."
+  ;; TODO: remove duplicates
+  (mapcar '(lambda (x) (nth 2 x)) standoff-dummy-backend))
+
+(defun standoff-dummy-markup-element-last-id ()
+  "Return the id of the last markup element in the dummy backend,
+i.e. the highest value."
+  (if standoff-dummy-backend
+      (apply 'max (mapcar '(lambda (x) (nth 3 x)) standoff-dummy-backend))
+    0))
+
+;; we want the dummy backend to be buffer local, so we set it up in a
+;; mode hook
+(defun standoff-dummy-backend-setup ()
+  (setq standoff-dummy-backend nil))
+(add-hook 'standoff-mode-hook 'standoff-dummy-backend-setup)
+
+;;
+;; creating and deleting stand-off markup
+;;
 
 (defun standoff-markup-region (markup-name markup-id)
   "Markup the selected region, i.e. mark the region as a range
@@ -77,7 +138,7 @@ of `markup-name' with the id given in `markup-id'."
     (save-restriction
       (widen)
       (save-excursion
-	(let* ((id-from-backend (funcall standoff-markup-function buf (region-beginning) (region-end) markup-name markup-id)))
+	(let* ((id-from-backend (funcall standoff-markup-write-range-function buf (region-beginning) (region-end) markup-name markup-id)))
 	  (when id-from-backend
 	    ;; run hook to notify success and highlight the new markup
 	    (run-hook-with-args 'standoff-markup-post-functions buf (region-beginning) (region-end) markup-name id-from-backend)))))
@@ -85,14 +146,10 @@ of `markup-name' with the id given in `markup-id'."
 
 (defun standoff-minibuffer-require-id-or-key ()
   (let ((enable-recursive-minibuffers t)
-	 (mini-input (read-from-minibuffer "Id of markup element or <i> for automatic incrementation: ")))
-    (if (string-match "^\\([0-9]+\\|i\\)$" mini-input)
+	 (mini-input (read-from-minibuffer "Id of markup element or <n> for a new one (automatic handling): ")))
+    (if (string-match "^\\([0-9]+\\|n\\)$" mini-input)
 	(match-string 0 mini-input)
       (standoff-minibuffer-require-id-or-key))))
-
-(defun standoff-markup-names ()
-  "Return the list of user defined markup elements."
-  (mapcar 'car standoff-markup-overlays))
 
 (defcustom standoff-markup-require-name-require-match 'confirm
   "Defines how restrictive the markup name is handled. If set to
@@ -101,6 +158,12 @@ standoff-markup-names-function. If set to `nil', the user may
 exit his input with any name. If set to `confirm' (symbol), the
 user may exit with any name, but is asked to confirm his input."
   :group 'standoff-mode)
+
+(defun standoff-markup-names-from-overlays ()
+  "Return the list of user defined markup elements. This would be
+a good alternative for standoff-dummy-markup-element-names as the
+standoff-markup-names-function. "
+  (mapcar 'car standoff-markup-overlays))
 
 (defun standoff-minibuffer-require-markup-name ()
   "Ask the user for the name of the  "
@@ -111,7 +174,7 @@ user may exit with any name, but is asked to confirm his input."
 
 (defun standoff-markup-notify (buf startchar endchar markup-name markup-id)
   "A handler function that can be hooked to the
-standoff-markup-functions hook, which is called when ever an
+standoff-markup-post-functions hook, which is called when ever an
 markup is being done. This function does nothing but notify
 the user with a message in the minibuffer (and in the *Messages*
 buffer)."
@@ -123,41 +186,12 @@ buffer)."
 
 
 
-(defun standoff-markup-remove-at-point ()
-  "Delete the markup at the point."
-  (interactive)
-  
-  ;; update hightlightning
-  (standoff-remove-highlightning (current-buffer))
-  (standoff-create-hightlightning (current-buffer)))
 
-
-;; Obsolte
-
-(defcustom standoff-text-element "text"
-  "The name of the xml element, which holds the markup
-layer. Without tags < >."
-  :group 'standoff-mode
-  :type 'string)
-
-(defun standoff-text-offset ()
-  "Get the offset, where the annotatable text starts. This parses
-  for the element name defined in `standoff-text-element'."
-  ;; TODO handle narrowing that starts after offset 
-  (or (save-excursion
-	(goto-char (point-min))
-	(search-forward (format "<%s>" standoff-text-element) nil t))
-      0))
-
-
-(defun standoff-test ()
-  "This is for testing non-interactive functions."
-  (interactive)
-  (message "%i" (standoff-text-offset)))
-
-
+;;
 ;; HIGHLIGHTNING
-;; =============
+;;
+
+;; We use overlays for highlightning markup elements
 
 (defcustom standoff-markup-overlays nil
   "This should be a alist defined by the user."
@@ -197,8 +231,8 @@ overlays. This is used for markup elements not defined in
   :group 'standoff-mode
   :type 'alist)
 
-(defun standoff-highlight-markup (buf startchar endchar markup-name markup-id)
-"Highlight an markup given as an elisp list expression."
+(defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
+"Highlight a markup range. This is the workhorse of highlighning in standoff mode."
 (save-restriction
  (widen)
  (let* ((ovly-props (or (cdr (assoc markup-name standoff-markup-overlays))
@@ -223,14 +257,14 @@ overlays. This is used for markup elements not defined in
    (overlay-put ovly 'after-string after-string)
    (overlay-put ovly 'name markup-name)
    (overlay-put ovly 'id markup-id)
-   (overlay-put ovly 'local-map standoff-markup-local-map)
+   (overlay-put ovly 'local-map standoff-markup-range-local-map)
    )))
 
-(add-hook 'standoff-markup-post-functions 'standoff-highlight-markup)
+(add-hook 'standoff-markup-post-functions 'standoff-highlight-markup-range)
 
 
-(defun standoff-remove-highlightning-buffer (markup-name)
-  "Remove all hightlightning in the current buffer."
+(defun standoff-hide-markup-buffer (&optional markup-name)
+  "Hide markup in the current buffer, i.e. remove all overlays."
   (interactive
    (list (completing-read "Name of markup element, <!> for all: "
 			  (funcall standoff-markup-names-function)
@@ -241,99 +275,108 @@ overlays. This is used for markup elements not defined in
      ((equal markup-name "!") (remove-overlays))
      (t (remove-overlays (point-min) (point-max) 'name markup-name)))))
 
-(defun standoff-remove-highlightning-region (area-start area-end)
-  "Remove highlightning in the region."
+(defun standoff-hide-markup-region (area-start area-end &optional markup-name)
+  "Hide markup in the region, i.e. remove overlays."
   (interactive "r")
   (save-excursion
     (overlay-recenter area-end)
     (mapc 'delete-overlay (overlays-in area-start area-end))))
 
-(defun standoff-remove-highlightning-at-point ()
-  "Remove highlightning at the point."
+(defun standoff-hide-markup-at-point ()
+  "Hide markup at point, i.e. remove overlay(s)."
   (interactive)
   (save-excursion
     (overlay-recenter (point))
     (mapc 'delete-overlay (overlays-at (point)))))
 
-(defun standoff-show-markup-region (beg end markup-name)
+(defun standoff-highlight-markup-region (beg end &optional markup-name)
   "Create overlays for all markup in the backend."
   (interactive 
    (list 
     (region-beginning)
     (region-end)
-    (completing-read "Name of markup elements to show, <!> for all: "
+    (completing-read "Name of markup elements to show up, <!> for all: "
 			  (cons "!" (funcall standoff-markup-names-function))
 			  nil t)))
-  (let ((markup-name-or-t (cond ((equal markup-name t) t)
-				(t markup-name)))
-	(markup-elements (funcall standoff-get-markup-function (current-buffer) beg end markup-name)))
+  (let* ((markup-name-or-nil (cond ((equal markup-name "!") nil)
+				  (t markup-name)))
+	(markup-elements (funcall standoff-markup-read-ranges-function (current-buffer) beg end markup-name-or-nil)))
+    ;; First remove overlays because else they get doubled.
+    (standoff-hide-markup-region beg end markup-name-or-nil)
     ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
-    (mapc '(lambda (x) apply 'standoff-highlight-markup (cons (current-buffer) x)))))
+    (dolist (range markup-elements)
+      (apply 'standoff-highlight-markup-range (cons (current-buffer) range)))))
 
-
-(defun standoff-show-markup-buffer (markup-name)
+(defun standoff-highlight-markup-buffer (&optional markup-name)
   "Create overlays for all markup in the backend."
   (interactive 
-   (list (completing-read "Name of markup elements to show, <!> for all: "
+   (list (completing-read "Name of markup elements to show up, <!> for all: "
 			  (cons "!" (funcall standoff-markup-names-function))
 			  nil t)))
-  (standoff-show-markup-region (point-min) (point-max) markup-name))
+  (standoff-highlight-markup-region (point-min) (point-max) markup-name))
 
 
 ;;
+;; Major mode
+;;
+
 ;; Keymap and Menu
-;;
 
-;; This should be a major mode and it should at first make the buffer read only!
-;; Then we don't need any escape and prefix keys but only
-;; m -- markup-region
-;; h -- hide (global map: on buffer, ... on region, local-map: on overlay)
-;; d -- delete
-;; r -- relate 
-
-
-(defvar standoff-markup-minor-mode-map
+(defvar standoff-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-cm" 'standoff-markup-region)
+    (define-key map "m" 'standoff-markup-region)
+    (define-key map "d" 'standoff-markup-delete-range-at-point)
+    (define-key map "D" 'standoff-markup-delete-element-at-point)
+    (define-key map "h" 'standoff-hide-markup-at-point)
+    (define-key map "H" 'standoff-hide-markup-buffer)
+    (define-key map "l" 'standoff-highlight-markup-at-point)
+    (define-key map "L" 'standoff-highlight-markup-buffer)
+    (define-key map "r" 'standoff-relate-markup-element-at-point)
+    (define-key map "s" 'standoff-store-markup-element-at-point)
+    (define-key map "a" 'standoff-annotate-markup-element-at-point)
     map))
 
-(define-minor-mode standoff-markup-minor-mode
-  "Toggle the minor mode to *produce* standoff markup."
-  :init-value nil
-  :lighter " standoff"
-  :keymap standoff-markup-minor-mode-map
-  :group 'standoff)
-
-(easy-menu-define standoff-menu standoff-markup-minor-mode-map
+(easy-menu-define standoff-menu standoff-mode-map
   "Menu for standoff mode"
   '("Standoff"
     ["Markup region as ..." standoff-markup-region]
     ["--" nil]
-    ["Hide markup in buffer" standoff-remove-highlightning-buffer]
-    ["Hide markup in region" standoff-remove-highlightning-region]
-    ["Hide markup at point" standoff-remove-highlightning-at-point]
-    ["Show markup in buffer" standoff-show-markup-buffer]
-    ["Show markup in region" standoff-show-markup-region]
+    ["Delete markup range at point" standoff-markup-delete-range-at-point]
+    ["Delete markup element at point" standoff-markup-delete-element-at-point]
+    ["--" nil]
+    ["Store markup element as relation object" standoff-store-markup-element-at-point]
+    ["Relate markup element to stored object" standoff-relate-markup-at-point]
+    ["--" nil]
+    ["Annotate markup element" standoff-annotate-markup-element-at-point]
+    ["--" nil]
+    ["Highlight markup in buffer" standoff-highlight-markup-buffer]
+    ["Highlight markup in region" standoff-highlight-markup-region]
+    ["Hide markup in buffer" standoff-hide-markup-buffer]
+    ["Hide markup in region" standoff-hide-markup-region]
+    ["Hide markup at point" standoff-hide-markup-at-point]
+    ["--" nil]
     ))
 
-;; (defvar
-(setq standoff-markup-local-map
+(defvar standoff-markup-range-local-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-d" 'standoff-remove-markup-at-point)
-    (define-key map "\C-c\C-r" 'standoff-relate-markup-at-point)
-    (define-key map "\C-c\C-h" 'standoff-remove-highlightning-at-point)
+    (define-key map "d" 'standoff-markup-delete-range-at-point)
+    (define-key map "D" 'standoff-markup-delete-element-at-point)
+    (define-key map "h" 'standoff-hide-markup-at-point)
     map))
 
 
-;; (defvar standoff-markup-menu-bar-menu
-;;   (let ((menu (make-sparse-keymap "Standoff")))
-;;     (define-key menu [standoff-markup-region]
-;;       '(menu-item "Markup selected region" standoff-markup-region
-;; 		  :help ""
-;; 		  :key-sequence "\C-cm"))
-;;     (define-key menu [separator-standoff-create]
-;;       '(menu-item "--"))
-;;     menu))
+(define-derived-mode standoff-mode special-mode "Standoff"
+  "Standoff mode is an Emacs major mode for creating standoff
+markup. It makes the file (the buffer) which is linked by the
+markup read only. 
+
+Since text insertion to a file linked by standoff markup is not
+sensible at all, keyboard letters don't allow inserting text but
+are bound to commands instead.
+
+\\{standoff-mode-map}
+"
+  )
 
 
 

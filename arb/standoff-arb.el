@@ -1,5 +1,5 @@
 ;; use sqlite as persistent layer
-(setq standoff-markup-function 'standoff-sqlite-markup-range)
+(setq standoff-markup-write-range-function 'standoff-sqlite-markup-range)
 (setq standoff-markup-names-function 'standoff-sqlite-get-markupDefinition-names)
 
 ;; set how restrictive markup names are handled:

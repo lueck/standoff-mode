@@ -93,7 +93,7 @@ object."
 	  (let* ((markupDefinition-id (standoff-sqlite--get-markupDefinitionID-by-name stream markupInstance-name t))
 		 (document-id (standoff-sqlite--get-documentID stream buf t))
 		 (sql-ins-markupInst (format "INSERT INTO markupInstance (documentID, uuid,  markupDefinitionID) VALUES ('%s', lower(hex(randomblob(16))), '%s');" document-id markupDefinition-id))
-		 (markupInst-id (if (equal markupInstance-id "i")
+		 (markupInst-id (if (equal markupInstance-id "n")
 				     (progn
 				       (esqlite-stream-execute stream sql-ins-markupInst)
 				       (esqlite-stream-read-atom stream sql-sel-markupInstID))
