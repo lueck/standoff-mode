@@ -21,7 +21,7 @@ The function is expected to return an integer ID of the markup
 element (not the range). In case storing to the backend was not
 successfull it is expected to return `nil'.
 "
-  :group 'standoff-mode
+  :group 'standoff
   :type 'function)
 
 (defcustom standoff-markup-read-ranges-function 'standoff-dummy-read-ranges
@@ -72,7 +72,7 @@ functions (aka handlers) must take the following arguments:
 BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
 
 "
-  :group 'standoff-mode
+  :group 'standoff
   :type 'hook
   :options '(standoff-notify-markup))
 
@@ -80,7 +80,7 @@ BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
   "The name of the function that returns the list of names of
 valid markup elements. This should be set according to the
 choosen persistent layer."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'function)
 
 ;;
@@ -157,7 +157,7 @@ of `markup-name' with the id given in `markup-id'."
 standoff-markup-names-function. If set to `nil', the user may
 exit his input with any name. If set to `confirm' (symbol), the
 user may exit with any name, but is asked to confirm his input."
-  :group 'standoff-mode)
+  :group 'standoff)
 
 (defun standoff-markup-names-from-overlays ()
   "Return the list of user defined markup elements. This would be
@@ -183,9 +183,27 @@ buffer)."
 
 (add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
 
-
-
-
+(defun standoff-markup-delete-range-at-point ()
+  "Delete a string range of a markup element at point. The range
+is identified by the overlays properties. So this works only if
+there is an overlay."
+  (interactive)
+  (save-restriction
+    (widen)
+    (overlay-recenter (point))
+    (let* ((overlays (overlays-at (point)))
+	   (ovly (car overlays))
+	   (startchar)
+	   (endchar)
+	   (markup-name)
+	   (markup-id))
+      (if (> (length overlays) 1)
+	  (error "There is more than one markup element at point. Not deleting anything")
+	(setq startchar (overlay-start ovly))
+	(setq endchar (overlay-end ovly))
+	(setq markup-name (standoff--overlay-property-extract (overlay-get ovly 'name) "name"))
+	(setq markup-id (standoff--overlay-property-extract (overlay-get ovly 'id) "id"))
+	(message (format "%i %i %s %s" startchar endchar markup-name markup-id))))))
 
 ;;
 ;; HIGHLIGHTNING
@@ -195,24 +213,24 @@ buffer)."
 
 (defcustom standoff-markup-overlays nil
   "This should be a alist defined by the user."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
 
 (defcustom standoff-markup-overlays-front nil
   "This should be a alist defined by the user."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
 
 (defcustom standoff-markup-overlays-after nil
   "This should be a alist defined by the user."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
 
 (defcustom standoff-markup-overlays-default 
   '(('face (:background "light grey")))
   "Overlay properties for markup elements not defined in
 `standoff-markup-overlays'."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
 
 (defcustom standoff-markup-overlays-front-default 
@@ -220,7 +238,7 @@ buffer)."
   "Text properties of the front string of markup
 oferlays. This is used for markup elements not defined in
 `standoff-markup-overlays-after'."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
 
 (defcustom standoff-markup-overlays-after-default 
@@ -228,8 +246,16 @@ oferlays. This is used for markup elements not defined in
   "Text properties of the after string which trails markup
 overlays. This is used for markup elements not defined in
 `standoff-markup-overlays-after'."
-  :group 'standoff-mode
+  :group 'standoff
   :type 'alist)
+
+(defun standoff--overlay-property (key value)
+  (format "standoff-markup-element-property-symbol-%s-%s" key value))
+
+(defun standoff--overlay-property-extract (value key)
+  (let ((value-front-length (length (format "standoff-markup-element-property-symbol-%s-" key))))
+    ;; we use (format "%s" ...) to make a string from the symbol
+    (substring (format "%s" value) value-front-length)))
 
 (defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
 "Highlight a markup range. This is the workhorse of highlighning in standoff mode."
@@ -248,20 +274,21 @@ overlays. This is used for markup elements not defined in
 	(after-string (car (mapcar '(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props)))
 	;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
 	;; create the overlay
-	(ovly (make-overlay startchar endchar buf)))
+	(ovly (make-overlay startchar endchar buf))
+	(ovly-property-value-id (intern (standoff--overlay-property "id" markup-id)))
+	(ovly-property-value-name (intern (standoff--overlay-property "name" markup-name))))
    ;;(mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (car (cdr x)))) ovly-props)
    ;;(message (format "%s" ovly-props))
    (mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
    (overlay-put ovly 'help-echo hlp-echo)
    (overlay-put ovly 'before-string front-string)
    (overlay-put ovly 'after-string after-string)
-   (overlay-put ovly 'name markup-name)
-   (overlay-put ovly 'id markup-id)
+   (overlay-put ovly 'name ovly-property-value-name)
+   (overlay-put ovly 'id ovly-property-value-id)
    (overlay-put ovly 'local-map standoff-markup-range-local-map)
    )))
 
 (add-hook 'standoff-markup-post-functions 'standoff-highlight-markup-range)
-
 
 (defun standoff-hide-markup-buffer (&optional markup-name)
   "Hide markup in the current buffer, i.e. remove all overlays."
@@ -273,7 +300,7 @@ overlays. This is used for markup elements not defined in
   (save-excursion
     (cond
      ((equal markup-name "!") (remove-overlays))
-     (t (remove-overlays (point-min) (point-max) 'name markup-name)))))
+     (t (remove-overlays (point-min) (point-max) 'name (intern-soft (standoff--overlay-property "name" markup-name)))))))
 
 (defun standoff-hide-markup-region (area-start area-end &optional markup-name)
   "Hide markup in the region, i.e. remove overlays."
@@ -288,6 +315,20 @@ overlays. This is used for markup elements not defined in
   (save-excursion
     (overlay-recenter (point))
     (mapc 'delete-overlay (overlays-at (point)))))
+
+(defun standoff-hide-markup-at-point-by-id (id)
+  (interactive "NId of markup element to hide: ")
+  (save-excursion
+    (overlay-recenter (point))
+    (let ((overlays (overlays-at (point))))
+      (while overlays
+	(let* ((overlay (car overlays))
+	       (overlay-id (overlay-get overlay 'id)))
+	  (when (and overlay-id
+		   (equal overlay-id
+			  (intern-soft (standoff--overlay-property "id" id))))
+	    (delete-overlay overlay)))
+	(setq overlays (cdr overlays))))))
 
 (defun standoff--assert-integer-stringrange (range)
   (if (and (numberp (nth 0 range)) 
@@ -326,7 +367,6 @@ overlays. This is used for markup elements not defined in
 			  nil t)))
   (standoff-highlight-markup-region (point-min) (point-max) markup-name))
 
-
 ;;
 ;; Major mode
 ;;
@@ -339,6 +379,7 @@ overlays. This is used for markup elements not defined in
     (define-key map "d" 'standoff-markup-delete-range-at-point)
     (define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
+    (define-key map "ħ" 'standoff-hide-markup-at-point-by-id)
     (define-key map "H" 'standoff-hide-markup-buffer)
     (define-key map "l" 'standoff-highlight-markup-at-point)
     (define-key map "L" 'standoff-highlight-markup-buffer)
@@ -365,6 +406,7 @@ overlays. This is used for markup elements not defined in
     ["Hide markup in buffer" standoff-hide-markup-buffer]
     ["Hide markup in region" standoff-hide-markup-region]
     ["Hide markup at point" standoff-hide-markup-at-point]
+    ["Hide markup with id at point" standoff-hide-markup-at-point-by-id]
     ["--" nil]
     ))
 
@@ -373,6 +415,7 @@ overlays. This is used for markup elements not defined in
     (define-key map "d" 'standoff-markup-delete-range-at-point)
     (define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
+    (define-key map "H" 'standoff-hide-markup-at-point-by-id)
     map))
 
 
