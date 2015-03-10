@@ -114,8 +114,35 @@ object."
 	      (error "Markup element %s is not of type %s" markupInst-id markupInstance-name))))
       (esqlite-stream-close stream))))
 
-
-
+(defun standoff-sqlite-read-ranges (buf &optional startchar endchar markup-name markup-id)
+  "Get ranges of markup elements from the sqlite database and
+  return the as a list."
+  (let ((stream (esqlite-stream-open (standoff-sqlite-get-database-path)))
+	(doc-id)
+	(sql-sel-markupDef)
+	(markupDef-id)
+	(where-list nil)
+	(where)
+	(sql-sel-ranges))
+    (unwind-protect
+	(progn
+	  (setq doc-id (standoff-sqlite--get-documentID stream buf t))
+	  (setq where (concat where (format " AND stringrange.documentID=%s"
+					    (esqlite-format-value doc-id))))
+	  (when (and startchar endchar)
+	    (setq where (concat where (format " AND stringrange.endchar>=%s AND stringrange.startchar<=%s"
+					      (esqlite-format-value startchar)
+					      (esqlite-format-value endchar)))))
+	  (when markup-id
+	    (setq where (concat where (format " AND stringrange.markupInstanceID=%s"
+					      (esqlite-format-value markup-id)))))
+	  (when markup-name
+	    (setq where (concat where (format " AND markupDefinition.name=%s"
+					      (esqlite-format-value markup-name)))))
+	  (setq sql-sel-ranges (format "SELECT stringrange.startchar, stringrange.endchar, markupDefinition.name, markupInstance.markupInstanceID FROM stringrange INNER JOIN markupInstance INNER JOIN markupDefinition WHERE stringrange.markupInstanceID=markupInstance.markupInstanceID and markupInstance.markupDefinitionID=markupDefinition.markupDefinitionID %s;" where))
+	  ;;(message sql-sel-ranges)
+	  (esqlite-stream-read stream sql-sel-ranges))
+      (esqlite-stream-close stream))))
 
 
 

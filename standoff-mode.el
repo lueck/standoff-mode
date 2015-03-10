@@ -289,6 +289,17 @@ overlays. This is used for markup elements not defined in
     (overlay-recenter (point))
     (mapc 'delete-overlay (overlays-at (point)))))
 
+(defun standoff--assert-integer-stringrange (range)
+  (if (and (numberp (nth 0 range)) 
+	   (numberp (nth 1 range)) 
+	   (numberp (nth 3 range)))
+      range
+    ;; TODO
+    (list (string-to-number (nth 0 range))
+	  (string-to-number (nth 1 range))
+	  (nth 2 range)
+	  (string-to-number (nth 3 range)))))
+
 (defun standoff-highlight-markup-region (beg end &optional markup-name)
   "Create overlays for all markup in the backend."
   (interactive 
@@ -305,7 +316,7 @@ overlays. This is used for markup elements not defined in
     (standoff-hide-markup-region beg end markup-name-or-nil)
     ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
     (dolist (range markup-elements)
-      (apply 'standoff-highlight-markup-range (cons (current-buffer) range)))))
+      (apply 'standoff-highlight-markup-range (cons (current-buffer) (standoff--assert-integer-stringrange range))))))
 
 (defun standoff-highlight-markup-buffer (&optional markup-name)
   "Create overlays for all markup in the backend."
