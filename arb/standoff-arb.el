@@ -1,4 +1,10 @@
+;; use sqlite as persistent layer
+(setq standoff-markup-function 'standoff-sqlite-markup-range)
+(setq standoff-markup-names-function 'standoff-sqlite-get-markupDefinition-names)
+
+;; set how restrictive markup names are handled:
 ;;(setq standoff-markup-require-name-require-match t)
+
 
 (setq standoff-markup-overlays
       '(("beispiel" 

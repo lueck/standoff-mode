@@ -29,7 +29,7 @@ CREATE TABLE If NOT EXISTS "document"(
   "documentID" INTEGER PRIMARY KEY NOT NULL,
   "uuid" TEXT NOT NULL,
   "text" LONGTEXT,
-  "md5checksum" BIGINT,
+  "md5checksum" BIGINT NOT NULL,
   "mimeType" VARCHAR(255),
   "encoding" VARCHAR(45),
   "sourceUri" VARCHAR(300),
