@@ -201,8 +201,8 @@ there is an overlay."
 	  (error "There is more than one markup element at point. Not deleting anything")
 	(setq startchar (overlay-start ovly))
 	(setq endchar (overlay-end ovly))
-	(setq markup-name (standoff--overlay-property-extract (overlay-get ovly 'name) "name"))
-	(setq markup-id (standoff--overlay-property-extract (overlay-get ovly 'id) "id"))
+	(setq markup-name (standoff--overlay-property-get ovly "name"))
+	(setq markup-id (standoff--overlay-property-get ovly "id"))
 	(message (format "%i %i %s %s" startchar endchar markup-name markup-id))))))
 
 ;;
@@ -249,13 +249,44 @@ overlays. This is used for markup elements not defined in
   :group 'standoff
   :type 'alist)
 
-(defun standoff--overlay-property (key value)
-  (format "standoff-markup-element-property-symbol-%s-%s" key value))
+(defvar standoff--overlay-property-value-format
+  "standoff-markup-element-property-symbol-%s-%s")
 
-(defun standoff--overlay-property-extract (value key)
-  (let ((value-front-length (length (format "standoff-markup-element-property-symbol-%s-" key))))
-    ;; we use (format "%s" ...) to make a string from the symbol
-    (substring (format "%s" value) value-front-length)))
+(defun standoff--overlay-property-format-key (key)
+  "Overlay properties are key value pairs where key and value are
+symbols. This function returns the key as an interned
+symbol. Interference with symbol names of other emacs packages
+prevented if you use this function."
+  (intern (format "%s" key)))
+
+(defun standoff--overlay-property-format-value (key value &optional setting)
+  "Overlay properties are key value pairs where key and value are
+symbols. This function returns the value as an interned symbol
+whichs name is made from the key and the value. Interference with
+symbol names of other emacs packages prevented if you use this
+function."
+  (let ((value-formatted (format standoff--overlay-property-value-format key value)))
+    (if setting
+	(intern value-formatted)
+      (intern-soft value-formatted))))
+
+(defun standoff--overlay-property-set (ovly key value)
+  "A convience function to set the property of the overlay OVLY
+given as KEY and VALUE."
+  (overlay-put ovly 
+	       (standoff--overlay-property-format-key key)
+	       (standoff--overlay-property-format-value key value t)))
+
+(defun standoff--overlay-property-get (ovly key)
+  "A convience function to get the property of an overlay. The
+value of property KEY of the overlay OVLY is returned as a
+string."
+  (let ((value-front-length (length (format standoff--overlay-property-value-format key "")))
+	(value-symbol (overlay-get ovly (standoff--overlay-property-format-key key))))
+    (if (not (and value-symbol (intern-soft value-symbol)))
+	nil
+      ;; we use (format "%s" ...) to make a string from the symbol
+      (message (substring (format "%s" value-symbol) value-front-length)))))
 
 (defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
 "Highlight a markup range. This is the workhorse of highlighning in standoff mode."
@@ -274,17 +305,15 @@ overlays. This is used for markup elements not defined in
 	(after-string (car (mapcar '(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props)))
 	;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
 	;; create the overlay
-	(ovly (make-overlay startchar endchar buf))
-	(ovly-property-value-id (intern (standoff--overlay-property "id" markup-id)))
-	(ovly-property-value-name (intern (standoff--overlay-property "name" markup-name))))
+	(ovly (make-overlay startchar endchar buf)))
    ;;(mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (car (cdr x)))) ovly-props)
    ;;(message (format "%s" ovly-props))
    (mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
    (overlay-put ovly 'help-echo hlp-echo)
    (overlay-put ovly 'before-string front-string)
    (overlay-put ovly 'after-string after-string)
-   (overlay-put ovly 'name ovly-property-value-name)
-   (overlay-put ovly 'id ovly-property-value-id)
+   (standoff--overlay-property-set ovly "name" markup-name)
+   (standoff--overlay-property-set ovly "id" (number-to-string markup-id))
    (overlay-put ovly 'local-map standoff-markup-range-local-map)
    )))
 
@@ -300,7 +329,9 @@ overlays. This is used for markup elements not defined in
   (save-excursion
     (cond
      ((equal markup-name "!") (remove-overlays))
-     (t (remove-overlays (point-min) (point-max) 'name (intern-soft (standoff--overlay-property "name" markup-name)))))))
+     (t (remove-overlays (point-min) (point-max) 
+			 (standoff--overlay-property-format-key "name")
+			 (standoff--overlay-property-format-value "name" markup-name))))))
 
 (defun standoff-hide-markup-region (area-start area-end &optional markup-name)
   "Hide markup in the region, i.e. remove overlays."
@@ -323,10 +354,8 @@ overlays. This is used for markup elements not defined in
     (let ((overlays (overlays-at (point))))
       (while overlays
 	(let* ((overlay (car overlays))
-	       (overlay-id (overlay-get overlay 'id)))
-	  (when (and overlay-id
-		   (equal overlay-id
-			  (intern-soft (standoff--overlay-property "id" id))))
+	       (overlay-id (standoff--overlay-property-get overlay "id")))
+	  (when (equal overlay-id (number-to-string id))
 	    (delete-overlay overlay)))
 	(setq overlays (cdr overlays))))))
 
