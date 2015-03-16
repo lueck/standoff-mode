@@ -43,6 +43,7 @@
 	   ('face (:foreground "green")))
 	  ))
   
+  (standoff-highlight-markup-buffer (current-buffer))
 )
 
 ;; (setplist 'beispiel-tag 

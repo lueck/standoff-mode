@@ -54,6 +54,26 @@ MARKUP-ID must occur in more than one of those lists.
   :group 'standoff
   :type 'function)
 
+(defcustom standoff-markup-delete-range-function 'standoff-dummy-delete-range
+  "A pointer to the function that deletes a range of a markup
+  element form the backend. The range is given by the following
+  parameters which the function must take (all of them):
+
+BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
+
+The function should return nil or throw an error if the range
+could not be deleted and t on successfull deletion. It's up to
+the backend to control deletion preconditions which might be:
+
+- any relation of the markup element, which the range belongs to,
+  to other markup elements if there the markup element would have
+  zero ranges after the deletion. The backend may interact with
+  the user in this case.
+
+"
+  :group 'standoff
+  :type 'function)
+
 (defcustom standoff-markup-names-function 'standoff-dummy-markup-element-names
   "A function that returns names of defined (or already used)
 markup elements. The function ist expected to return a list of
@@ -100,10 +120,34 @@ function that persists the markup in some backend."
     markup-identifier))
 
 (defun standoff-dummy-read-ranges (buf &optional startchar endchar markup-name markup-id)
-  "Return the dummy backend, but for this dummy thing we don't
-filter for portion of buffer or for name or id of markup
-element."
-standoff-dummy-backend)
+  "Return the dummy backend, apply filter given by STARTCHAR
+ENDCHAR MARKUP-NAME MARKUP-ID."
+  (let ((backend standoff-dummy-backend)
+	(ranges-to-return nil)
+	(range))
+    (while backend
+      (setq range (car backend))
+      (when (and (or (not startchar) (> (nth 1 range) startchar))
+		 (or (not startchar) (< (nth 0 range) endchar))
+		 (or (not markup-name) (equal (nth 2 range) markup-name))
+		 (or (not markup-id) (equal (nth 3 range) markup-id)))
+	(setq ranges-to-return (cons range ranges-to-return)))
+      (setq backend (cdr backend)))
+    ranges-to-return))
+
+(defun standoff-dummy-delete-range (buf startchar endchar markup-name markup-id)
+  "Delete a markup range from the dummy backend."
+  (let ((new-backend nil)
+	(range))
+    (while standoff-dummy-backend
+      (setq range (car standoff-dummy-backend))
+      (when (not (and (equal (nth 0 range) startchar)
+		      (equal (nth 1 range) endchar)
+		      (equal (nth 2 range) markup-name)
+		      (equal (nth 3 range) markup-id)))
+	(setq new-backend (cons range new-backend)))
+      (setq standoff-dummy-backend (cdr standoff-dummy-backend)))
+    (setq standoff-dummy-backend new-backend)))
 
 (defun standoff-dummy-markup-element-names ()
   "Return the names of markup elements stored in the dummy backend."
@@ -117,11 +161,20 @@ i.e. the highest value."
       (apply 'max (mapcar '(lambda (x) (nth 3 x)) standoff-dummy-backend))
     0))
 
+(defun standoff-dummy-backend-setup ()
+  "Set up the dummy backend. It may be usefull during development
+to make this an interactive function."
+  (interactive)
+  (setq standoff-dummy-backend nil))
 ;; we want the dummy backend to be buffer local, so we set it up in a
 ;; mode hook
-(defun standoff-dummy-backend-setup ()
-  (setq standoff-dummy-backend nil))
 (add-hook 'standoff-mode-hook 'standoff-dummy-backend-setup)
+
+(defun standoff-dummy-backend-inspect ()
+  "Display the dummy backend in the minibuffer. This may be
+usefull for development."
+  (interactive)
+  (message "%s" standoff-dummy-backend))
 
 ;;
 ;; creating and deleting stand-off markup
@@ -202,8 +255,10 @@ there is an overlay."
 	(setq startchar (overlay-start ovly))
 	(setq endchar (overlay-end ovly))
 	(setq markup-name (standoff--overlay-property-get ovly "name"))
-	(setq markup-id (standoff--overlay-property-get ovly "id"))
-	(message (format "%i %i %s %s" startchar endchar markup-name markup-id))))))
+	(setq markup-id (string-to-number (standoff--overlay-property-get ovly "id")))
+	;; (message (format "%i %i %s %i" startchar endchar markup-name markup-id))
+	(when (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-name markup-id)
+	  (standoff-hide-markup-at-point))))))
 
 ;;
 ;; HIGHLIGHTNING
@@ -322,7 +377,7 @@ string."
    (overlay-put ovly 'after-string after-string)
    (standoff--overlay-property-set ovly "name" markup-name)
    (standoff--overlay-property-set ovly "id" (number-to-string markup-id))
-   (overlay-put ovly 'local-map standoff-markup-range-local-map)
+   ;;(overlay-put ovly 'local-map standoff-markup-range-local-map)
    )))
 
 (add-hook 'standoff-markup-post-functions 'standoff-highlight-markup-range)
@@ -391,6 +446,8 @@ string."
 				  (t markup-name)))
 	(markup-elements (funcall standoff-markup-read-ranges-function (current-buffer) beg end markup-name-or-nil)))
     ;; First remove overlays because else they get doubled.
+    ;; TODO: This makes it impossible to use this function several
+    ;; times in order to sequetially show up parts of the markup.
     (standoff-hide-markup-region beg end markup-name-or-nil)
     ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
     (dolist (range markup-elements)
