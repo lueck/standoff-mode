@@ -249,6 +249,14 @@ overlays. This is used for markup elements not defined in
   :group 'standoff
   :type 'alist)
 
+(defun standoff--overlay-property-obarray-init ()
+  "When we store the parameters of markup elements as key value
+pairs of overlay properties, they are interned to a special
+obarray in order to avoid namespace collisions. We also make this
+special obarray buffer local."
+  (defvar standoff--overlay-property-obarray nil))
+(add-hook 'standoff-mode-hook 'standoff--overlay-property-obarray-init)
+
 (defvar standoff--overlay-property-value-format
   "standoff-markup-element-property-symbol-%s-%s")
 
@@ -257,7 +265,7 @@ overlays. This is used for markup elements not defined in
 symbols. This function returns the key as an interned
 symbol. Interference with symbol names of other emacs packages
 prevented if you use this function."
-  (intern (format "%s" key)))
+  (intern (format "%s" key) standoff--overlay-property-obarray))
 
 (defun standoff--overlay-property-format-value (key value &optional setting)
   "Overlay properties are key value pairs where key and value are
@@ -267,8 +275,8 @@ symbol names of other emacs packages prevented if you use this
 function."
   (let ((value-formatted (format standoff--overlay-property-value-format key value)))
     (if setting
-	(intern value-formatted)
-      (intern-soft value-formatted))))
+	(intern value-formatted standoff--overlay-property-obarray)
+      (intern-soft value-formatted standoff--overlay-property-obarray))))
 
 (defun standoff--overlay-property-set (ovly key value)
   "A convience function to set the property of the overlay OVLY
@@ -283,10 +291,10 @@ value of property KEY of the overlay OVLY is returned as a
 string."
   (let ((value-front-length (length (format standoff--overlay-property-value-format key "")))
 	(value-symbol (overlay-get ovly (standoff--overlay-property-format-key key))))
-    (if (not (and value-symbol (intern-soft value-symbol)))
+    (if (not (and value-symbol (intern-soft value-symbol standoff--overlay-property-obarray)))
 	nil
       ;; we use (format "%s" ...) to make a string from the symbol
-      (message (substring (format "%s" value-symbol) value-front-length)))))
+      (substring (format "%s" value-symbol) value-front-length))))
 
 (defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
 "Highlight a markup range. This is the workhorse of highlighning in standoff mode."
