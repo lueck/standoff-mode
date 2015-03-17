@@ -114,6 +114,7 @@ function that persists the markup in some backend."
 ;; TODO: Check if markup with id is of markup-name! (Consistency)
   (let ((markup-identifier (cond
 			    ((equal markup-id "n") (+ (standoff-dummy-markup-element-last-id) 1))
+			    ((numberp markup-id) markup-id)
 			    (t (string-to-number markup-id)))))
     (setq standoff-dummy-backend
 	  (cons (list startchar endchar markup-name markup-identifier) 
@@ -181,12 +182,60 @@ usefull for development."
 ;; creating and deleting stand-off markup
 ;;
 
-(defun standoff-markup-region (markup-name markup-id)
+(defun standoff-markup-region (beg end markup-name)
+  "Create stand-off markup for the selected region given by BEG
+and END, the name of the markup element is given by MARKUP-NAME.
+The id is automatically assigned by the backend, e.g. by
+automatic incrementation. This function will create a new markup
+element."
+  (interactive
+   (list (region-beginning)
+	 (region-end)
+	 (completing-read "Name of markup element: "
+			  (funcall standoff-markup-names-function)
+			  nil
+			  standoff-markup-require-name-require-match)))
+  (let ((markup-id nil))
+    (save-restriction
+      (widen)
+      (save-excursion
+	(setq markup-id (funcall standoff-markup-write-range-function (current-buffer) beg end markup-name "n"))
+	(when markup-id
+	  ;; run hook to notify success and highlight the new markup
+	  (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-name markup-id))))
+    (deactivate-mark)))
+
+(defun standoff-markup-region-continue (beg end markup-id)
+  "Add a range for the markup element identified by
+MARKUP-ID. The range is given by BEG and END or point and mark,
+aka the region (which may be inactive). This function enables the
+user to create continues markup (which should better be called
+discontinues markup, because there will be kind of gaps in the
+markup produced)."
+  (interactive "r\nNId (number) of markup element to be continued: ")
+  (let* ((markup-name (nth 2 (car (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id))))
+	 (duplicate (funcall standoff-markup-read-ranges-function (current-buffer) beg end markup-name markup-id))
+	 (markup-id-from-backend nil))
+    (if (not markup-name)
+	(error "No markup element with ID %i found" markup-id)
+      (if duplicate
+	  (error "Overlapping markup with the same id and element name! Not creating a duplicate")
+	(save-restriction
+	  (widen)
+	  (save-excursion
+	    (setq markup-id-from-backend (funcall standoff-markup-write-range-function (current-buffer) beg end markup-name markup-id))
+	    (message "Hi: %s" markup-id-from-backend)
+	    (when markup-id-from-backend
+	      ;; run hook to notify success and highlight the new markup
+	      (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-name markup-id-from-backend))))
+	(deactivate-mark)))))
+
+(defun standoff-markup-region-deprecated (markup-name markup-id)
   "Markup the selected region, i.e. mark the region as a range
 of `markup-name' with the id given in `markup-id'."
   ;; Deprecated! Ether a name or an id should be given! This makes
   ;; things consistent.
-  (interactive ;;"MMarkup as: \nnId of %s: ")
+  (interactive
    (list (standoff-minibuffer-require-markup-name)
 	 (standoff-minibuffer-require-id-or-key)))
   (message (format "Name was %s, ID was %s." markup-name markup-id))
@@ -409,6 +458,7 @@ string."
   (save-excursion
     (cond
      ((equal markup-name "!") (remove-overlays))
+     ((not markup-name) (remove-overlays))
      (t (remove-overlays (point-min) (point-max) 
 			 (standoff--overlay-property-format-key "name")
 			 (standoff--overlay-property-format-value "name" markup-name))))))
@@ -478,6 +528,40 @@ string."
 			  nil t)))
   (standoff-highlight-markup-region (point-min) (point-max) markup-name))
 
+(defun standoff-highlight-markup-by-id (markup-id)
+  "Create overlays for all ranges of the markup element
+identified by MARKUP-ID."
+  (interactive "NId (number) of markup element to highlight: ")
+  (let ((ranges (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id)))
+    ;; First remove overlays because else they get doubled.
+    ;; TODO: This makes it impossible to use this function several
+    ;; times in order to sequetially show up parts of the markup.
+    (standoff-hide-markup-buffer)
+    ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
+    (dolist (range ranges)
+      (apply 'standoff-highlight-markup-range (cons (current-buffer) (standoff--assert-integer-stringrange range))))))
+
+
+;;
+;; Navigate
+;;
+
+(defun standoff-navigate-next ()
+  (interactive)
+  (overlay-recenter (point))
+  (let ((pos (next-overlay-change (point))))
+    (if (equal pos (point-max))
+	(error "Last highlightened markup element in buffer")
+      (goto-char pos))))
+
+(defun standoff-navigate-previous ()
+  (interactive)
+  (overlay-recenter (point))
+  (let ((pos (previous-overlay-change (point))))
+    (if (equal pos (point-min))
+	(error "First highlightened markup element in buffer")
+      (goto-char pos))))
+
 ;;
 ;; Major mode
 ;;
@@ -487,25 +571,29 @@ string."
 (defvar standoff-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "m" 'standoff-markup-region)
+    (define-key map "M" 'standoff-markup-region-continue)
     (define-key map "d" 'standoff-markup-delete-range-at-point)
-    (define-key map "D" 'standoff-markup-delete-element-at-point)
+    ;;(define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
     (define-key map "ħ" 'standoff-hide-markup-at-point-by-id)
     (define-key map "H" 'standoff-hide-markup-buffer)
-    (define-key map "l" 'standoff-highlight-markup-at-point)
+    (define-key map "l" 'standoff-highlight-markup-by-id)
     (define-key map "L" 'standoff-highlight-markup-buffer)
     (define-key map "r" 'standoff-relate-markup-element-at-point)
     (define-key map "s" 'standoff-store-markup-element-at-point)
     (define-key map "a" 'standoff-annotate-markup-element-at-point)
+    (define-key map "n" 'standoff-navigate-next)
+    (define-key map "p" 'standoff-navigate-previous)
     map))
 
 (easy-menu-define standoff-menu standoff-mode-map
   "Menu for standoff mode"
   '("Standoff"
-    ["Markup region as ..." standoff-markup-region]
+    ["Create new markup element" standoff-markup-region]
+    ["Continue markup element" standoff-markup-region-continue]
     ["--" nil]
-    ["Delete markup range at point" standoff-markup-delete-range-at-point]
-    ["Delete markup element at point" standoff-markup-delete-element-at-point]
+    ["Delete markup at point" standoff-markup-delete-range-at-point]
+    ;;["Delete markup element at point" standoff-markup-delete-element-at-point]
     ["--" nil]
     ["Store markup element as relation object" standoff-store-markup-element-at-point]
     ["Relate markup element to stored object" standoff-relate-markup-at-point]
@@ -514,17 +602,20 @@ string."
     ["--" nil]
     ["Highlight markup in buffer" standoff-highlight-markup-buffer]
     ["Highlight markup in region" standoff-highlight-markup-region]
+    ["Highlight markup with id" standoff-highlight-markup-by-id]
     ["Hide markup in buffer" standoff-hide-markup-buffer]
     ["Hide markup in region" standoff-hide-markup-region]
     ["Hide markup at point" standoff-hide-markup-at-point]
     ["Hide markup with id at point" standoff-hide-markup-at-point-by-id]
     ["--" nil]
+    ["Navigate to next highlightened element" standoff-navigate-next]
+    ["Navigate to previous highlightened element" standoff-navigate-previous]
     ))
 
 (defvar standoff-markup-range-local-map
   (let ((map (make-sparse-keymap)))
     (define-key map "d" 'standoff-markup-delete-range-at-point)
-    (define-key map "D" 'standoff-markup-delete-element-at-point)
+    ;; (define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
     (define-key map "H" 'standoff-hide-markup-at-point-by-id)
     map))

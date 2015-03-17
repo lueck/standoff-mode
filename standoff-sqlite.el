@@ -115,22 +115,24 @@ with id MARKUP-ID is of markup element MARKUP-NAME."
 		 (document-id (standoff-sqlite--get-documentID stream buf t))
 		 (sql-ins-markupInst (format "INSERT INTO markupInstance (documentID, uuid,  markupDefinitionID) VALUES ('%s', lower(hex(randomblob(16))), '%s');" document-id markupDefinition-id))
 		 (markupInst-id (if (equal markupInstance-id "n")
-				     (progn
-				       (esqlite-stream-execute stream sql-ins-markupInst)
-				       (esqlite-stream-read-atom stream sql-sel-markupInstID))
-				   markupInstance-id))
+				    (progn
+				      (esqlite-stream-execute stream sql-ins-markupInst)
+				      (esqlite-stream-read-atom stream sql-sel-markupInstID))
+				  markupInstance-id))
 		 (sql-ins-stringrange (format 
-				       "INSERT INTO stringrange (documentID, markupInstanceID, uuid, startchar, endchar) VALUES ('%s', '%s', lower(hex(randomblob(16))), '%i', '%i');"
-				       document-id
-				       markupInst-id
-				       startchar
-				       endchar)))
+				       "INSERT INTO stringrange (documentID, markupInstanceID, uuid, startchar, endchar) VALUES (%s, %s, lower(hex(randomblob(16))), %s, %s);"
+				       (esqlite-format-value document-id)
+				       (esqlite-format-value markupInst-id)
+				       (esqlite-format-value startchar)
+				       (esqlite-format-value endchar))))
 	    (if (standoff-sqlite--assert-markupInstance-markupDefinitionID stream markupInst-id markupDefinition-id)
 		(progn
+		  (message "Hi3")
 		  (esqlite-stream-execute stream sql-ins-stringrange)
 		  (esqlite-stream-execute stream "COMMIT")
 		  ;; return the id of markupInstance as integer
-		  (string-to-number markupInst-id))
+		  (cond ((numberp markupInst-id) markupInst-id)
+			(t (string-to-number markupInst-id))))
 	      (esqlite-stream-execute stream "ROLLBACK")
 	      (error "Markup element %s is not of type %s" markupInst-id markupInstance-name))))
       (esqlite-stream-close stream))))
