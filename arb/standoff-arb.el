@@ -1,11 +1,12 @@
+(require 'standoff-mode)
 (add-hook 'standoff-mode-hook 'standoff-arb-config)
 
 (defun standoff-arb-config ()
+
   ;; use sqlite as persistent layer
-  (setq standoff-markup-write-range-function 'standoff-sqlite-markup-range)
-  (setq standoff-markup-read-ranges-function 'standoff-sqlite-read-ranges)
-  (setq standoff-markup-names-function 'standoff-sqlite-get-markupDefinition-names)
-  
+  (require 'standoff-sqlite)
+  (standoff-sqlite-register-backend)
+
   ;; set how restrictive markup names are handled:
   ;;(setq standoff-markup-require-name-require-match t)
 

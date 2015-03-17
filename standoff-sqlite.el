@@ -7,6 +7,10 @@
 
 (defcustom standoff-sqlite-database-path "~/markup.sqlite3"
   "The path to the sqlite database file."
+  ;; During development you should use
+  ;; $ fuser <path to sqlite database>
+  ;; from the linux command line in order to see if connections are
+  ;; left open.
   ;; TODO: Should we put in a place like
   ;; ~/.emacs.d/standoff/markup.sqlite3 ?
   :group 'standoff-sqlite
@@ -17,6 +21,10 @@
 that fits the conventions of the operating system."
   (convert-standard-filename standoff-sqlite-database-path))
 
+;;
+;; private
+;;
+
 (defun standoff-sqlite--assert-database (stream)
   "Assert that a database is present."
   ;; TODO: Get the path with something like 
@@ -24,17 +32,8 @@ that fits the conventions of the operating system."
 			  "createDB-sqlite.sql")))
     (esqlite-stream-send-command stream ".read" sql-file)))
 
-(defun standoff-sqlite-get-markupDefinition-names ()
-  "Return the list of markup definitions."
-  (let ((stream (esqlite-stream-open (standoff-sqlite-get-database-path))))
-    (unwind-protect
-	(progn
-	  (standoff-sqlite--assert-database stream)
-	  (esqlite-stream-read-list stream "SELECT name FROM markupDefinition;"))
-      (esqlite-stream-close stream))))
-
 (defun standoff-sqlite--get-markupDefinitionID-by-name (stream markup-name &optional create)
-  "Ask for the ID of the markup defintion given by name."
+  "Ask for the ID of the markup definition given by name."
   (let* ((sql-sel (format "SELECT markupDefinitionID FROM markupDefinition WHERE name='%s';" markup-name))
 	(sql-ins (format "INSERT INTO markupDefinition (name, reading, uuid, version) VALUES ('%s', '%s', lower(hex(randomblob(16))), datetime('now'));" markup-name markup-name))
 	(markupDef-id (esqlite-stream-read-atom stream sql-sel)))
@@ -54,7 +53,7 @@ database. The argument STREAM is expected to be an esqlite stream
 object."
   ;; TODO: save the buffer given in buf to the database, not only the
   ;; file path and the checksum. Find a fast way to do this. With
-  ;; esqlite it's very slow.
+  ;; esqlite it's very slow--if not impossible.
   (let* ((checksum (md5 buf))
 	 (sql-sel-doc-id (format "SELECT documentID FROM document WHERE md5checksum='%s';" checksum))
 	 (doc-id (esqlite-stream-read-atom stream sql-sel-doc-id)))
@@ -82,7 +81,29 @@ object."
 				    markupInstID
 				    markupDefID)))
 
-(defun standoff-sqlite-markup-range (buf startchar endchar markupInstance-name markupInstance-id)
+(defun standoff-sqlite--markup-instance-has-markup-name (stream markup-id markup-name)
+  "Returns the markupInstance id if and only if markupInstance
+with id MARKUP-ID is of markup element MARKUP-NAME."
+  (esqlite-stream-read-atom
+   stream
+   (format "SELECT markupInstance.markupInstanceID FROM markupInstance INNER JOIN markupDefinition WHERE markupInstance.markupDefinitionID=markupDefinition.markupDefinitionID AND markupDefinition.name=%s AND markupInstance.markupInstanceID=%s;"
+	   (esqlite-format-value markup-name)
+	   (esqlite-format-value markup-id))))
+
+;;
+;; public
+;;
+
+(defun standoff-sqlite-get-markupDefinition-names ()
+  "Return the list of markup definitions."
+  (let ((stream (esqlite-stream-open (standoff-sqlite-get-database-path))))
+    (unwind-protect
+	(progn
+	  (standoff-sqlite--assert-database stream)
+	  (esqlite-stream-read-list stream "SELECT name FROM markupDefinition;"))
+      (esqlite-stream-close stream))))
+
+(defun standoff-sqlite-write-range (buf startchar endchar markupInstance-name markupInstance-id)
   "Make a new markup range persistent in the backend."
   (let ((stream (esqlite-stream-open (standoff-sqlite-get-database-path)))
 	(sql-sel-markupInstID "SELECT last_insert_rowid()"))
@@ -144,7 +165,48 @@ object."
 	  (esqlite-stream-read stream sql-sel-ranges))
       (esqlite-stream-close stream))))
 
+(defun standoff-sqlite-delete-range (buf startchar endchar markup-name markup-id)
+  "Delete a string range from the sqlite database."
+  (let ((stream (esqlite-stream-open (standoff-sqlite-get-database-path)))
+	(doc-id)
+	(sql-del-range (format "DELETE FROM stringrange WHERE startchar=%s AND endchar=%s AND markupInstanceID=%s;"
+			       (esqlite-format-value startchar)
+			       (esqlite-format-value endchar)
+			       (esqlite-format-value markup-id)))
+	(sql-sel-other-ranges (format "SELECT stringrangeID FROM stringrange WHERE markupInstanceID=%s;"
+				      (esqlite-format-value markup-id)))
+	(sql-del-markup-inst (format "DELETE FROM markupInstance WHERE markupInstanceID=%s;"
+				     (esqlite-format-value markup-id))))
+    (unwind-protect
+	(progn
+	  (setq doc-id (standoff-sqlite--get-documentID stream buf nil))
+	  (if (not (standoff-sqlite--markup-instance-has-markup-name stream markup-id markup-name))
+	      (error "Markup element %s is not of type %s" markup-id markup-name)
+	    (esqlite-stream-execute stream "BEGIN;")
+	    (esqlite-stream-execute stream sql-del-range)
+	    (when (not (esqlite-stream-read stream sql-sel-other-ranges))
+	      (esqlite-stream-execute stream sql-del-markup-inst))
+	    (esqlite-stream-execute stream "COMMIT;")
+	    t))
+      (esqlite-stream-close stream))))
 
+
+;;
+;; Setup
+;;
+
+(defun standoff-sqlite-register-backend ()
+  "Register sqlite as backend, i.e. setting the
+standoff-markup-*-function variables point to sqlite backup functions."
+  (setq standoff-markup-write-range-function 'standoff-sqlite-write-range
+	standoff-markup-read-ranges-function 'standoff-sqlite-read-ranges
+	standoff-markup-delete-range-function 'standoff-sqlite-delete-range
+	standoff-markup-names-function 'standoff-sqlite-get-markupDefinition-names))
+
+
+;;
+;; Testing interactively while developping
+;;
 
 (defun standoff-sqlite-test ()
   (interactive)
@@ -162,3 +224,5 @@ object."
 		     )))
       (esqlite-stream-close stream))))
 
+
+(provide 'standoff-sqlite)

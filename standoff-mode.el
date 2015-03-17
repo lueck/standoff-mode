@@ -111,6 +111,7 @@ choosen persistent layer."
   "A dummy function that does nothing but fullfill the function
 definition. The user should definitively replace it with a
 function that persists the markup in some backend."
+;; TODO: Check if markup with id is of markup-name! (Consistency)
   (let ((markup-identifier (cond
 			    ((equal markup-id "n") (+ (standoff-dummy-markup-element-last-id) 1))
 			    (t (string-to-number markup-id)))))
@@ -183,6 +184,8 @@ usefull for development."
 (defun standoff-markup-region (markup-name markup-id)
   "Markup the selected region, i.e. mark the region as a range
 of `markup-name' with the id given in `markup-id'."
+  ;; Deprecated! Ether a name or an id should be given! This makes
+  ;; things consistent.
   (interactive ;;"MMarkup as: \nnId of %s: ")
    (list (standoff-minibuffer-require-markup-name)
 	 (standoff-minibuffer-require-id-or-key)))
@@ -240,6 +243,8 @@ buffer)."
   "Delete a string range of a markup element at point. The range
 is identified by the overlays properties. So this works only if
 there is an overlay."
+;; TODO: Collect information about related items when
+;; asking "Do you really ...? (yes or no)"
   (interactive)
   (save-restriction
     (widen)
@@ -249,7 +254,10 @@ there is an overlay."
 	   (startchar)
 	   (endchar)
 	   (markup-name)
-	   (markup-id))
+	   (markup-id)
+	   (markup-ranges)
+	   (precondition)
+	   (deleted))
       (if (> (length overlays) 1)
 	  (error "There is more than one markup element at point. Not deleting anything")
 	(setq startchar (overlay-start ovly))
@@ -257,8 +265,16 @@ there is an overlay."
 	(setq markup-name (standoff--overlay-property-get ovly "name"))
 	(setq markup-id (string-to-number (standoff--overlay-property-get ovly "id")))
 	;; (message (format "%i %i %s %i" startchar endchar markup-name markup-id))
-	(when (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-name markup-id)
-	  (standoff-hide-markup-at-point))))))
+	(setq markup-ranges (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id))
+	(message "%s" (length markup-ranges))
+	(if (> (length markup-ranges) 1)
+	    (setq precondition (y-or-n-p (format "Do you really want to delete this range of '%s' %s? " markup-name markup-id)))
+	  (setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-id markup-name))))
+	(when precondition
+	  (setq deleted (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-name markup-id))
+	  (when deleted
+	    (message "... deleted.")
+	    (standoff-hide-markup-at-point)))))))
 
 ;;
 ;; HIGHLIGHTNING
@@ -309,7 +325,8 @@ overlays. This is used for markup elements not defined in
 pairs of overlay properties, they are interned to a special
 obarray in order to avoid namespace collisions. We also make this
 special obarray buffer local."
-  (defvar standoff--overlay-property-obarray nil))
+;;TODO
+  (setq standoff--overlay-property-obarray nil))
 (add-hook 'standoff-mode-hook 'standoff--overlay-property-obarray-init)
 
 (defvar standoff--overlay-property-value-format
@@ -320,7 +337,7 @@ special obarray buffer local."
 symbols. This function returns the key as an interned
 symbol. Interference with symbol names of other emacs packages
 prevented if you use this function."
-  (intern (format "%s" key) standoff--overlay-property-obarray))
+  (intern (format "%s" key)))
 
 (defun standoff--overlay-property-format-value (key value &optional setting)
   "Overlay properties are key value pairs where key and value are
@@ -330,8 +347,8 @@ symbol names of other emacs packages prevented if you use this
 function."
   (let ((value-formatted (format standoff--overlay-property-value-format key value)))
     (if setting
-	(intern value-formatted standoff--overlay-property-obarray)
-      (intern-soft value-formatted standoff--overlay-property-obarray))))
+	(intern value-formatted)
+      (intern-soft value-formatted))))
 
 (defun standoff--overlay-property-set (ovly key value)
   "A convience function to set the property of the overlay OVLY
@@ -346,7 +363,7 @@ value of property KEY of the overlay OVLY is returned as a
 string."
   (let ((value-front-length (length (format standoff--overlay-property-value-format key "")))
 	(value-symbol (overlay-get ovly (standoff--overlay-property-format-key key))))
-    (if (not (and value-symbol (intern-soft value-symbol standoff--overlay-property-obarray)))
+    (if (not (and value-symbol (intern-soft value-symbol)))
 	nil
       ;; we use (format "%s" ...) to make a string from the symbol
       (substring (format "%s" value-symbol) value-front-length))))
@@ -528,4 +545,4 @@ are bound to commands instead.
 
 
 
-(provide 'standoff)
+(provide 'standoff-mode)
