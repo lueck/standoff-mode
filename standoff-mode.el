@@ -81,6 +81,21 @@ strings."
   :group 'standoff
   :type 'function)
 
+(defcustom standoff-markup-changed-functions nil
+  "A hook for handlers that need to be called if the markup on a
+buffer was changed. This can be used for evalution, updating the
+highlightning etc. etc.
+
+In terms of elisp this is a so called abnormal hook, i.e. the
+hooked functions must take arguments. Arguments are:
+
+BUFFER
+
+BUFFER: the buffer the markup relates to, aka the source document
+
+The return value of the hooked functions is not evaluated at all. 
+")
+
 (defcustom standoff-markup-post-functions nil
   "A hook for handlers called when a region was marked up und the
 markup was successfully stored to the backend. This hook should
@@ -96,12 +111,25 @@ BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
   :type 'hook
   :options '(standoff-notify-markup))
 
-(defcustom standoff-markup-names-function 'standoff-markup-names
-  "The name of the function that returns the list of names of
-valid markup elements. This should be set according to the
-choosen persistent layer."
-  :group 'standoff
-  :type 'function)
+(defvar standoff-predicate-names-function 'standoff-dummy-predicate-names
+  "The function which returns a list of names of relation
+predicates from the backend. It must take two arguments
+
+SUBJECT-ID OBJECT-ID 
+
+The returned list of predicate names must be valid predicate
+names for the combination of subject and object. Should return
+nil if there are no valid predicates for this combination.")
+
+(defvar standoff-markup-write-relation 'standoff-dummy-write-relation
+  "The function which writes a new relation to the backend. It
+  must take the following arguments:
+
+BUFFER SUBJECT-ID PREDICATE-NAME OBJECT-ID
+
+The function is expected to return a non-nil value, if writing
+the relation to the backend was successful, nil in case of
+failure.")
 
 ;;
 ;; Dummy backend
@@ -163,11 +191,24 @@ i.e. the highest value."
       (apply 'max (mapcar '(lambda (x) (nth 3 x)) standoff-dummy-backend))
     0))
 
+(defun standoff-dummy-predicate-names (buf subj-id obj-id)
+  "Returns a list of predicate names for relations between
+subject given by SUBJ-ID and object given by OBJ-ID. Currently
+this does not filter valid relation names for combination of
+subject and object."
+  (mapcar '(lambda (x) (nth 1 x)) standoff-dummy-backend-relations))
+
+(defun standoff-dummy-write-relation (buf subj-id predicate obj-id)
+  "Store relation to the backend."
+  (setq standoff-dummy-backend-relations
+	(cons (list subj-id predicate obj-id) standoff-dummy-backend-relations)))
+
 (defun standoff-dummy-backend-setup ()
   "Set up the dummy backend. It may be usefull during development
 to make this an interactive function."
   (interactive)
-  (setq standoff-dummy-backend nil))
+  (setq standoff-dummy-backend nil)
+  (setq standoff-dummy-backend-relations nil))
 ;; we want the dummy backend to be buffer local, so we set it up in a
 ;; mode hook
 (add-hook 'standoff-mode-hook 'standoff-dummy-backend-setup)
@@ -176,7 +217,8 @@ to make this an interactive function."
   "Display the dummy backend in the minibuffer. This may be
 usefull for development."
   (interactive)
-  (message "%s" standoff-dummy-backend))
+  (message "%s" (list standoff-dummy-backend
+		      standoff-dummy-backend-relations)))
 
 ;;
 ;; creating and deleting stand-off markup
@@ -417,6 +459,12 @@ string."
       ;; we use (format "%s" ...) to make a string from the symbol
       (substring (format "%s" value-symbol) value-front-length))))
 
+(defun standoff--overlay-get-markup-id-at-point (error-message)
+  (let ((overlays (overlays-at (point))))
+    (if (> (length overlays) 1)
+	(error error-message)
+      (string-to-number (standoff--overlay-property-get (car overlays) "id")))))
+
 (defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
 "Highlight a markup range. This is the workhorse of highlighning in standoff mode."
 (save-restriction
@@ -561,6 +609,41 @@ identified by MARKUP-ID."
     (if (equal pos (point-min))
 	(error "First highlightened markup element in buffer")
       (goto-char pos))))
+
+;;
+;; Relations
+;;
+
+(defcustom standoff-markup-relation-name-require-match 'confirm
+  "How restrictive has input of relation names to be? `t' for no
+other names than already know names, `'confirm' to allow other
+than already known names, but ask for confirmation."
+  :group 'standoff
+  :type 'symbol)
+
+(defun standoff-markup-relate (subject-id predicate object-id)
+  "Create a relation between the markup element given by
+SUBJECT-ID and the markup element given by OBJECT-ID. Relations
+have the form of a predication like in RDF: subject predicate
+object. The markup element at point serves as subject, the object
+must be given as OBJECT-ID, the relation given by RELATION."
+  (interactive
+   (let* ((subj-id (standoff--overlay-get-markup-id-at-point "This needs exactly one highlightend markup element at point"))
+	  (obj-id (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's ID is %i. Please enter the ID (number) of the markup element that serves as the relation's object: " subj-id)))
+	  (obj-id-passed (if (equal subj-id obj-id)
+			     (error "The relation's object must not be the relation's subject")
+			   obj-id))
+	  (predicate-name (completing-read "Predicate: "
+					   (funcall standoff-predicate-names-function (current-buffer) subj-id obj-id)
+					   nil
+					   standoff-markup-relation-name-require-match)))
+     (if (equal subj-id obj-id)
+	 (error "The relation's object must not be the relation's subject")
+       (list subj-id predicate-name obj-id-passed))))
+  (message "Creating relation %s %s %s." subject-id predicate object-id)
+  (if (funcall standoff-markup-write-relation (current-buffer) subject-id predicate object-id)
+      (run-hook-with-args 'standoff-markup-changed (current-buffer))
+    (error "Storing relation failed")))
 
 ;;
 ;; Major mode
