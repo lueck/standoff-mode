@@ -1,10 +1,8 @@
 ;; standoff.el -- An Emacs mode for stand-off markup
 
-(defcustom standoff-markup-write-range-function 'standoff-dummy-write-range
+(defvar standoff-markup-write-range-function 'standoff-dummy-write-range
   "The function that writes a range of a markup element to some
-backend (which should be persistent).  The default value is
-`standoff-dummy-write-range' which does not persist
-anything. Use this variable to choose an elaborate backend.
+backend (which should be persistent).
 
 The function must take the following arguments:
 
@@ -20,13 +18,10 @@ character key signalling how to handle the ID:
 The function is expected to return an integer ID of the markup
 element (not the range). In case storing to the backend was not
 successfull it is expected to return `nil'.
-"
-  :group 'standoff
-  :type 'function)
+")
 
-(defcustom standoff-markup-read-ranges-function 'standoff-dummy-read-ranges
-  "The function that gets markup ranges from some backend--which
-should be persistent.
+(defvar standoff-markup-read-ranges-function 'standoff-dummy-read-ranges
+  "The function that gets markup ranges from some backend.
 
 The function must take the following arguments:
 
@@ -41,7 +36,7 @@ none of STARTCHAR, ENDCHAR, MARKUP-NAME and MARKUP-ID is given,
 the function should return all markup element ranges for the
 buffer.
 
-The function is expected to return a list markup ranges which are
+The function is expected to return a list of markup ranges which are
 again represented as lists, as follows:
 
 '('(STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID) (...))
@@ -50,11 +45,9 @@ So, if a markup element consists of more than one
 range (discontinous markup), the same values for MARKUP-NAME and
 MARKUP-ID must occur in more than one of those lists.
 
-"
-  :group 'standoff
-  :type 'function)
+")
 
-(defcustom standoff-markup-delete-range-function 'standoff-dummy-delete-range
+(defvar standoff-markup-delete-range-function 'standoff-dummy-delete-range
   "A pointer to the function that deletes a range of a markup
   element form the backend. The range is given by the following
   parameters which the function must take (all of them):
@@ -70,16 +63,12 @@ the backend to control deletion preconditions which might be:
   zero ranges after the deletion. The backend may interact with
   the user in this case.
 
-"
-  :group 'standoff
-  :type 'function)
+")
 
-(defcustom standoff-markup-names-function 'standoff-dummy-markup-element-names
+(defvar standoff-markup-names-function 'standoff-dummy-markup-element-names
   "A function that returns names of defined (or already used)
 markup elements. The function ist expected to return a list of
-strings."
-  :group 'standoff
-  :type 'function)
+strings.")
 
 (defcustom standoff-markup-changed-functions nil
   "A hook for handlers that need to be called if the markup on a
