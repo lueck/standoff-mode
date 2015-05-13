@@ -38,35 +38,48 @@ function that persists the markup in some backend."
 				      standoff-dummy-markup))
     markup-inst-id))
 
-(defun standoff-dummy-read-ranges (buf &optional startchar endchar markup-name markup-id)
-  "Return the dummy backend, apply filter given by STARTCHAR
-ENDCHAR MARKUP-NAME MARKUP-ID."
+(defun standoff-dummy-read-markup (buf &optional startchar endchar markup-type markup-inst-id)
+  "Return the markup, apply filter given by STARTCHAR
+ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
   (let ((backend standoff-dummy-markup)
-	(ranges-to-return nil)
+	(ranges-to-return '())
 	(range))
+    (or (and (not startchar) (not endchar))
+	(and startchar endchar)
+	(error "Ether give startchar and endchar or nether of them"))  
+    (message "Start-Wert: %s End-Wert: %s" startchar endchar)
     (while backend
       (setq range (car backend))
-      (when (and (or (not startchar) (> (nth 1 range) startchar))
-		 (or (not startchar) (< (nth 0 range) endchar))
-		 (or (not markup-name) (equal (nth 2 range) markup-name))
-		 (or (not markup-id) (equal (nth 3 range) markup-id)))
+      (message "%s" range)
+      (when (and (or (and (not startchar) (not endchar))
+		     (or (and (<= (nth 2 range) startchar)
+			      (>= (nth 3 range) startchar))
+			 (and (<= (nth 2 range) endchar)
+			      (>= (nth 3 range) endchar))))
+		 (or (not markup-type) (equal (nth 1 range) markup-type))
+		 (or (not markup-inst-id) (equal (nth 0 range) markup-inst-id)))
+	(message "passed filter")
 	(setq ranges-to-return (cons range ranges-to-return)))
       (setq backend (cdr backend)))
     ranges-to-return))
 
-(defun standoff-dummy-delete-range (buf startchar endchar markup-name markup-id)
+(defun standoff-dummy-delete-range (buf startchar endchar markup-type markup-inst-id)
   "Delete a markup range from the dummy backend."
-  (let ((new-backend nil)
+  (let ((old-markup standoff-dummy-markup) ;; make error tolerant
+	(old-length (length standoff-dummy-markup))
+	(new-markup '())
 	(range))
-    (while standoff-dummy-markup
-      (setq range (car standoff-dummy-markup))
-      (when (not (and (equal (nth 0 range) startchar)
-		      (equal (nth 1 range) endchar)
-		      (equal (nth 2 range) markup-name)
-		      (equal (nth 3 range) markup-id)))
-	(setq new-backend (cons range new-backend)))
-      (setq standoff-dummy-markup (cdr standoff-dummy-markup)))
-    (setq standoff-dummy-markup new-backend)))
+    (while old-markup
+      (setq range (car old-markup))
+      (when (not (and (equal (nth 0 range) markup-inst-id)
+		      (equal (nth 1 range) markup-type)
+		      (equal (nth 2 range) startchar)
+		      (equal (nth 3 range) endchar)))
+	(setq new-markup (cons range new-markup)))
+      (setq old-markup (cdr old-markup)))
+    (if (= (length new-markup) old-length)
+	(error "No markup found")
+      (setq standoff-dummy-markup new-markup))))
 
 (defun standoff-dummy-markup-element-names ()
   "Return the names of markup elements stored in the dummy backend."
@@ -85,7 +98,7 @@ of. E.g. 0 is the POS of the ids in standoff-dummy-markup."
 
 (defun standoff-dummy-create-uuid (&optional data pos)
   "Create a UUID. This uses a simple hashing of variable data.
-Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3dq
 
 Note: this code uses https://en.wikipedia.org/wiki/Md5 , which is
 not cryptographically safe. I'm not sure what's the implication
