@@ -81,10 +81,17 @@ ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
 	(error "No markup found")
       (setq standoff-dummy-markup new-markup))))
 
-(defun standoff-dummy-markup-element-names ()
+(defun standoff-dummy-markup-types (buf)
   "Return the names of markup elements stored in the dummy backend."
-  ;; TODO: remove duplicates
-  (mapcar '(lambda (x) (nth 2 x)) standoff-dummy-markup))
+  ;;(mapcar '(lambda (x) (nth 1 x)) standoff-dummy-markup));; duplicates
+  (let ((markup standoff-dummy-markup)
+	(typel)
+	(used-types '()))
+    (while markup
+      (setq typel (nth 1 (pop markup)))
+      (unless (member typel used-types)
+	(setq used-types (cons typel used-types))))
+    used-types))
 
 (defun standoff-dummy-create-intid (data pos)
   "Create an integer ID for the next item in the dummy backend,

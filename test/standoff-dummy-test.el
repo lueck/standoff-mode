@@ -108,4 +108,26 @@
     ;; should return the same if startchar < endchar
     (should (= (length (standoff-dummy-read-markup test-buffer 32 22)) 2))
     (should-error (standoff-dummy-read-markup test-buffer 22))
+    ;; combinations of range and markup-type and markup-inst-id 
+    (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "example")) 1))
+    (should (= (length (standoff-dummy-read-markup test-buffer 22 32 nil markup-id)) 1))
+    (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "marker" markup-id)) 0))
     (kill-buffer test-buffer)))
+
+(ert-deftest standoff-dummy-markup-types-test ()
+  (let ((test-buffer (generate-new-buffer "dummy-test"))
+	(markup-id nil))
+    (set-buffer test-buffer)
+    (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
+    (standoff-dummy--backend-reset)
+    (setq markup-id (standoff-dummy-create-markup test-buffer 23 42 "example"))
+    (standoff-dummy-create-markup test-buffer 16 27 "marker")
+    (standoff-dummy-add-range test-buffer 47 49 markup-id)
+    ;; "example" and "marker" should be member of returned list
+    (should (member "example" (standoff-dummy-markup-types test-buffer)))
+    (should (member "marker" (standoff-dummy-markup-types test-buffer)))
+    (should-not (member "fail" (standoff-dummy-markup-types test-buffer)))
+    ;; duplicates should be removed
+    (should (= (length (standoff-dummy-markup-types test-buffer)) 2))
+    (kill-buffer test-buffer)))
+    
