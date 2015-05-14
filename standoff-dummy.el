@@ -2,22 +2,36 @@
 ;; Dummy backend
 ;;
 
-(defun standoff-dummy-write-range-DEPRECATED (buf startchar endchar markup-name markup-id)
-  "A dummy function that does nothing but fullfill the function
-definition. The user should definitively replace it with a
-function that persists the markup in some backend."
-;; TODO: Check if markup with id is of markup-name! (Consistency)
-  (let ((markup-identifier (cond
-			    ((equal markup-id "n") (+ (standoff-dummy-markup-element-last-id) 1))
-			    ((numberp markup-id) markup-id)
-			    (t (string-to-number markup-id)))))
-    (setq standoff-dummy-markup
-	  (cons (list startchar endchar markup-name markup-identifier) 
-		standoff-dummy-markup))
-    markup-identifier))
+(defconst standoff-pos-markup-inst-id 0
+  "Position of the ID of the markup instance in a list
+  representing a markup element (or a range of a markup element
+  in the case of discontinous markup).
+
+  Example of a list representing a markup element:
+  '(1 \"example\" 23 42 &rest)
+
+  This represents the markup element with the ID 1, its type is
+  \"example\" and it's ranging from character 23 to 42.")
+
+(defconst standoff-pos-markup-type 1
+  "Position of the markup type in a list representing a markup
+  element (or a range of a markup element in the case of
+  discontinous markup)")
+
+(defconst standoff-pos-startchar 2
+  "Position of the offset of the starting character in a list
+  representing a markup element (or a range of a markup element
+  in the case of discontinous markup)")
+
+(defconst standoff-pos-endchar 3
+  "Position of the offset of the end character in a list
+  representing a markup element (or a range of a markup element
+  in the case of discontinous markup)")
 
 (defun standoff-dummy-create-markup (buf startchar endchar markup-type)
-  (let ((markup-inst-id (funcall standoff-dummy-create-id-function standoff-dummy-markup 0)))
+  (let ((markup-inst-id (funcall standoff-dummy-create-id-function
+				 standoff-dummy-markup
+				 standoff-pos-markup-inst-id)))
     (setq standoff-dummy-markup
 	  (cons (list markup-inst-id markup-type startchar endchar)
 		standoff-dummy-markup))
@@ -27,9 +41,9 @@ function that persists the markup in some backend."
   (let ((markup-data standoff-dummy-markup)
 	(markup-type nil))
     (while markup-data
-      (if (equal markup-inst-id (nth 0 (car markup-data)))
+      (if (equal markup-inst-id (nth standoff-pos-markup-inst-id (car markup-data)))
 	  (progn
-	    (setq markup-type (nth 1 (car markup-data)))
+	    (setq markup-type (nth standoff-pos-markup-type (car markup-data)))
 	    (setq markup-data nil))
 	(setq markup-data (cdr markup-data))))
     (unless markup-type
@@ -47,18 +61,17 @@ ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
     (or (and (not startchar) (not endchar))
 	(and startchar endchar)
 	(error "Ether give startchar and endchar or nether of them"))  
-    (message "Start-Wert: %s End-Wert: %s" startchar endchar)
     (while backend
       (setq range (car backend))
-      (message "%s" range)
       (when (and (or (and (not startchar) (not endchar))
-		     (or (and (<= (nth 2 range) startchar)
-			      (>= (nth 3 range) startchar))
-			 (and (<= (nth 2 range) endchar)
-			      (>= (nth 3 range) endchar))))
-		 (or (not markup-type) (equal (nth 1 range) markup-type))
-		 (or (not markup-inst-id) (equal (nth 0 range) markup-inst-id)))
-	(message "passed filter")
+		     (or (and (<= (nth standoff-pos-startchar range) startchar)
+			      (>= (nth standoff-pos-endchar range) startchar))
+			 (and (<= (nth standoff-pos-startchar range) endchar)
+			      (>= (nth standoff-pos-endchar range) endchar))))
+		 (or (not markup-type)
+		     (equal (nth standoff-pos-markup-type range) markup-type))
+		 (or (not markup-inst-id)
+		     (equal (nth standoff-pos-markup-inst-id range) markup-inst-id)))
 	(setq ranges-to-return (cons range ranges-to-return)))
       (setq backend (cdr backend)))
     ranges-to-return))
@@ -71,10 +84,10 @@ ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
 	(range))
     (while old-markup
       (setq range (car old-markup))
-      (when (not (and (equal (nth 0 range) markup-inst-id)
-		      (equal (nth 1 range) markup-type)
-		      (equal (nth 2 range) startchar)
-		      (equal (nth 3 range) endchar)))
+      (when (not (and (equal (nth standoff-pos-markup-inst-id range) markup-inst-id)
+		      (equal (nth standoff-pos-markup-type range) markup-type)
+		      (equal (nth standoff-pos-startchar range) startchar)
+		      (equal (nth standoff-pos-endchar range) endchar)))
 	(setq new-markup (cons range new-markup)))
       (setq old-markup (cdr old-markup)))
     (if (= (length new-markup) old-length)
@@ -82,13 +95,12 @@ ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
       (setq standoff-dummy-markup new-markup))))
 
 (defun standoff-dummy-markup-types (buf)
-  "Return the names of markup elements stored in the dummy backend."
-  ;;(mapcar '(lambda (x) (nth 1 x)) standoff-dummy-markup));; duplicates
+  "Return a list of the types of markup used in buffer BUF."
   (let ((markup standoff-dummy-markup)
 	(typel)
 	(used-types '()))
     (while markup
-      (setq typel (nth 1 (pop markup)))
+      (setq typel (nth standoff-pos-markup-type (pop markup)))
       (unless (member typel used-types)
 	(setq used-types (cons typel used-types))))
     used-types))
