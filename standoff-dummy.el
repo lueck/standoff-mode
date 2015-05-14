@@ -38,20 +38,26 @@
     markup-inst-id))
 
 (defun standoff-dummy-add-range (buf startchar endchar markup-inst-id)
-  (let ((markup-data standoff-dummy-markup)
-	(markup-type nil))
-    (while markup-data
-      (if (equal markup-inst-id (nth standoff-pos-markup-inst-id (car markup-data)))
-	  (progn
-	    (setq markup-type (nth standoff-pos-markup-type (car markup-data)))
-	    (setq markup-data nil))
-	(setq markup-data (cdr markup-data))))
+  (let ((markup-type (standoff-dummy-markup-get-type-by-inst-id buf markup-inst-id)))
     (unless markup-type
-      (error "Invalid ID"))
+      (error "Invalid ID. No markup type found"))
     (setq standoff-dummy-markup
 	  (cons (list markup-inst-id markup-type startchar endchar)
 		standoff-dummy-markup))
     markup-inst-id))
+
+(defun standoff-dummy-markup-get-type-by-inst-id (buf markup-inst-id)
+  "Return the markup type for the markup element given by
+MARKUP-INST-ID. The buffer is given by BUF."
+  (let ((markup-data standoff-dummy-markup)
+	(markup-inst nil)
+	(markup-type nil))
+    (while markup-data
+      (setq markup-inst (pop markup-data))
+      (if (equal markup-inst-id (nth standoff-pos-markup-inst-id markup-inst))
+	  (setq markup-type (nth standoff-pos-markup-type markup-inst)
+		markup-data nil)))
+    markup-type))
 
 (defun standoff-dummy-read-markup (buf &optional startchar endchar markup-type markup-inst-id)
   "Return the markup, apply filter given by STARTCHAR
@@ -153,17 +159,70 @@ http://ergoemacs.org/emacs/elisp_generate_uuid.html
   :group 'standoff
   :type 'function)
 
-(defun standoff-dummy-predicate-names (buf subj-id obj-id)
-  "Returns a list of predicate names for relations between
-subject given by SUBJ-ID and object given by OBJ-ID. Currently
-this does not filter valid relation names for combination of
-subject and object."
-  (mapcar '(lambda (x) (nth 1 x)) standoff-dummy-relations))
+(defconst standoff-pos-subject 0
+  "The position of the subject in a list representing a relation
+  between markup elements.")
 
-(defun standoff-dummy-write-relation (buf subj-id predicate obj-id)
-  "Store relation to the backend."
+(defconst standoff-pos-predicate 1
+  "The position of the predicate in a list representing a
+  relation between markup elements.")
+
+(defconst standoff-pos-object 2
+  "The position of the object in a list representing a
+  relation between markup elements.")
+
+(defun standoff-dummy-used-predicates (buf subj-id obj-id)
+  "Returns a list of predicates used for relations between
+subjects similar to the one given by SUBJ-ID and objects similar
+to the one given by OBJ-ID. Similarity is equivalence of the
+subject's and object's markup type respectivly, here."
+  (let ((subj-type (standoff-dummy-markup-get-type-by-inst-id buf subj-id))
+	(obj-type (standoff-dummy-markup-get-type-by-inst-id buf obj-id))
+	(relations standoff-dummy-relations)
+	(relation)
+	(predicate)
+	(predicates '()))
+    (while relations
+      (setq relation (pop relations)
+	    subj (nth standoff-pos-subject relation)
+	    predicate (nth standoff-pos-predicate relation)
+	    obj (nth standoff-pos-object relation))
+      ;; when COND
+      (and (equal (standoff-dummy-markup-get-type-by-inst-id buf subj) subj-type)
+	   (equal (standoff-dummy-markup-get-type-by-inst-id buf obj) obj-type)
+	   (not (member predicate predicates))
+	   ;; BODY
+	   (setq predicates (cons predicate predicates))))
+    predicates))
+
+(defun standoff-dummy-create-relation (buf subj-id predicate obj-id)
+  "Create a directed graph with the markup given by SUBJ-ID as
+subject, the predicate given by PREDICATE and the markup given by
+OBJ-ID as object. The buffer with the markup must be given by
+BUF."
   (setq standoff-dummy-relations
 	(cons (list subj-id predicate obj-id) standoff-dummy-relations)))
+
+(defun standoff-dummy-read-relations (buf &optional subj-id predicate obj-id)
+  "Get all relations in buffer BUF, filtered by a combination of
+  subject given by SUBJ-ID, PREDICATE and object given by
+  OBJ-ID. A value of `nil' in those positions will be treated as
+  a wildcard."
+  (let ((data standoff-dummy-relations)
+	(relations '())
+	(relation))
+    (while data
+      (setq relation (pop data))
+      (and (or (not subj-id)
+	       (equal subj-id (nth standoff-pos-subject relation)))
+	   (or (not predicate)
+	       (equal predicate (nth standoff-pos-predicate relation)))
+	   (or (not obj-id)
+	       (equal obj-id (nth standoff-pos-object relation)))
+	   (setq relations (cons relation relations))))
+    relations))
+
+;; setup and reset backend
 
 (defun standoff-dummy-backend-reset ()
   "Reset the dummy backend. It may be usefull during development

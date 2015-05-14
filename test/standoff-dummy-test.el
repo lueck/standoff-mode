@@ -51,7 +51,21 @@
       (standoff-dummy-create-markup test-buffer 23 42 "example")
       2))    
     (kill-buffer test-buffer)))
-					  
+
+(ert-deftest standoff-dummy-markup-get-type-by-inst-id-test ()
+  (let ((test-buffer (generate-new-buffer "dummy-test"))
+	(markup-id nil))
+    (set-buffer test-buffer)
+    (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
+    (standoff-dummy--backend-reset)
+    (setq markup-id (standoff-dummy-create-markup test-buffer 23 42 "example"))
+    (standoff-dummy-create-markup test-buffer 23 42 "hammer")
+    (should
+     (=
+      (standoff-dummy-markup-get-type-by-inst-id test-buffer markup-id)
+      "example"))
+    (kill-buffer test-buffer)))
+
 (ert-deftest standoff-dummy-add-range-test ()
   (let ((test-buffer (generate-new-buffer "dummy-test"))
 	(markup-id nil))
@@ -131,3 +145,102 @@
     (should (= (length (standoff-dummy-markup-types test-buffer)) 2))
     (kill-buffer test-buffer)))
     
+
+;; relations
+
+(ert-deftest standoff-dummy-create-relation-test ()
+  (let ((test-buffer (generate-new-buffer "dummy-test"))
+	(markup-id nil))
+    (set-buffer test-buffer)
+    (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
+    (standoff-dummy--backend-reset)
+    (setq markup-id1 (standoff-dummy-create-markup test-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-dummy-create-markup test-buffer 16 27 "marker"))
+    (should (= (length standoff-dummy-relations) 0))
+    (standoff-dummy-create-relation test-buffer markup-id2 "marks" markup-id1)
+    (should (= (length standoff-dummy-relations) 1))
+    (kill-buffer test-buffer)))
+  
+(ert-deftest standoff-dummy-used-predicates-test ()
+  (let ((test-buffer (generate-new-buffer "dummy-test"))
+	(markup-id nil))
+    (set-buffer test-buffer)
+    (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
+    (standoff-dummy--backend-reset)
+    (setq markup-id1 (standoff-dummy-create-markup test-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-dummy-create-markup test-buffer 47 49 "example"))
+    (setq markup-id3 (standoff-dummy-create-markup test-buffer 16 27 "marker"))
+    (standoff-dummy-create-relation test-buffer markup-id3 "marks" markup-id1)
+    ;; should return predicates for similar combinations
+    (should
+     (equal
+      (standoff-dummy-used-predicates test-buffer markup-id3 markup-id2)
+      (list "marks")))
+    ;; should return zero length if no similar combination exists
+    (should
+     (=
+      (length (standoff-dummy-used-predicates test-buffer markup-id1 markup-id2))
+      0))
+    ;; we deel with *directed* graphs here, so switching subject and
+    ;; object should matter
+    (should
+     (=
+      (length (standoff-dummy-used-predicates test-buffer markup-id2 markup-id3))
+      0))
+    ;; there should be no duplicates
+    (standoff-dummy-create-relation test-buffer markup-id2 "marks" markup-id1)
+    (should
+     (equal
+      (standoff-dummy-used-predicates test-buffer markup-id3 markup-id2)
+      (list "marks")))    
+    (kill-buffer test-buffer)))
+  
+(ert-deftest standoff-dummy-read-relations-test ()
+  (let ((test-buffer (generate-new-buffer "dummy-test"))
+	(markup-id nil))
+    (set-buffer test-buffer)
+    (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
+    (standoff-dummy--backend-reset)
+    (setq markup-id1 (standoff-dummy-create-markup test-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-dummy-create-markup test-buffer 47 49 "example"))
+    (setq markup-id3 (standoff-dummy-create-markup test-buffer 16 27 "marker"))
+    (standoff-dummy-create-relation test-buffer markup-id3 "marks" markup-id1)
+    (standoff-dummy-create-relation test-buffer markup-id3 "marks" markup-id2)
+    (standoff-dummy-create-relation test-buffer markup-id2 "furtherConcretizes" markup-id1)
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer))
+      3))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer markup-id1))
+      0))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer markup-id3))
+      2))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer nil "marks"))
+      2))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer markup-id2 "marks"))
+      0))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer nil nil markup-id1))
+      2))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer nil "furtherConcretizes" markup-id1))
+      1))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer markup-id2 "furtherConcretizes" markup-id1))
+      1))
+    (should
+     (=
+      (length (standoff-dummy-read-relations test-buffer markup-id2 nil markup-id1))
+      1))
+    (kill-buffer test-buffer)))
