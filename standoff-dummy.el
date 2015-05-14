@@ -48,8 +48,9 @@
 	(setq markup-data (cdr markup-data))))
     (unless markup-type
       (error "Invalid ID"))
-    (setq standoff-dummy-markup (cons (list markup-inst-id markup-type startchar endchar)
-				      standoff-dummy-markup))
+    (setq standoff-dummy-markup
+	  (cons (list markup-inst-id markup-type startchar endchar)
+		standoff-dummy-markup))
     markup-inst-id))
 
 (defun standoff-dummy-read-markup (buf &optional startchar endchar markup-type markup-inst-id)
@@ -60,20 +61,21 @@ ENDCHAR MARKUP-TYPE MARKUP-INST-ID."
 	(range))
     (or (and (not startchar) (not endchar))
 	(and startchar endchar)
-	(error "Ether give startchar and endchar or nether of them"))  
+	(error "Either give startchar *and* endchar or neither of them"))  
     (while backend
-      (setq range (car backend))
-      (when (and (or (and (not startchar) (not endchar))
-		     (or (and (<= (nth standoff-pos-startchar range) startchar)
-			      (>= (nth standoff-pos-endchar range) startchar))
-			 (and (<= (nth standoff-pos-startchar range) endchar)
-			      (>= (nth standoff-pos-endchar range) endchar))))
-		 (or (not markup-type)
-		     (equal (nth standoff-pos-markup-type range) markup-type))
-		 (or (not markup-inst-id)
-		     (equal (nth standoff-pos-markup-inst-id range) markup-inst-id)))
-	(setq ranges-to-return (cons range ranges-to-return)))
-      (setq backend (cdr backend)))
+      (setq range (pop backend))
+      ;; when COND
+      (and (or (and (not startchar) (not endchar))
+	       (or (and (<= (nth standoff-pos-startchar range) startchar)
+			(>= (nth standoff-pos-endchar range) startchar))
+		   (and (<= (nth standoff-pos-startchar range) endchar)
+			(>= (nth standoff-pos-endchar range) endchar))))
+	   (or (not markup-type)
+	       (equal (nth standoff-pos-markup-type range) markup-type))
+	   (or (not markup-inst-id)
+	       (equal (nth standoff-pos-markup-inst-id range) markup-inst-id))
+	   ;; BODY
+	   (setq ranges-to-return (cons range ranges-to-return))))
     ranges-to-return))
 
 (defun standoff-dummy-delete-range (buf startchar endchar markup-type markup-inst-id)
