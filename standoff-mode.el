@@ -1,76 +1,96 @@
 ;; standoff.el -- An Emacs mode for stand-off markup
 
-(defvar standoff-markup-write-range-function 'standoff-dummy-write-range
-  "The function that writes a range of a markup element to some
-backend (which should be persistent).
+(require 'standoff-dummy)
 
-The function must take the following arguments:
+;;
+;; API for backends
+;;
 
-BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
+(defvar standoff-markup-create-function 'standoff-dummy-create-markup
+  "The function that writes a markup element to some backend.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
-where MARKUP-ID can ether be an integer value or a single
-character key signalling how to handle the ID:
+BUFFER STARTCHAR ENDCHAR MARKUP-NAME
 
-`n': new, which requires automatic handling of the id,
-     e.g. auto-incrementing. The backend has to take control over
-     the ID.
+The function is expected to return the ID of the markup
+element. When storing to the backend was not successfull, it
+should return nil.")
 
-The function is expected to return an integer ID of the markup
-element (not the range). In case storing to the backend was not
-successfull it is expected to return `nil'.
-")
+(defvar standoff-markup-range-add-function 'standoff-dummy-add-range
+  "The function that adds a range to a markup element in some backend.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
-(defvar standoff-markup-read-ranges-function 'standoff-dummy-read-ranges
-  "The function that gets markup ranges from some backend.
+BUFFER STARTCHAR ENDCHAR MARKUP-INST-ID
 
-The function must take the following arguments:
+The function is expected to return the ID of the markup
+element. When storing to the backend was not successfull, it
+should return nil.")
 
-BUFFER &optional STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
+(defvar standoff-markup-read-function 'standoff-dummy-read-markup
+  "The function that gets the markup from some backend.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
-If STARTCHAR *and* ENDCHAR are numerical values, the function
-should return only markup elements that overlap this portion of
-BUFFER. If MARKUP-NAME is given, only markup elements of this
-type should be returned. If MARKUP-ID is given, only the ranges
-of the markup-element with this id should be returned. So, if
-none of STARTCHAR, ENDCHAR, MARKUP-NAME and MARKUP-ID is given,
-the function should return all markup element ranges for the
-buffer.
+BUFFER &optional STARTCHAR ENDCHAR MARKUP-NAME MARKUP-INST-ID
 
-The function is expected to return a list of markup ranges which are
-again represented as lists, as follows:
+The optional parameters should be used for filtering the returned
+markup. If STARTCHAR *and* ENDCHAR are numerical values, the
+function should return only markup elements that overlap this
+portion of BUFFER. If MARKUP-NAME is given, only markup elements
+of this type should be returned. If MARKUP-INST-ID is given, only
+the markup with this id should be returned. So, if none of
+STARTCHAR, ENDCHAR, MARKUP-NAME and MARKUP-ID is given (or all of
+them are nil), the function should return all markup element
+ranges for the buffer.
 
-'('(STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID) (...))
+The function is expected to return a list of markup ranges which
+are again represented as true lists, as follows:
 
-So, if a markup element consists of more than one
-range (discontinous markup), the same values for MARKUP-NAME and
-MARKUP-ID must occur in more than one of those lists.
+(markup markup markup ...)
 
-")
+where markup takes the form of a true list as
+
+(MARKUP-INST-ID MARKUP-TYPE STARTCHAR ENDCHAR &rest)
+
+If a markup element consists of more than one
+range--i.e. discontinous markup--the same values for MARKUP-NAME
+and MARKUP-INST-ID must occur in more than one of those markup
+lists.")
 
 (defvar standoff-markup-delete-range-function 'standoff-dummy-delete-range
-  "A pointer to the function that deletes a range of a markup
-  element form the backend. The range is given by the following
-  parameters which the function must take (all of them):
+  "The function that deletes (a range of a) markup from some backend.
+This variable must be set to the function's symbol (name). The
+function should delete a markup element or only a range of this
+markup element in case of discountinous markup. The element or
+range respectively is given by the following parameters all of
+which the function must take:
 
-BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
+BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-INST-ID
 
 The function should return nil or throw an error if the range
 could not be deleted and t on successfull deletion. It's up to
 the backend to control deletion preconditions which might be:
 
-- any relation of the markup element, which the range belongs to,
-  to other markup elements if there the markup element would have
-  zero ranges after the deletion. The backend may interact with
-  the user in this case.
+- any relation to other markup elements. If the markup element
+  would consist of only one range then the relation would get
+  invalid after deletion. The backend may interact with the user
+  in this case.
 
 ")
 
-(defvar standoff-markup-names-function 'standoff-dummy-markup-element-names
-  "A function that returns names of defined (or already used)
-markup elements. The function ist expected to return a list of
-strings.")
+(defvar standoff-markup-types-used-function 'standoff-dummy-markup-types
+  "The function that returns names the types of markup in use.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
-(defcustom standoff-markup-changed-functions nil
+BUFFER
+
+The function ist expected to return a true list of markup
+types.")
+
+(defvar standoff-markup-changed-functions nil
   "A hook for handlers that need to be called if the markup on a
 buffer was changed. This can be used for evalution, updating the
 highlightning etc. etc.
@@ -82,37 +102,24 @@ BUFFER
 
 BUFFER: the buffer the markup relates to, aka the source document
 
-The return value of the hooked functions is not evaluated at all. 
-")
+The return value of the hooked functions is not evaluated at all.")
 
-(defcustom standoff-markup-post-functions nil
-  "A hook for handlers called when a region was marked up und the
-markup was successfully stored to the backend. This hook should
-be used for highlightning and notifications.
+(defvar standoff-predicates-used-function 'standoff-dummy-used-predicates
+  "The function which returns a list of used relation predicates from some backend. 
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
-This is a so called `abnormal' hook, i.e. the hooked
-functions (aka handlers) must take the following arguments:
-
-BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID
-
-"
-  :group 'standoff
-  :type 'hook
-  :options '(standoff-notify-markup))
-
-(defvar standoff-predicate-names-function 'standoff-dummy-predicate-names
-  "The function which returns a list of names of relation
-predicates from the backend. It must take two arguments
-
-SUBJECT-ID OBJECT-ID 
+BUFFER SUBJECT-ID OBJECT-ID 
 
 The returned list of predicate names must be valid predicate
 names for the combination of subject and object. Should return
-nil if there are no valid predicates for this combination.")
+nil or an empty true list if there are no valid predicates for
+this combination.")
 
-(defvar standoff-markup-write-relation 'standoff-dummy-write-relation
-  "The function which writes a new relation to the backend. It
-  must take the following arguments:
+(defvar standoff-relation-write-function 'standoff-dummy-create-relation
+  "The function which writes a new relation to some backend.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
 
 BUFFER SUBJECT-ID PREDICATE-NAME OBJECT-ID
 
@@ -120,104 +127,130 @@ The function is expected to return a non-nil value, if writing
 the relation to the backend was successful, nil in case of
 failure.")
 
+(defvar standoff-relations-read-function 'standoff-dummy-read-relations
+  "The function which reads relations from some backend. 
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
+
+BUFFER &optional SUBJ-ID PREDICATE OBJ-ID
+
+The optional arguments should be interpreted as filter parameters
+and a value of nil in either of them should be interpreted as a
+wildcard.")
+
+(defvar standoff-relations-delete-function 'standoff-dummy-delete-relation
+  "The function that deletes a relation from some backend.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
+
+BUFFER SUBJECT-ID PREDICATE OBJECT-ID
+
+The relation that is to be deleted is given by the three last
+arguments. All duplicates of the relation should be removed.")
+
 ;;
-;; creating and deleting stand-off markup
+;; creating and deleting markup
 ;;
 
-(defun standoff-markup-region (beg end markup-name)
-  "Create stand-off markup for the selected region given by BEG
-and END, the name of the markup element is given by MARKUP-NAME.
-The id is automatically assigned by the backend, e.g. by
-automatic incrementation. This function will create a new markup
-element."
+(defcustom standoff-markup-post-functions '('standoff-notify-markup)
+  "A hook for handlers called when markup was successfully stored to some backend.
+This hook can be used for highlightning and notifications.  It is
+a so called abnormal hook, cf. Info node `(emacs) Hooks', because
+the hooked functions (aka handlers) must take the following
+arguments:
+
+BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-INST-ID
+
+"
+  :group 'standoff
+  :type 'hook
+  :options '('standoff-notify-markup))
+
+(defcustom standoff-markup-type-require-match 'confirm
+  "Defines how restrictive the markup schema is handled.
+This has effect when adding new markup and choosing its type. If
+set to `t' then the entered type must be amongst the members of
+the list returned by `standoff-markup-types-allowed-function'. If
+set to `nil', the user may exit his input with any name. If set
+to `confirm' (symbol), the user may exit with any name, but is
+asked to confirm his input."
+  :group 'standoff)
+
+(defcustom standoff-markup-types-allowed-function 'standoff-markup-types-from-overlay-definition
+  "The function that returns a list of allowed markup types.
+This variable must be set to the function's symbol (name)."
+  :group 'standoff
+  :type 'function
+  :options '('standoff-markup-types-from-overlay-definition))
+
+(defcustom standoff-markup-overlays '()
+  "The overlay definition. This should be defined by the user."
+  :group 'standoff)
+
+(defun standoff-markup-types-from-overlay-definition ()
+  "Return the list of user defined markup elements. This would be
+a good alternative for standoff-dummy-markup-element-names as the
+standoff-markup-names-function. "
+  (mapcar 'car standoff-markup-overlays))
+
+(defun standoff-markup-type-completion (buf)
+  "Returns a list of completions for the markup type.
+Depending on `standoff-markup-type-require-match' the list is
+composed of a markup from a schema definition and markup types
+used in the (current) buffer BUF."
+  (cond ((equal standoff-markup-type-require-match t)
+	 (funcall standoff-markup-types-allowed-function))
+	(t ;; 'confirm OR nil
+	 (append (funcall standoff-markup-types-used-function buf)
+		 (funcall standoff-markup-types-allowed-function)))))
+
+(defun standoff-markup-region (beg end markup-type)
+  "Create markup for the selected region.
+The region is given by BEG and END, the type of the markup is
+given by MARKUP-TYPE. The id is automatically assigned by the
+backend, e.g. by automatic incrementation of an integer."
   (interactive
    (list (region-beginning)
 	 (region-end)
-	 (completing-read "Name of markup element: "
-			  (funcall standoff-markup-names-function)
-			  nil
-			  standoff-markup-require-name-require-match)))
+	 (completing-read
+	  "Name of markup element: "
+	  (standoff-markup-type-completion (current-buffer))
+	  nil
+	  standoff-markup-require-name-require-match)))
   (let ((markup-id nil))
     (save-restriction
       (widen)
       (save-excursion
-	(setq markup-id (funcall standoff-markup-write-range-function (current-buffer) beg end markup-name "n"))
+	(setq markup-id (funcall standoff-markup-create-function
+				 (current-buffer) beg end markup-type))
 	(when markup-id
 	  ;; run hook to notify success and highlight the new markup
-	  (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-name markup-id))))
+	  (run-hook-with-args 'standoff-markup-post-functions
+			      (current-buffer) beg end markup-type markup-id))))
     (deactivate-mark)))
 
 (defun standoff-markup-region-continue (beg end markup-id)
-  "Add a range for the markup element identified by
-MARKUP-ID. The range is given by BEG and END or point and mark,
-aka the region (which may be inactive). This function enables the
-user to create continues markup (which should better be called
-discontinues markup, because there will be kind of gaps in the
-markup produced)."
-  (interactive "r\nNId (number) of markup element to be continued: ")
-  (let* ((markup-name (nth 2 (car (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id))))
-	 (duplicate (funcall standoff-markup-read-ranges-function (current-buffer) beg end markup-name markup-id))
+  "Add selected region as a new range continueing an existing markup element.
+The markup element is identified by MARKUP-ID. The range is given
+by BEG and END or point and mark, aka the region. This function
+enables the user to create discontinues markup."
+  (interactive "r\nNIdentifying number of markup element to be continued: ")
+  (let* ((markup-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-id))))
+	 (duplicate (funcall standoff-markup-read-function (current-buffer) beg end markup-type markup-id))
 	 (markup-id-from-backend nil))
-    (if (not markup-name)
+    (if (not markup-type)
 	(error "No markup element with ID %i found" markup-id)
       (if duplicate
 	  (error "Overlapping markup with the same id and element name! Not creating a duplicate")
 	(save-restriction
 	  (widen)
 	  (save-excursion
-	    (setq markup-id-from-backend (funcall standoff-markup-write-range-function (current-buffer) beg end markup-name markup-id))
-	    (message "Hi: %s" markup-id-from-backend)
+	    (setq markup-id-from-backend (funcall standoff-markup-range-add-function (current-buffer) beg end markup-id))
+	    ;;(message "Hi: %s" markup-id-from-backend)
 	    (when markup-id-from-backend
 	      ;; run hook to notify success and highlight the new markup
-	      (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-name markup-id-from-backend))))
+	      (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-type markup-id-from-backend))))
 	(deactivate-mark)))))
-
-(defun standoff-markup-region-deprecated (markup-name markup-id)
-  "Markup the selected region, i.e. mark the region as a range
-of `markup-name' with the id given in `markup-id'."
-  ;; Deprecated! Ether a name or an id should be given! This makes
-  ;; things consistent.
-  (interactive
-   (list (standoff-minibuffer-require-markup-name)
-	 (standoff-minibuffer-require-id-or-key)))
-  (message (format "Name was %s, ID was %s." markup-name markup-id))
-  (let* ((buf (current-buffer)))
-    (save-restriction
-      (widen)
-      (save-excursion
-	(let* ((id-from-backend (funcall standoff-markup-write-range-function buf (region-beginning) (region-end) markup-name markup-id)))
-	  (when id-from-backend
-	    ;; run hook to notify success and highlight the new markup
-	    (run-hook-with-args 'standoff-markup-post-functions buf (region-beginning) (region-end) markup-name id-from-backend)))))
-    (deactivate-mark)))
-
-(defun standoff-minibuffer-require-id-or-key ()
-  (let ((enable-recursive-minibuffers t)
-	 (mini-input (read-from-minibuffer "Id of markup element or <n> for a new one (automatic handling): ")))
-    (if (string-match "^\\([0-9]+\\|n\\)$" mini-input)
-	(match-string 0 mini-input)
-      (standoff-minibuffer-require-id-or-key))))
-
-(defcustom standoff-markup-require-name-require-match 'confirm
-  "Defines how restrictive the markup name is handled. If set to
-`t' then it must match a list element returned by
-standoff-markup-names-function. If set to `nil', the user may
-exit his input with any name. If set to `confirm' (symbol), the
-user may exit with any name, but is asked to confirm his input."
-  :group 'standoff)
-
-(defun standoff-markup-names-from-overlays ()
-  "Return the list of user defined markup elements. This would be
-a good alternative for standoff-dummy-markup-element-names as the
-standoff-markup-names-function. "
-  (mapcar 'car standoff-markup-overlays))
-
-(defun standoff-minibuffer-require-markup-name ()
-  "Ask the user for the name of the  "
-  (completing-read "Name of markup element: " 
-		   (funcall standoff-markup-names-function) 
-		   nil
-		   standoff-markup-require-name-require-match))
 
 (defun standoff-markup-notify (buf startchar endchar markup-name markup-id)
   "A handler function that can be hooked to the
@@ -231,9 +264,9 @@ buffer)."
 (add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
 
 (defun standoff-markup-delete-range-at-point ()
-  "Delete a string range of a markup element at point. The range
-is identified by the overlays properties. So this works only if
-there is an overlay."
+  "Delete the range of a markup element at point.
+The range is identified by the overlays properties. So this works
+only if there is an overlay."
 ;; TODO: Collect information about related items when
 ;; asking "Do you really ...? (yes or no)"
   (interactive)

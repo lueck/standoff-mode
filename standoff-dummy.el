@@ -99,9 +99,9 @@ applied to the result."
     ranges-to-return))
 
 (defun standoff-dummy-delete-range (buf startchar endchar markup-type markup-inst-id)
-  "Delete a markup range or element respectively.
+  "Delete a markup range or element respectively  from the dummy backend.
 It is identified by STARTCHAR, ENDCHAR, MARKUP-TYPE and
-MARKUP-INST-ID in context of buffer BUF from the dummy backend."
+MARKUP-INST-ID in context of buffer BUF."
   (let ((old-markup standoff-dummy-markup) ;; make error tolerant
 	(old-length (length standoff-dummy-markup))
 	(new-markup '())
@@ -287,3 +287,5 @@ This may be usefull for development."
   (message "%s" (list standoff-dummy-checksum
 		      standoff-dummy-markup
 		      standoff-dummy-relations)))
+
+(provide 'standoff-dummy)
