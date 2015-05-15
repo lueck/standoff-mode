@@ -222,6 +222,19 @@ BUF."
 	   (setq relations (cons relation relations))))
     relations))
 
+(defun standoff-dummy-delete-relation (buf subj-id predicate obj-id)
+  (let ((data standoff-dummy-relations)
+	(new-relations '())
+	(relation))
+    (while data
+      (setq relation (pop data))
+      (when (not (and (equal (nth standoff-pos-subject relation) subj-id)
+		      (equal (nth standoff-pos-predicate relation) predicate)
+		      (equal (nth standoff-pos-object relation) obj-id)))
+	(setq new-relations (cons relation new-relations))))
+    (setq standoff-dummy-relations new-relations)))
+	
+
 ;; setup and reset backend
 
 (defun standoff-dummy-backend-reset ()
