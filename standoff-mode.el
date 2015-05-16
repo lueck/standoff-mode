@@ -116,7 +116,7 @@ names for the combination of subject and object. Should return
 nil or an empty true list if there are no valid predicates for
 this combination.")
 
-(defvar standoff-relation-write-function 'standoff-dummy-create-relation
+(defvar standoff-relation-create-function 'standoff-dummy-create-relation
   "The function which writes a new relation to some backend.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
@@ -152,19 +152,19 @@ arguments. All duplicates of the relation should be removed.")
 ;; creating and deleting markup
 ;;
 
-(defcustom standoff-markup-post-functions '('standoff-notify-markup)
+(defcustom standoff-markup-post-functions nil
   "A hook for handlers called when markup was successfully stored to some backend.
-This hook can be used for highlightning and notifications.  It is
-a so called abnormal hook, cf. Info node `(emacs) Hooks', because
-the hooked functions (aka handlers) must take the following
-arguments:
+This hook can be used for notifications or to set some state. It
+is a so called abnormal hook, cf. Info node `(emacs) Hooks',
+because the hooked functions (aka handlers) must take the
+following arguments:
 
 BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-INST-ID
 
 "
   :group 'standoff
   :type 'hook
-  :options '('standoff-notify-markup))
+  :options '('standoff-markup-notify))
 
 (defcustom standoff-markup-type-require-match 'confirm
   "Defines how restrictive the markup schema is handled.
@@ -224,7 +224,9 @@ backend, e.g. by automatic incrementation of an integer."
 	(setq markup-id (funcall standoff-markup-create-function
 				 (current-buffer) beg end markup-type))
 	(when markup-id
-	  ;; run hook to notify success and highlight the new markup
+	  ;; highlight the new markup
+	  (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id)
+	  ;; run hook to notify success
 	  (run-hook-with-args 'standoff-markup-post-functions
 			      (current-buffer) beg end markup-type markup-id))))
     (deactivate-mark)))
@@ -248,25 +250,28 @@ enables the user to create discontinues markup."
 	    (setq markup-id-from-backend (funcall standoff-markup-range-add-function (current-buffer) beg end markup-id))
 	    ;;(message "Hi: %s" markup-id-from-backend)
 	    (when markup-id-from-backend
-	      ;; run hook to notify success and highlight the new markup
+	      ;; highlight the new markup
+	      (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id-from-backend)
+	      ;; run hook to notify success
 	      (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-type markup-id-from-backend))))
 	(deactivate-mark)))))
 
-(defun standoff-markup-notify (buf startchar endchar markup-name markup-id)
-  "A handler function that can be hooked to the
-standoff-markup-post-functions hook, which is called when ever an
-markup is being done. This function does nothing but notify
+(defun standoff-markup-notify (buf startchar endchar markup-type markup-id)
+  "Notify the creation of a markup element or range.
+This is a handler function that can be hooked to the
+`standoff-markup-post-functions' hook, which is called when ever
+an markup is being done. This function does nothing but notify
 the user with a message in the minibuffer (and in the *Messages*
 buffer)."
   (message "Annotating from %i to %i as %s with id %i." 
-	   startchar endchar markup-name markup-id))
+	   startchar endchar markup-type markup-id))
 
 (add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
 
 (defun standoff-markup-delete-range-at-point ()
   "Delete the range of a markup element at point.
-The range is identified by the overlays properties. So this works
-only if there is an overlay."
+The range is identified by the overlay's properties. So this
+works only if there is one and exactly one overlay."
 ;; TODO: Collect information about related items when
 ;; asking "Do you really ...? (yes or no)"
   (interactive)
@@ -426,8 +431,6 @@ string."
    (standoff--overlay-property-set ovly "id" (number-to-string markup-id))
    ;;(overlay-put ovly 'local-map standoff-markup-range-local-map)
    )))
-
-(add-hook 'standoff-markup-post-functions 'standoff-highlight-markup-range)
 
 (defun standoff-hide-markup-buffer (&optional markup-name)
   "Hide markup in the current buffer, i.e. remove all overlays."

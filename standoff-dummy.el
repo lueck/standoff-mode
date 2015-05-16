@@ -288,4 +288,23 @@ This may be usefull for development."
 		      standoff-dummy-markup
 		      standoff-dummy-relations)))
 
+;; Registration / Set up
+
+;; This actually restores the default values for handler function
+;; variables defined in `standoff-dummy.el'.
+(defun standoff-dummy-register-backend ()
+  (setq
+   ;; markup
+   standoff-markup-create-function 'standoff-dummy-create-markup
+   standoff-markup-range-add-function 'standoff-dummy-add-range
+   standoff-markup-read-function 'standoff-dummy-read-markup
+   standoff-markup-delete-range-function 'standoff-dummy-delete-range
+   standoff-markup-types-used-function 'standoff-dummy-markup-types
+   ;; relations
+   standoff-predicates-used-function 'standoff-dummy-used-predicates
+   standoff-relation-create-function 'standoff-dummy-create-relation
+   standoff-relations-read-function 'standoff-dummy-read-relations
+   standoff-relations-delete-function 'standoff-dummy-delete-relation
+   ))
+
 (provide 'standoff-dummy)
