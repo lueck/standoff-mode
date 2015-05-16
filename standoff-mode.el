@@ -387,8 +387,8 @@ given as KEY and VALUE."
 	       (standoff--overlay-property-format-value key value t)))
 
 (defun standoff--overlay-property-get (ovly key)
-  "A convience function to get the property of an overlay. The
-value of property KEY of the overlay OVLY is returned as a
+  "A convience function to get the property of an overlay.
+The value of property KEY of the overlay OVLY is returned as a
 string."
   (let ((value-front-length (length (format standoff--overlay-property-value-format key "")))
 	(value-symbol (overlay-get ovly (standoff--overlay-property-format-key key))))
@@ -403,75 +403,155 @@ string."
 	(error error-message)
       (string-to-number (standoff--overlay-property-get (car overlays) "id")))))
 
-(defun standoff-highlight-markup-range (buf startchar endchar markup-name markup-id)
-"Highlight a markup range. This is the workhorse of highlighning in standoff mode."
+(defun standoff-markup-number-mapping-setup ()
+  "Make a new hashtable for mapping markup instance ids to numbers."
+  (setq-local standoff-markup-number-mapping (make-hash-table :test 'equal)))
+
+(add-hook 'standoff-mode-hook 'standoff-markup-number-mapping-setup)
+  
+(defun standoff-markup-get-number (buf markup-inst-id)
+  "Return the number associated to a markup instance.
+This returns an integer for the markup instance given by
+MARKUP-INST-ID in the buffer BUF. If there is not yet a number
+assiciated with this instance, a new unique number is created."
+  (let ((number (gethash markup-inst-id standoff-markup-number-mapping nil))
+	(numbers '()))
+    (if number
+	number
+      (maphash (lambda (k _v) (push _v numbers)) standoff-markup-number-mapping)
+      (puthash markup-inst-id
+	       ;; max fails for an empty list, so we cons 0
+	       (setq number (+ (apply 'max (cons 0 numbers)) 1))
+	       standoff-markup-number-mapping)
+      number)))
+
+(defun standoff-markup-get-by-number (buf number)
+  "Return the markup instance ID for a number.
+If no ID maps to number, nil is returned."
+  (let ((markup-inst-id nil))
+    (maphash (lambda (k _v) (when (equal _v number) (setq markup-inst-id k)))
+	     standoff-markup-number-mapping)
+    markup-inst-id))
+
+(defun standoff-highlight-markup-range (buf startchar endchar markup-type markup-inst-id)
+"Highlight a markup range.
+This is the workhorse for highlightning markup in standoff
+mode. It highlights a range of text given by STARTCHAR and
+ENDCHAR in the context of buffer BUF. The range is highlightened
+as MARKUP-TYPE and is assigned MARKUP-INST-ID. A number is also
+assigned to it for easy access by the user. This number is not
+stable over working sessions, but assigned on a per session
+basis. The highlightning is done by creating overlays. This
+overlay is assigned the key value `\"standoff\" t'."
 (save-restriction
  (widen)
- (let* ((ovly-props (or (cdr (assoc markup-name standoff-markup-overlays))
-			standoff-markup-overlays-default))
-	(front-props (or (cdr (assoc markup-name standoff-markup-overlays-front))
-			 standoff-markup-overlays-front-default))
-	(after-props (or (cdr (assoc markup-name standoff-markup-overlays-after))
-			 standoff-markup-overlays-after-default))
-	(front-str (format "[%i" markup-id))
-	(after-str (format "%i]" markup-id))
-	(hlp-echo (format "%s ID=%i" markup-name markup-id))
-	(front-string (car (mapcar '(lambda (x) (propertize front-str (car(cdar x)) (cadr x))) front-props)))
-	(after-string (car (mapcar '(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props)))
-	;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
-	;; create the overlay
-	(ovly (make-overlay startchar endchar buf)))
-   ;;(mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (car (cdr x)))) ovly-props)
-   ;;(message (format "%s" ovly-props))
-   (mapcar '(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
-   (overlay-put ovly 'help-echo hlp-echo)
-   (overlay-put ovly 'before-string front-string)
-   (overlay-put ovly 'after-string after-string)
-   (standoff--overlay-property-set ovly "name" markup-name)
-   (standoff--overlay-property-set ovly "id" (number-to-string markup-id))
-   ;;(overlay-put ovly 'local-map standoff-markup-range-local-map)
-   )))
+ (let ((ovlys (overlays-at startchar))
+       (ovly)
+       (ovly-present nil))
+   ;; don't create the overlay if there is already a similar one
+   (while ovlys
+     (setq ovly (pop ovlys))
+     ;; when COND
+     (and (equal (standoff--overlay-property-get ovly "id") markup-inst-id)
+	  (equal (overlay-start ovly) startchar)
+	  (equal (overlay-end ovly) endchar)
+	  (equal (standoff--overlay-property-get ovly "type") markup-type)
+	  (equal (standoff--overlay-property-get ovly "standoff") (symbol-name t))
+	  ;; BODY (of when)
+	  (setq ovly-present t
+		ovlys nil)))
+   (unless ovly-present
+     ;; create the overlay
+     (setq ovly (make-overlay startchar endchar buf))
+     (let* ((ovly-props (or (cdr (assoc markup-type standoff-markup-overlays))
+			    standoff-markup-overlays-default))
+	    (front-props (or (cdr (assoc markup-type standoff-markup-overlays-front))
+			     standoff-markup-overlays-front-default))
+	    (after-props (or (cdr (assoc markup-type standoff-markup-overlays-after))
+			     standoff-markup-overlays-after-default))
+	    (number (standoff-markup-get-number buf markup-inst-id))
+	    (front-str (format "[%i" number))
+	    (after-str (format "%i]" number))
+	    (hlp-echo (format "%s no=%i ID=%s" markup-type number markup-inst-id))
+	    (front-string (car (mapcar #'(lambda (x) (propertize front-str (car(cdar x)) (cadr x))) front-props)))
+	    (after-string (car (mapcar #'(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props))))
+	    ;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
+       ;;(mapcar #'(lambda (x) (overlay-put ovly (car (cdar x)) (car (cdr x)))) ovly-props)
+       ;;(message (format "%s" ovly-props))
+       (mapcar #'(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
+       (overlay-put ovly 'help-echo hlp-echo)
+       (overlay-put ovly 'before-string front-string)
+       (overlay-put ovly 'after-string after-string)
+       (standoff--overlay-property-set ovly "standoff" t)
+       (standoff--overlay-property-set ovly "type" markup-type)
+       (standoff--overlay-property-set ovly "id" markup-inst-id)
+       (standoff--overlay-property-set ovly "number" number)
+       ;;(overlay-put ovly 'local-map standoff-markup-range-local-map)
+       )))))
 
-(defun standoff-hide-markup-buffer (&optional markup-name)
+(defun standoff-hide-markup (&optional area-start area-end markup-type markup-number)
+  "Hide markup. A general function with a filter.
+This function is the workhorse of hiding markup and is being
+reused by more specific interactive functions for hiding markup."
+  (let* ((startchar (or area-start (point-min)))
+	 (endchar (or area-end (point-max)))
+	 (ovlys-present)
+	 (ovlys-found '())
+	 (ovly)
+	 (markup-number-string (cond ((numberp markup-number) (number-to-string markup-number))
+				     (t markup-number))))
+    (overlay-recenter (/ (+ startchar endchar) 2))
+    (setq ovlys-present (overlays-in startchar endchar))
+    (while ovlys-present
+      (setq ovly (pop ovlys-present))
+      ;; when COND
+      (and (equal (standoff--overlay-property-get ovly "standoff") (symbol-name t))
+	   (or (not markup-type)
+	       (equal (standoff--overlay-property-get ovly "type") markup-type))
+	   (or (not markup-number)
+	       (equal (standoff--overlay-property-get ovly "number") markup-number-string))
+	   ;; BODY
+	   (delete-overlay ovly)))))
+
+(defun standoff-hide-markup-buffer (&optional markup-type)
   "Hide markup in the current buffer, i.e. remove all overlays."
   (interactive
-   (list (completing-read "Name of markup element, <!> for all: "
-			  (funcall standoff-markup-names-function)
-			  nil
-			  nil)))
+   (list (completing-read
+	  "Markup type to hide, <!> for all: "
+	  (append "!" (standoff-markup-type-completion (current-buffer)))
+	  nil
+	  standoff-markup-require-name-require-match)))
   (save-excursion
-    (cond
-     ((equal markup-name "!") (remove-overlays))
-     ((not markup-name) (remove-overlays))
-     (t (remove-overlays (point-min) (point-max) 
-			 (standoff--overlay-property-format-key "name")
-			 (standoff--overlay-property-format-value "name" markup-name))))))
+    (if (or (not markup-type) (equal markup-type "!"))
+	(standoff-markup-hide)
+      (standoff-markup-hide nil nil markup-type))))
 
-(defun standoff-hide-markup-region (area-start area-end &optional markup-name)
-  "Hide markup in the region, i.e. remove overlays."
-  (interactive "r")
+(defun standoff-hide-markup-region (area-start area-end &optional markup-type)
+  "Hide markup in the region, optionally filtered by type."
+  (interactive
+   (list (region-beginning)
+	 (region-end)
+	 (completing-read
+	  "Markup type to hide, <!> for all: "
+	  (append "!" (standoff-markup-type-completion (current-buffer)))
+	  nil
+	  standoff-markup-require-name-require-match)))
   (save-excursion
-    (overlay-recenter area-end)
-    (mapc 'delete-overlay (overlays-in area-start area-end))))
+    (if (or (not markup-type) (equal markup-type "!"))
+	(standoff-markup-hide area-start area-end)
+      (standoff-markup-hide area-start area-end markup-type))))
 
 (defun standoff-hide-markup-at-point ()
-  "Hide markup at point, i.e. remove overlay(s)."
+  "Hide markup at point."
   (interactive)
   (save-excursion
-    (overlay-recenter (point))
-    (mapc 'delete-overlay (overlays-at (point)))))
+    (standoff-markup-hide (point) (point))))
 
-(defun standoff-hide-markup-at-point-by-id (id)
-  (interactive "NId of markup element to hide: ")
+(defun standoff-hide-markup-by-number (markup-number)
+  "Hide all markup with number MARKUP-NUMBER."
+  (interactive "NNumber of markup element to hide: ")
   (save-excursion
-    (overlay-recenter (point))
-    (let ((overlays (overlays-at (point))))
-      (while overlays
-	(let* ((overlay (car overlays))
-	       (overlay-id (standoff--overlay-property-get overlay "id")))
-	  (when (equal overlay-id (number-to-string id))
-	    (delete-overlay overlay)))
-	(setq overlays (cdr overlays))))))
+    (standoff-markup-hide nil nil nil markup-number)))
 
 (defun standoff--assert-integer-stringrange (range)
   (if (and (numberp (nth 0 range)) 
@@ -594,7 +674,7 @@ must be given as OBJECT-ID, the relation given by RELATION."
     (define-key map "d" 'standoff-markup-delete-range-at-point)
     ;;(define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
-    (define-key map "ħ" 'standoff-hide-markup-at-point-by-id)
+    (define-key map "ħ" 'standoff-hide-markup-by-number)
     (define-key map "H" 'standoff-hide-markup-buffer)
     (define-key map "l" 'standoff-highlight-markup-by-id)
     (define-key map "L" 'standoff-highlight-markup-buffer)
@@ -625,7 +705,7 @@ must be given as OBJECT-ID, the relation given by RELATION."
     ["Hide markup in buffer" standoff-hide-markup-buffer]
     ["Hide markup in region" standoff-hide-markup-region]
     ["Hide markup at point" standoff-hide-markup-at-point]
-    ["Hide markup with id at point" standoff-hide-markup-at-point-by-id]
+    ["Hide markup with number" standoff-hide-markup-by-number]
     ["--" nil]
     ["Navigate to next highlightened element" standoff-navigate-next]
     ["Navigate to previous highlightened element" standoff-navigate-previous]
@@ -636,7 +716,7 @@ must be given as OBJECT-ID, the relation given by RELATION."
     (define-key map "d" 'standoff-markup-delete-range-at-point)
     ;; (define-key map "D" 'standoff-markup-delete-element-at-point)
     (define-key map "h" 'standoff-hide-markup-at-point)
-    (define-key map "H" 'standoff-hide-markup-at-point-by-id)
+    (define-key map "H" 'standoff-hide-markup-by-number)
     map))
 
 
