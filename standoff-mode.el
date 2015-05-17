@@ -295,7 +295,7 @@ works only if there is one and exactly one overlay."
 	(setq markup-id (string-to-number (standoff--overlay-property-get ovly "id")))
 	;; (message (format "%i %i %s %i" startchar endchar markup-name markup-id))
 	(setq markup-ranges (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id))
-	(message "%s" (length markup-ranges))
+	;; (message "%s" (length markup-ranges))
 	(if (> (length markup-ranges) 1)
 	    (setq precondition (y-or-n-p (format "Do you really want to delete this range of '%s' %s? " markup-name markup-id)))
 	  (setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-id markup-name))))
@@ -403,6 +403,17 @@ string."
 	(error error-message)
       (string-to-number (standoff--overlay-property-get (car overlays) "id")))))
 
+(defun standoff--normalize-markup-inst-id (id)
+  "Cast ID of markup instance to the format returned by `standoff--overlay-property-get'.
+This is used in `standoff-highlight-markup-range' to check if a
+similar overlay is already
+present. `standoff--overlay-property-get' returns strings, after
+`standoff--overlay-property-set' used (`format' \"...%s\"
+... value) to gerate the value. So using `format' here is quite
+save. But depending on the the format of the IDs for markup
+instances this functions might need to be rewritten."
+  (format "%s" id))
+
 (defun standoff-markup-number-mapping-setup ()
   "Make a new hashtable for mapping markup instance ids to numbers."
   (setq-local standoff-markup-number-mapping (make-hash-table :test 'equal)))
@@ -452,10 +463,10 @@ overlay is assigned the key value `\"standoff\" t'."
    (while ovlys
      (setq ovly (pop ovlys))
      ;; when COND
-     (and (equal (standoff--overlay-property-get ovly "id") markup-inst-id)
+     (and (equal (standoff--overlay-property-get ovly "id") (standoff--normalize-markup-inst-id markup-inst-id))
 	  (equal (overlay-start ovly) startchar)
 	  (equal (overlay-end ovly) endchar)
-	  (equal (standoff--overlay-property-get ovly "type") markup-type)
+	  (equal (standoff--overlay-property-get ovly "type") (format "%s" markup-type))
 	  (equal (standoff--overlay-property-get ovly "standoff") (symbol-name t))
 	  ;; BODY (of when)
 	  (setq ovly-present t
@@ -493,13 +504,12 @@ overlay is assigned the key value `\"standoff\" t'."
   "Hide markup. A general function with a filter.
 This function is the workhorse of hiding markup and is being
 reused by more specific interactive functions for hiding markup."
-  (let* ((startchar (or area-start (point-min)))
-	 (endchar (or area-end (point-max)))
-	 (ovlys-present)
-	 (ovlys-found '())
-	 (ovly)
-	 (markup-number-string (cond ((numberp markup-number) (number-to-string markup-number))
-				     (t markup-number))))
+  (let ((startchar (or area-start (point-min)))
+	(endchar (or area-end (point-max)))
+	(ovlys-present)
+	(ovlys-found '())
+	(ovly)
+	(markup-number-string (format "%s" markup-number)))
     (overlay-recenter (/ (+ startchar endchar) 2))
     (setq ovlys-present (overlays-in startchar endchar))
     (while ovlys-present
@@ -523,8 +533,8 @@ reused by more specific interactive functions for hiding markup."
 	  standoff-markup-require-name-require-match)))
   (save-excursion
     (if (or (not markup-type) (equal markup-type "!"))
-	(standoff-markup-hide)
-      (standoff-markup-hide nil nil markup-type))))
+	(standoff-hide-markup)
+      (standoff-hide-markup nil nil markup-type))))
 
 (defun standoff-hide-markup-region (area-start area-end &optional markup-type)
   "Hide markup in the region, optionally filtered by type."
@@ -537,74 +547,78 @@ reused by more specific interactive functions for hiding markup."
 	  nil
 	  standoff-markup-require-name-require-match)))
   (save-excursion
-    (if (or (not markup-type) (equal markup-type "!"))
-	(standoff-markup-hide area-start area-end)
-      (standoff-markup-hide area-start area-end markup-type))))
+    (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
+      (standoff-hide-markup area-start area-end markup-type-or-nil))))
 
 (defun standoff-hide-markup-at-point ()
   "Hide markup at point."
   (interactive)
   (save-excursion
-    (standoff-markup-hide (point) (point))))
+    (standoff-hide-markup (point) (point))))
 
 (defun standoff-hide-markup-by-number (markup-number)
   "Hide all markup with number MARKUP-NUMBER."
   (interactive "NNumber of markup element to hide: ")
   (save-excursion
-    (standoff-markup-hide nil nil nil markup-number)))
+    (standoff-hide-markup nil nil nil markup-number)))
 
-(defun standoff--assert-integer-stringrange (range)
-  (if (and (numberp (nth 0 range)) 
-	   (numberp (nth 1 range)) 
-	   (numberp (nth 3 range)))
-      range
-    ;; TODO
-    (list (string-to-number (nth 0 range))
-	  (string-to-number (nth 1 range))
-	  (nth 2 range)
-	  (string-to-number (nth 3 range)))))
+(defun standoff--markup-offset-integer (offset)
+  "Do a type cast for an offset value from the backend if neccessary.
+Offset values have to be integer. Some backends may store them as
+strings. So we use this function to assert that we have
+integers. Takes OFFSET as argument."
+  (cond ((numberp offset) offset)
+	((stringp offset) (string-to-number offset));; TODO: better regexp?
+	(t (error "Can not convert offset value to integer: %s" offset))))
 
-(defun standoff-highlight-markup-region (beg end &optional markup-name)
+(defun standoff-highlight-markup (&optional beg end markup-type markup-inst-id)
+  "Apply a filter to the markup from the backend and highlight it.
+This function can be reused by other more specific interactive
+functions for highlightning markup in the current buffer. It
+calls `standoff-highlight-markup-range' to actually highlight a
+markup element or range."
+  (let ((markup-elements (funcall standoff-markup-read-function (current-buffer) beg end markup-type markup-inst-id)))
+    ;;(message "id: %s ; From Backend: %s" markup-inst-id markup-elements)
+    ;; build a list from the markup returned by the backend and apply
+    ;; it to standoff-highlight-markup-range
+    (dolist (range markup-elements)
+      (apply 'standoff-highlight-markup-range
+	     (list (current-buffer)
+		   (standoff--markup-offset-integer (nth standoff-pos-startchar range))
+		   (standoff--markup-offset-integer (nth standoff-pos-endchar range))
+		   (nth standoff-pos-markup-type range)
+		   (nth standoff-pos-markup-inst-id range))))))
+
+(defun standoff-highlight-markup-region (beg end &optional markup-type)
   "Create overlays for all markup in the backend."
-  (interactive 
-   (list 
+  (interactive
+   (list
     (region-beginning)
     (region-end)
-    (completing-read "Name of markup elements to show up, <!> for all: "
-			  (cons "!" (funcall standoff-markup-names-function))
+    (completing-read "Type of markup to show up, <!> for all: "
+		     (cons "!" (funcall standoff-markup-type-completion (current-buffer)))
+		     nil t)))
+  (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
+    (standoff-highlight-markup beg end markup-type-or-nil)))
+
+(defun standoff-highlight-markup-buffer (&optional markup-type)
+  "Highlight markup in the backend optionally filtered by markup type."
+  (interactive
+   (list (completing-read "Type of markup to show up, <!> for all: "
+			  (cons "!" (funcall standoff-markup-type-completion (current-buffer)))
 			  nil t)))
-  (let* ((markup-name-or-nil (cond ((equal markup-name "!") nil)
-				  (t markup-name)))
-	(markup-elements (funcall standoff-markup-read-ranges-function (current-buffer) beg end markup-name-or-nil)))
-    ;; First remove overlays because else they get doubled.
-    ;; TODO: This makes it impossible to use this function several
-    ;; times in order to sequetially show up parts of the markup.
-    (standoff-hide-markup-region beg end markup-name-or-nil)
-    ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
-    (dolist (range markup-elements)
-      (apply 'standoff-highlight-markup-range (cons (current-buffer) (standoff--assert-integer-stringrange range))))))
+  (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
+    (standoff-highlight-markup nil nil markup-type-or-nil)))
 
-(defun standoff-highlight-markup-buffer (&optional markup-name)
-  "Create overlays for all markup in the backend."
-  (interactive 
-   (list (completing-read "Name of markup elements to show up, <!> for all: "
-			  (cons "!" (funcall standoff-markup-names-function))
-			  nil t)))
-  (standoff-highlight-markup-region (point-min) (point-max) markup-name))
-
-(defun standoff-highlight-markup-by-id (markup-id)
-  "Create overlays for all ranges of the markup element
-identified by MARKUP-ID."
-  (interactive "NId (number) of markup element to highlight: ")
-  (let ((ranges (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id)))
-    ;; First remove overlays because else they get doubled.
-    ;; TODO: This makes it impossible to use this function several
-    ;; times in order to sequetially show up parts of the markup.
-    (standoff-hide-markup-buffer)
-    ;; build a list from BUF STARTCHAR ENDCHAR MARKUP-NAME MARKUP-ID and apply it to ..
-    (dolist (range ranges)
-      (apply 'standoff-highlight-markup-range (cons (current-buffer) (standoff--assert-integer-stringrange range))))))
-
+(defun standoff-highlight-markup-by-number (number)
+  "Highlight the markup element which's id is mapping to NUMBER."
+  ;; Fixme!
+  (interactive "NNumber of markup element to highlight: ")
+  (let ((markup-inst-id (standoff-markup-get-by-number (current-buffer) number)))
+    (unless markup-inst-id
+      (error "No markup element mapping to number %s" number))
+    ;;(message "n: %s, id: %s" number markup-inst-id)
+    (standoff-highlight-markup (point-min) (point-max) nil markup-inst-id)))
 
 ;;
 ;; Navigate
@@ -676,7 +690,7 @@ must be given as OBJECT-ID, the relation given by RELATION."
     (define-key map "h" 'standoff-hide-markup-at-point)
     (define-key map "ħ" 'standoff-hide-markup-by-number)
     (define-key map "H" 'standoff-hide-markup-buffer)
-    (define-key map "l" 'standoff-highlight-markup-by-id)
+    (define-key map "l" 'standoff-highlight-markup-by-number)
     (define-key map "L" 'standoff-highlight-markup-buffer)
     (define-key map "r" 'standoff-relate-markup-element-at-point)
     (define-key map "s" 'standoff-store-markup-element-at-point)
@@ -701,7 +715,7 @@ must be given as OBJECT-ID, the relation given by RELATION."
     ["--" nil]
     ["Highlight markup in buffer" standoff-highlight-markup-buffer]
     ["Highlight markup in region" standoff-highlight-markup-region]
-    ["Highlight markup with id" standoff-highlight-markup-by-id]
+    ["Highlight markup with id" standoff-highlight-markup-by-number]
     ["Hide markup in buffer" standoff-hide-markup-buffer]
     ["Hide markup in region" standoff-hide-markup-region]
     ["Hide markup at point" standoff-hide-markup-at-point]

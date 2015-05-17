@@ -86,3 +86,61 @@ This list depends on the value of
     (standoff-test-utils-teardown-source-buffer test-buffer)
     ))
 
+(ert-deftest standoff-markup-highlightning-with-backend-test ()
+  "Test highlightning markup from dummy backend."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer)))
+    (standoff-markup-number-mapping-setup)
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
+    (standoff-dummy-add-range test-buffer 528 537 id1)
+    (standoff-dummy-add-range test-buffer 429 439 id1)
+    (setq id2 (standoff-dummy-create-markup test-buffer 484 537 "example"))
+    (standoff-dummy-add-range test-buffer 429 439 id2)
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    ;; should highlight all
+    (standoff-highlight-markup)
+    (should (= (length (overlays-at 429)) 3))
+    ;; should hide 
+    (standoff-hide-markup-region 429 430)
+    (should (= (length (overlays-at 429)) 0))
+    (should (= (length (overlays-at 528)) 2))
+    (standoff-hide-markup-by-number id1)
+    (should (= (length (overlays-at 528)) 1))
+    (goto-char 528)
+    (standoff-hide-markup-at-point)
+    (should (= (length (overlays-at 528)) 0))
+    ;; testing buffer wide functions
+    (standoff-highlight-markup-buffer "marker")
+    (should (= (length (overlays-at 429)) 1))
+    (standoff-highlight-markup-buffer "!")
+    (should (= (length (overlays-at 429)) 3))
+    (standoff-hide-markup-buffer "marker")
+    (should (= (length (overlays-at 429)) 2))
+    (standoff-hide-markup-buffer "!")
+    (should (= (length (overlays-at 429)) 0))
+    ;; testing regional functions
+    (standoff-highlight-markup-region 1 429 "marker")
+    (should (= (length (overlays-at 429)) 1))
+    (standoff-highlight-markup-region 1 429 "!")
+    (should (= (length (overlays-at 429)) 3))
+    (should (= (length (overlays-at 528)) 0))
+    (standoff-highlight-markup-buffer)
+    (standoff-hide-markup-region 1 429 "marker")
+    (should (= (length (overlays-at 429)) 2))
+    ;; see what overlapping means!
+    (standoff-hide-markup-region 1 429 "!")
+    (should (= (length (overlays-at 429)) 2))
+    (standoff-hide-markup-region 1 430 "!")
+    (should (= (length (overlays-at 429)) 0))
+    (should (= (length (overlays-at 528)) 2))
+    ;; testing numerical functions
+    (let ((n3 (standoff-markup-get-number test-buffer id3)))
+      (message "id: %s , n: %s" id3 n3)
+      (standoff-highlight-markup-by-number n3)
+      ;;(should (= (length (overlays-at 429)) 1));; Fixme!
+      (standoff-highlight-markup-buffer)
+      (standoff-hide-markup-by-number n3)
+      (should (= (length (overlays-at 429)) 2))
+      )
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+

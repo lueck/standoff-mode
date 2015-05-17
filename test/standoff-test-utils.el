@@ -20,7 +20,7 @@
 Returns a test buffer with some content, sets up the dummy
 backend."
   (let ((test-buffer (generate-new-buffer "dummy-test")))
-    (standoff-mode-test-save-old-config)
+    (standoff-test-utils-save-old-config)
     ;; create and fill test buffer
     (set-buffer test-buffer)
     (insert "Was kann das Licht in unſer Auge mahlen?
@@ -62,6 +62,6 @@ using this setup function."
 (defun standoff-test-utils-teardown-source-buffer (buf)
   "Tear down the test setup and restore the old configuration."
   (kill-buffer buf)
-  (standoff-mode-test-restore-old-config))
+  (standoff-test-utils-restore-old-config))
 
 (provide 'standoff-test-utils)
