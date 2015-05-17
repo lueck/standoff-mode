@@ -1,3 +1,8 @@
+;; WARNING: Close your production files before running tests! Restart
+;; Emacs before going from testing to production again, because it is
+;; not shure, that all configuration is restored correctly. You might
+;; loose data!
+
 (require 'standoff-dummy)
 
 (ert-deftest standoff-dummy-markup-create-test ()
@@ -61,7 +66,7 @@
     (setq markup-id (standoff-dummy-create-markup test-buffer 23 42 "example"))
     (standoff-dummy-create-markup test-buffer 23 42 "hammer")
     (should
-     (=
+     (equal
       (standoff-dummy-markup-get-type-by-inst-id test-buffer markup-id)
       "example"))
     (kill-buffer test-buffer)))

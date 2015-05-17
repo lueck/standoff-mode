@@ -1,31 +1,10 @@
+;; Dummy Backend - This is a reference implementation of the standoff-api
+
+(require 'standoff-api)
+
 ;;
-;; Dummy backend
+;; Markup
 ;;
-
-(defconst standoff-pos-markup-inst-id 0
-  "Position of a markup instance's ID.
-I.e. the position of the ID in a list representing a markup
-element (or a range of a markup element in the case of
-discontinous markup).
-
-Example of a list representing a markup element: 
-
-'(1 \"example\" 23 42 &rest)
-
-This represents the markup element with the ID 1, its type is
-\"example\" and it's ranging from character 23 to 42.")
-
-(defconst standoff-pos-markup-type 1
-  "Position of a markup element's type.
-See `standoff-pos-markup-inst-id' for an example.")
-
-(defconst standoff-pos-startchar 2
-  "Position of a markup element's starting character's offset.
-See `standoff-pos-markup-inst-id' for an example.")
-
-(defconst standoff-pos-endchar 3
-  "Position of a markup element's end character's offset.
-See `standoff-pos-markup-inst-id' for an example.")
 
 (defun standoff-dummy-create-markup (buf startchar endchar markup-type)
   "Create a markup element and store it in dummy backend.
@@ -177,16 +156,9 @@ edited by Xah Lee and other, taken from URL
   :group 'standoff-dummy
   :type 'function)
 
-(defconst standoff-pos-subject 0
-  "The position of a relation's subject.
-I.e. the position in a list representing a relation between
-markup elements.")
-
-(defconst standoff-pos-predicate 1
-  "The position of a relation's predicate.")
-
-(defconst standoff-pos-object 2
-  "The position of a relations object.")
+;;
+;; Relations
+;;
 
 (defun standoff-dummy-used-predicates (buf subj-id obj-id)
   "Returns a list of predicates used for similar subject/object combinations.
