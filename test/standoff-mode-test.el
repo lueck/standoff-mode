@@ -27,7 +27,7 @@
   (should (member "beispiel" (standoff-markup-types-from-overlay-definition)))
   (should-not (member "fail" (standoff-markup-types-from-overlay-definition)))
   (standoff-test-utils-restore-old-config))
-  
+
 (ert-deftest standoff-markup-type-completion-test ()
   "Testing the completion list for markup types.
 This list depends on the value of
@@ -200,6 +200,46 @@ This list depends on the value of
     (should (= (length (funcall standoff-markup-read-function test-buffer)) 1))    
     ;; should have removed the overlay
     (should (= (length (overlays-at 445)) 0))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
+(ert-deftest standoff-relation-completion-test ()
+  "Test highlightning markup from dummy backend."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3))
+    (standoff-markup-number-mapping-setup)
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
+    (setq id2 (standoff-dummy-create-markup test-buffer 484 537 "example"))
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    (standoff-dummy-create-relation test-buffer id3 "marks" id1)
+    (setq standoff-predicate-require-match 'confirm)
+    ;; should include used predicate in completion list
+    (should (= (length (standoff-predicate-completion test-buffer id3 id2)) 1))
+    (should (equal (standoff-predicate-completion test-buffer id3 id2) '("marks")))
+    ;; should return an empty completion list
+    (should (= (length (standoff-predicate-completion test-buffer id1 id2)) 0))
+    ;; should not include used predicate
+    (setq standoff-predicate-require-match t)
+    (should (= (length (standoff-predicate-completion test-buffer id3 id2)) 0))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
+(ert-deftest standoff-relation-creation-deletion-test ()
+  "Test highlightning markup from dummy backend."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3))
+    (standoff-markup-number-mapping-setup)
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
+    (setq id2 (standoff-dummy-create-markup test-buffer 484 537 "example"))
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    ;; create relation
+    (standoff-markup-relate id3 "marks" id1)
+    ;; should have created a relation
+    (should (= (length (funcall standoff-relations-read-function test-buffer)) 1))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
 ;; run tests and exit

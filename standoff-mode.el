@@ -245,12 +245,6 @@ string."
       ;; we use (format "%s" ...) to make a string from the symbol
       (substring (format "%s" value-symbol) value-front-length))))
 
-(defun standoff--overlay-get-markup-id-at-point (error-message)
-  (let ((overlays (overlays-at (point))))
-    (if (> (length overlays) 1)
-	(error error-message)
-      (string-to-number (standoff--overlay-property-get (car overlays) "id")))))
-
 (defun standoff--normalize-markup-inst-id (id)
   "Cast ID of markup instance to the format returned by `standoff--overlay-property-get'.
 This is used in `standoff-highlight-markup-range' to check if a
@@ -468,8 +462,10 @@ markup element or range."
     ;;(message "n: %s, id: %s" number markup-inst-id)
     (standoff-highlight-markup (point-min) (point-max) nil markup-inst-id)))
 
+;; Selection of highlightened markup
+
 (defun standoff-highlight-markup--select (point)
-  "Returns the highlightened markup range at point.
+  "Returns the *overlay* for the markup range at point.
 This will throw an error if there's more than one highlightened
 standoff markup range at point, because the selection is
 ambiguous then."
@@ -483,6 +479,21 @@ ambiguous then."
     (when (cdr ovlys)
       (error "More than one highlightened markup element found. Please use the functions for hiding markup to make your selection unambiguous"))
     (car ovlys)))
+
+(defun standoff-highlight-markup--get-id (point error-message)
+  "Returns the id of the highlightened markup element at POINT.
+If there is not exactly one standoff highlightning at point, the
+show ERROR-MESSAGE."
+  (let ((ovlys '()))
+    (mapcar #'(lambda (x) (when (equal (standoff--overlay-property-get x "standoff")
+				       (symbol-name t))
+			    (push x ovlys)))
+	    (overlays-at point))
+    (if (= (length ovlys) 1)
+	(standoff-markup-get-by-number
+	 (current-buffer)
+	 (string-to-number (standoff--overlay-property-get (car ovlys) "number")))
+      (error error-message))))
 
 ;;
 ;; Navigate
@@ -508,36 +519,66 @@ ambiguous then."
 ;; Relations
 ;;
 
-(defcustom standoff-markup-relation-name-require-match 'confirm
-  "How restrictive has input of relation names to be? `t' for no
-other names than already know names, `'confirm' to allow other
-than already known names, but ask for confirmation."
+(defcustom standoff-predicate-require-match 'confirm
+  "Defines how restrictive relation types are handled.
+`t' for no other names than already know names, `confirm' to
+allow other than already known names, but ask for confirmation."
   :group 'standoff
   :type 'symbol)
 
+(defcustom standoff-predicates-allowed-function 'standoff-predicates-allowed-from-elisp
+  "")
+
+(defun standoff-predicates-allowed-from-elisp (buf subj-id obj-id)
+  ""
+  ;; TODO
+  '())
+
+(defun standoff-predicate-completion (buf subj-id obj-id)
+  "Return a list of valid predicates for a combination of subject and object.
+This may add labels to improve usability."
+  ;; TODO: add labels
+  (cond ((equal standoff-predicate-require-match t)
+	 (funcall standoff-predicates-allowed-function buf subj-id obj-id))
+	(t ;; 'confirm OR nil
+	 (append (funcall standoff-predicates-used-function buf subj-id obj-id)
+		 (funcall standoff-predicates-allowed-function buf subj-id obj-id)))))
+
+(defun standoff-predicate-from-user-input (buf predicate)
+  "Make a real predicate from user input.
+User input may still contain the predicates label."
+  ;; TODO: remove labels
+  predicate)
+
 (defun standoff-markup-relate (subject-id predicate object-id)
-  "Create a relation between the markup element given by
-SUBJECT-ID and the markup element given by OBJECT-ID. Relations
-have the form of a predication like in RDF: subject predicate
-object. The markup element at point serves as subject, the object
-must be given as OBJECT-ID, the relation given by RELATION."
+  "Create a directed graph modelling a relation between two markup elements.
+This establishes a rdf-like relation between markup element as
+subject given by SUBJECT-ID and a markup element as object given
+by OBJECT-ID. The relation is of type PREDICATE, so the graph has
+the form \"subject predicate object\". When called interactively,
+the markup element at point serves as subject, the object must be
+given by the number mapping to its id."
   (interactive
-   (let* ((subj-id (standoff--overlay-get-markup-id-at-point "This needs exactly one highlightend markup element at point"))
-	  (obj-id (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's ID is %i. Please enter the ID (number) of the markup element that serves as the relation's object: " subj-id)))
-	  (obj-id-passed (if (equal subj-id obj-id)
-			     (error "The relation's object must not be the relation's subject")
-			   obj-id))
-	  (predicate-name (completing-read "Predicate: "
-					   (funcall standoff-predicate-names-function (current-buffer) subj-id obj-id)
-					   nil
-					   standoff-markup-relation-name-require-match)))
-     (if (equal subj-id obj-id)
-	 (error "The relation's object must not be the relation's subject")
-       (list subj-id predicate-name obj-id-passed))))
+   (let* ((subj-ovly (standoff-highlight-markup--select (point)))
+	  (subj-number (number-to-string (standoff--overlay-property-get subj-ovly "number")))
+	  (subj-id (standoff-markup-get-by-number (current-buffer) subj-number))
+	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlightend markup element at point"))
+	  (obj-number (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's number is %i. Please enter the number of the markup element that serves as the relation's object: " subj-id)))
+	  (obj-is-not-subj (or (not (= subj-number obj-number))
+			       (error "The relation's object must not be the relation's subject")))
+	  (obj-id (or (standoff-markup-get-by-number (current-buffer) obj-number)
+		      (error "Invalid markup number")))
+	  (predicate-type
+	   (completing-read "Predicate: "
+			    (standoff-predicate-completion (current-buffer))
+			    nil
+			    standoff-markup-relation-name-require-match))
+	  (predicate (standoff-predicate-from-user-input (current-buffer) predicate-type)))
+     (list subj-id predicate obj-id)))
   (message "Creating relation %s %s %s." subject-id predicate object-id)
-  (if (funcall standoff-markup-write-relation (current-buffer) subject-id predicate object-id)
+  (if (funcall standoff-relation-create-function (current-buffer) subject-id predicate object-id)
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
-    (error "Storing relation failed")))
+    (error "Creating relation failed")))
 
 ;;
 ;; Major mode
