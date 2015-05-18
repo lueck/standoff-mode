@@ -124,42 +124,34 @@ buffer)."
 
 (add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
 
-(defun standoff-markup-delete-range-at-point ()
+(defun standoff-markup-delete-range-at-point (point)
   "Delete the range of a markup element at point.
 The range is identified by the overlay's properties. So this
 works only if there is one and exactly one overlay."
 ;; TODO: Collect information about related items when
 ;; asking "Do you really ...? (yes or no)"
-  (interactive)
+  (interactive "d")
   (save-restriction
     (widen)
     (overlay-recenter (point))
-    (let* ((overlays (overlays-at (point)))
-	   (ovly (car overlays))
-	   (startchar)
-	   (endchar)
-	   (markup-name)
-	   (markup-id)
-	   (markup-ranges)
+    (let* ((ovly (standoff-highlight-markup--select point))
+	   (startchar (overlay-start ovly))
+	   (endchar (overlay-end ovly))
+	   (markup-type (standoff--overlay-property-get ovly "type"))
+	   (markup-number (string-to-number (standoff--overlay-property-get ovly "number")))
+	   (markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
+	   (markup-ranges (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-inst-id))
 	   (precondition)
 	   (deleted))
-      (if (> (length overlays) 1)
-	  (error "There is more than one markup element at point. Not deleting anything")
-	(setq startchar (overlay-start ovly))
-	(setq endchar (overlay-end ovly))
-	(setq markup-name (standoff--overlay-property-get ovly "name"))
-	(setq markup-id (string-to-number (standoff--overlay-property-get ovly "id")))
-	;; (message (format "%i %i %s %i" startchar endchar markup-name markup-id))
-	(setq markup-ranges (funcall standoff-markup-read-ranges-function (current-buffer) nil nil nil markup-id))
-	;; (message "%s" (length markup-ranges))
-	(if (> (length markup-ranges) 1)
-	    (setq precondition (y-or-n-p (format "Do you really want to delete this range of '%s' %s? " markup-name markup-id)))
-	  (setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-id markup-name))))
-	(when precondition
-	  (setq deleted (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-name markup-id))
-	  (when deleted
-	    (message "... deleted.")
-	    (standoff-hide-markup-at-point)))))))
+      ;; (message "%s" (length markup-ranges))
+      (if (> (length markup-ranges) 1)
+	  (setq precondition (y-or-n-p (format "Do you really want to delete this range of '%s' %s? " markup-type markup-inst-id)))
+	(setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-inst-id markup-type))))
+      (when precondition
+	(setq deleted (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-type markup-inst-id))
+	(when deleted
+	  (delete-overlay ovly)
+	  (message "... deleted."))))))
 
 ;;
 ;; Highlighning and hiding markup
@@ -475,6 +467,22 @@ markup element or range."
       (error "No markup element mapping to number %s" number))
     ;;(message "n: %s, id: %s" number markup-inst-id)
     (standoff-highlight-markup (point-min) (point-max) nil markup-inst-id)))
+
+(defun standoff-highlight-markup--select (point)
+  "Returns the highlightened markup range at point.
+This will throw an error if there's more than one highlightened
+standoff markup range at point, because the selection is
+ambiguous then."
+  (let ((ovlys '()))
+    (mapcar #'(lambda (x) (when (equal (standoff--overlay-property-get x "standoff")
+				       (symbol-name t))
+			    (push x ovlys)))
+	    (overlays-at point))
+    (unless (car ovlys)
+      (error "No highlightened markup element found"))
+    (when (cdr ovlys)
+      (error "More than one highlightened markup element found. Please use the functions for hiding markup to make your selection unambiguous"))
+    (car ovlys)))
 
 ;;
 ;; Navigate

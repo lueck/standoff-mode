@@ -3,6 +3,19 @@
 (require 'standoff-dummy)
 ;;(require 'standoff-mode)
 
+;; Monkey patching in order to make tests non-interactive
+
+(when noninteractive
+
+  (setq standoff-y-or-n-p nil)
+  (defun y-or-n-p (prompt)
+    standoff-y-or-n-p)
+
+  (setq standoff-yes-or-no-p nil)
+  (defun yes-or-no-p (prompt)
+    standoff-yes-or-no-p)
+)
+  
 ;; Setup utility functions
 
 (defun standoff-test-utils-save-old-config ()

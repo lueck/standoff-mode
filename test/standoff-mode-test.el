@@ -1,8 +1,20 @@
+:; exec emacs -Q --script "$0" -- "$@"
+
 ;; WARNING: Close your production files before running tests! Restart
 ;; Emacs before going from testing to production again, because it is
 ;; not shure, that all configuration is restored correctly. You might
-;; loose data!
+;; loose data! -- OR BETTER: Run this test file in batch mode.
 
+(when noninteractive
+  ;; set load path to . and ..
+  (setq standoff-lib-dir (concat (file-name-directory load-file-name) "/.."))
+  (push standoff-lib-dir load-path)
+  (push (file-name-directory load-file-name) load-path)
+  ;; pop "--" from argv
+  (setq argv (cdr argv))
+  )
+
+(require 'ert)
 (require 'standoff-test-utils)
 (require 'standoff-mode)
 
@@ -74,15 +86,29 @@ This list depends on the value of
     ;; 2.a) should not delete non-standoff overlays +
     ;; 2.b) filter region
     (standoff-hide-markup 429 430)
-    (should (= (length (overlays-at 429)) 1))
     (should (= (length (overlays-at 528)) 2))
+    ;; non-standoff overlays should stay
+    (should (= (length (overlays-at 429)) 1))
     ;; 2.c) filter id
     (standoff-hide-markup nil nil nil (standoff-markup-get-number test-buffer "second"))
     (should (= (length (overlays-at 528)) 1))
+    ;; non-standoff overlays should stay
+    (should (= (length (overlays-at 429)) 1))
     ;; 2.d) filter for type
     (standoff-highlight-markup-range test-buffer 484 537 "beispiel" "third")
     (standoff-hide-markup nil nil "beispiel")
     (should (= (length (overlays-at 528)) 1))
+    ;; non-standoff overlays should stay
+    (should (= (length (overlays-at 429)) 1))
+    ;; 3. Select
+    ;; should not find non-standoff overlays
+    (should-error (standoff-highlight-markup--select 430))
+    (should (= (length (overlays-at 528)) 1))
+    ;; should find
+    (should (standoff-highlight-markup--select 528))
+    (standoff-highlight-markup-range test-buffer 484 537 "escalmpel" "fourth")
+    ;; should fail because ambiguous
+    (should-error (standoff-highlight-markup--select 528))
     (standoff-test-utils-teardown-source-buffer test-buffer)
     ))
 
@@ -135,7 +161,6 @@ This list depends on the value of
     (should (= (length (overlays-at 528)) 2))
     ;; testing numerical functions
     (let ((n3 (standoff-markup-get-number test-buffer id3)))
-      (message "id: %s , n: %s" id3 n3)
       (standoff-highlight-markup-by-number n3)
       ;;(should (= (length (overlays-at 429)) 1));; Fixme!
       (standoff-highlight-markup-buffer)
@@ -144,3 +169,39 @@ This list depends on the value of
       )
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
+(ert-deftest standoff-markup-creation-deletion-test ()
+  "Test highlightning markup from dummy backend."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(n1)
+	(standoff-y-or-n-p t))
+    (standoff-markup-number-mapping-setup)
+    ;; 1. standoff-markup-region
+    (standoff-markup-region 445 483 "example")
+    ;; should have stored markup to the backend
+    (should (= (length (funcall standoff-markup-read-function test-buffer)) 1))
+    ;; should have highlightened markup
+    (should (= (length (overlays-at 445)) 1))
+    ;; 2. standoff-markup-region-continue
+    ;; get the number
+    (setq n1 (standoff-markup-get-number test-buffer (nth standoff-pos-markup-inst-id (car (funcall standoff-markup-read-function test-buffer))))) 
+    (standoff-markup-region-continue 528 537 n1)
+    ;; should have stored to backend
+    (should (= (length (funcall standoff-markup-read-function test-buffer)) 2))
+    ;; should be of same type
+    (should
+     (equal
+      (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function test-buffer)))
+      (nth standoff-pos-markup-type (cadr (funcall standoff-markup-read-function test-buffer)))))
+    ;; should have highlightened markup
+    (should (= (length (overlays-at 528)) 1))
+    ;; 3. standoff-markup-delete-range-at-point
+    (standoff-markup-delete-range-at-point 445)
+    ;; should have removed from the backend
+    (should (= (length (funcall standoff-markup-read-function test-buffer)) 1))    
+    ;; should have removed the overlay
+    (should (= (length (overlays-at 445)) 0))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
+;; run tests and exit
+(when noninteractive
+  (ert-run-tests-batch-and-exit (car argv)))

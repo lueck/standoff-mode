@@ -1,8 +1,21 @@
+:; exec emacs -Q --script "$0" -- "$@"
+
 ;; WARNING: Close your production files before running tests! Restart
 ;; Emacs before going from testing to production again, because it is
 ;; not shure, that all configuration is restored correctly. You might
-;; loose data!
+;; loose data! -- OR BETTER: Run this test file in batch mode.
 
+(when noninteractive
+  ;; set load path to . and ..
+  (setq standoff-lib-dir (concat (file-name-directory load-file-name) "/.."))
+  (push standoff-lib-dir load-path)
+  (push (file-name-directory load-file-name) load-path)
+  ;; pop "--" from argv
+  (setq argv (cdr argv))
+  )
+
+(require 'ert)
+(require 'standoff-test-utils)
 (require 'standoff-dummy)
 
 (ert-deftest standoff-dummy-markup-create-test ()
@@ -271,3 +284,9 @@
     (standoff-dummy-delete-relation test-buffer markup-id3 "marks" markup-id2)
     (should (= (length standoff-dummy-relations) 1))
     (kill-buffer test-buffer)))
+
+
+
+;; run tests and exit
+(when noninteractive
+  (ert-run-tests-batch-and-exit (car argv)))
