@@ -43,7 +43,7 @@ calculated. The hash will show up in the minibuffer."
     (setq-local standoff-source-md5 (md5 (current-buffer))))
   (message "The documents md5 checksum is: %s" standoff-source-md5))
 
-(add-hook 'standoff-mode-hook 'standoff-source-checksum-set)
+(add-hook 'standoff-mode-hook 'standoff-source-checksum)
 
 ;;
 ;; creating and deleting markup
@@ -661,8 +661,9 @@ further arguments."
   (interactive
    (list (read-file-name "File to be dumped to: "
 			 nil
-			 (standoff-dump-filename-default)
-			 'confirm)))
+			 nil
+			 'confirm
+			 (file-relative-name (standoff-dump-filename-default)))))
   (let ((source-buf (current-buffer))
 	(dump-buf (find-file-noselect dump-file)))
     (save-excursion
@@ -707,6 +708,7 @@ further arguments."
     (define-key map "a" 'standoff-annotate-markup-element-at-point)
     (define-key map "n" 'standoff-navigate-next)
     (define-key map "p" 'standoff-navigate-previous)
+    (define-key map "u" 'standoff-dump-elisp)
     map))
 
 (easy-menu-define standoff-menu standoff-mode-map
@@ -733,6 +735,8 @@ further arguments."
     ["--" nil]
     ["Navigate to next highlighted element" standoff-navigate-next]
     ["Navigate to previous highlighted element" standoff-navigate-previous]
+    ["--" nil]
+    ["Dump to file (SAVE)" standoff-dump-elisp]
     ))
 
 (defvar standoff-markup-range-local-map
@@ -747,7 +751,8 @@ further arguments."
 (define-derived-mode standoff-mode special-mode "Stand-Off"
   "Stand-Off mode is an Emacs major mode for creating stand-off
 markup and annotations. It makes the file (the buffer) which the
-the markup refers to read only.
+the markup refers to read only, and the markup is stored
+externally (stand-off).
 
 Since text insertion to a file linked by standoff markup is not
 sensible at all, keyboard letters don't allow inserting text but
