@@ -41,7 +41,7 @@ interactively, but will have no effect, if the hash was already
 calculated. The hash will show up in the minibuffer."
   (unless standoff-source-md5
     (setq-local standoff-source-md5 (md5 (current-buffer))))
-  (message "The documents md5 checksum is: %s" standoff-source-md5))
+  (message "The document's md5 checksum is: %s" standoff-source-md5))
 
 (add-hook 'standoff-mode-hook 'standoff-source-checksum)
 
