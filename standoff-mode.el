@@ -23,6 +23,29 @@
 (require 'standoff-dummy)
 
 ;;
+;; Checksum of source document
+;;
+
+(make-variable-buffer-local 'standoff-source-md5)
+
+(defun standoff-source-checksum ()
+  (interactive)
+  "Set the checksum of the source document if and only if not yet set.
+Stand-off markup only makes sense, if the source document is
+stable. Otherwise the references to it via character offsets get
+broken. This function makes an md5 hash and stores it to the
+buffer-local variable `standoff-source-md5'.  This function will
+be called via a mode hook, so that the checksum is there right
+away for running checks against it. It can be called
+interactively, but will have no effect, if the hash was already
+calculated. The hash will show up in the minibuffer."
+  (unless standoff-source-md5
+    (setq-local standoff-source-md5 (md5 (current-buffer))))
+  (message "The documents md5 checksum is: %s" standoff-source-md5))
+
+(add-hook 'standoff-mode-hook 'standoff-source-checksum-set)
+
+;;
 ;; creating and deleting markup
 ;;
 
@@ -606,6 +629,61 @@ given by the number mapping to its id."
   (if (funcall standoff-relation-create-function (current-buffer) subject-id predicate object-id)
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
     (error "Creation of relation failed")))
+
+;;
+;; Dumping
+;;
+
+(defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-source-md5)
+  "A list of variables and function pointers to be dumped to elisp expressions.
+The dumper function `standoff-dump-elisp' will variables and even
+try to call the function given in a function pointer. Such
+functions should take a buffer as argument and should not require
+further arguments."
+  :group 'standoff
+  :type 'list
+  )
+
+(defun standoff-dump-filename-default ()
+  "Returns a default dump file name."
+  (concat (buffer-file-name) ".dump.el" ))
+
+(defun standoff-dump--print-quoted (to-buf var-name var-value)
+  "Dump variable VAR-NAME with value VAR-VALUE that is a list to buffer TO-BUF."
+  (print (list 'setq var-name (list 'quote var-value)) to-buf))
+
+(defun standoff-dump--print (to-buf var-name var-value)
+  "Dump variable VAR-NAME with value VAR-VALUE to buffer TO-BUF."
+  (print (list 'setq var-name var-value) to-buf))
+
+(defun standoff-dump-elisp (dump-file)
+  "Dump the stand-off markup in the current buffer to file DUMP-FILE."
+  (interactive
+   (list (read-file-name "File to be dumped to: "
+			 nil
+			 (standoff-dump-filename-default)
+			 'confirm)))
+  (let ((source-buf (current-buffer))
+	(dump-buf (find-file-noselect dump-file)))
+    (save-excursion
+      (set-buffer dump-buf)
+      (erase-buffer)
+      ;; make source buffer the current buffer, because the back-end
+      ;; may be buffer-local like the dummy back-end
+      (set-buffer source-buf)
+      (dolist (var standoff-dump-vars)
+	(let ((dump-var-name (intern (format "%s-dumped" var))))
+	  (if (symbolp (symbol-value var))
+	      (cond ((functionp (symbol-value var))
+		     (standoff-dump--print-quoted dump-buf dump-var-name (funcall (symbol-value var) source-buf)))
+		    (t (message "Left type %s: %s" var (type-of (symbol-value var)))))
+	    (cond
+	     ((stringp (symbol-value var))
+	      (standoff-dump--print dump-buf dump-var-name (symbol-value var)))
+	     (t (message "Left type %s: %s" var (type-of (symbol-value var))))))))
+      (set-buffer dump-buf)
+      (save-buffer)
+      (kill-buffer))))
 
 ;;
 ;; Major mode
