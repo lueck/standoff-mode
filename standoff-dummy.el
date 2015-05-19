@@ -266,12 +266,40 @@ function."
 
 (defun standoff-dummy--backend-reset ()
   "Reset the dummy backend."
-  (setq-local standoff-dummy-checksum nil)
   (setq-local standoff-dummy-markup '())
   (setq-local standoff-dummy-relations '()))
 
+(defcustom standoff-dummy-highlight-after-load t
+  "Whether or not to highlight all markup in the buffer after loading from file."
+  :group 'standoff-dummy
+  :type 'boolean)
+
+(defun standoff-dummy-load-dumped (fname)
+  "Load markup relations etc. from a dumped file FNAME."
+  (require 'standoff-mode)
+  (interactive
+   (list (read-file-name "File to be loaded: "
+			 nil
+			 nil
+			 'confirm
+			 (file-relative-name (standoff-dump-filename-default)))))
+  (load fname)
+  (unless (equal (md5 (current-buffer)) standoff-source-md5-dumped)
+    (error "Did you edit the file? Checksum does not match. Not loading"))
+  (setq standoff-dummy-markup standoff-markup-read-function-dumped
+	standoff-dummy-relations standoff-relations-read-function-dumped)
+  (message "File %s successfully loaded." fname)
+  (when standoff-dummy-highlight-after-load
+    (standoff-highlight-markup-buffer)))
+
 (defun standoff-dummy-backend-setup ()
-  (standoff-dummy--backend-reset))
+  "Setup the dummy backend. Called by mode hook."
+  ;; reset and make buffer-local
+  (standoff-dummy--backend-reset)
+  ;; try to load from file
+  (require 'standoff-mode)
+  (when (file-readable-p (standoff-dump-filename-default))
+    (standoff-dummy-load-dumped (standoff-dump-filename-default))))
 
 (add-hook 'standoff-mode-hook 'standoff-dummy-backend-setup)
 
@@ -279,8 +307,7 @@ function."
   "Display the dummy backend in the minibuffer.
 This may be usefull for development."
   (interactive)
-  (message "%s" (list standoff-dummy-checksum
-		      standoff-dummy-markup
+  (message "%s" (list standoff-dummy-markup
 		      standoff-dummy-relations)))
 
 ;; Registration / Set up
