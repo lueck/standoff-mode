@@ -116,7 +116,7 @@
     (standoff-dummy-delete-range test-buffer 47 49 "example" markup-id)
     (should (equal (length standoff-dummy-markup) 2))
     ;; delete inexistant markup range
-    (should-error (standoff-dummy-delete-range test-buffer 23 24 "example" markup-id))
+    (should-not (standoff-dummy-delete-range test-buffer 23 24 "example" markup-id))
     (should (equal (length standoff-dummy-markup) 2))
     (kill-buffer test-buffer)))
 
@@ -132,15 +132,21 @@
     (should (= (length (standoff-dummy-read-markup test-buffer)) 3))
     (should (= (length (standoff-dummy-read-markup test-buffer nil nil "example")) 2))
     (should (= (length (standoff-dummy-read-markup test-buffer nil nil nil markup-id)) 2))
-    ;; test startchar / endchar boundaries
+    ;; 1) test startchar / endchar boundaries
+    ;; a) should include overlapping ranges
     (should (= (length (standoff-dummy-read-markup test-buffer 18 22)) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 1 22)) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 48 55)) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32)) 2))
-    ;; should return the same if startchar < endchar
+    ;; b) should include completely contained ranges
+    (should (= (length (standoff-dummy-read-markup test-buffer 22 44)) 2))
+    (should (= (length (standoff-dummy-read-markup test-buffer 46 50)) 1))
+    ;; c) should no include non-overlapping an non-contained ranges
+    (should (= (length (standoff-dummy-read-markup test-buffer 1 15)) 0))
+    ;; 2) should return the same if startchar < endchar
     (should (= (length (standoff-dummy-read-markup test-buffer 32 22)) 2))
     (should-error (standoff-dummy-read-markup test-buffer 22))
-    ;; combinations of range and markup-type and markup-inst-id 
+    ;; 3) combinations of range and markup-type and markup-inst-id
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "example")) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 nil markup-id)) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "marker" markup-id)) 0))

@@ -114,7 +114,10 @@ This list depends on the value of
 
 (ert-deftest standoff-markup-highlightning-with-backend-test ()
   "Test highlightning markup from dummy backend."
-  (let ((test-buffer (standoff-test-utils-setup-source-buffer)))
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3))
     (standoff-markup-number-mapping-setup)
     ;; create some markup in the backend
     (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
@@ -130,7 +133,7 @@ This list depends on the value of
     (standoff-hide-markup-region 429 430)
     (should (= (length (overlays-at 429)) 0))
     (should (= (length (overlays-at 528)) 2))
-    (standoff-hide-markup-by-number id1)
+    (standoff-hide-markup-by-number (standoff-markup-get-number test-buffer id1))
     (should (= (length (overlays-at 528)) 1))
     (goto-char 528)
     (standoff-hide-markup-at-point)

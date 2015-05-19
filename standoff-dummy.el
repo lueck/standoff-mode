@@ -15,7 +15,8 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with SPARQL mode. If not, see <http://www.gnu.org/licenses/>.
+;; along with standoff-mode. If not, see
+;; <http://www.gnu.org/licenses/>.
 
 
 (require 'standoff-api)
@@ -85,6 +86,8 @@ applied to the result."
       (and (or (and (not startchar) (not endchar))
 	       (or (and (<= (nth standoff-pos-startchar range) startchar)
 			(>= (nth standoff-pos-endchar range) startchar))
+		   (and (>= (nth standoff-pos-startchar range) startchar)
+			(<= (nth standoff-pos-endchar range) endchar))
 		   (and (<= (nth standoff-pos-startchar range) endchar)
 			(>= (nth standoff-pos-endchar range) endchar))))
 	   (or (not markup-type)
@@ -102,18 +105,20 @@ MARKUP-INST-ID in context of buffer BUF."
   (let ((old-markup standoff-dummy-markup) ;; make error tolerant
 	(old-length (length standoff-dummy-markup))
 	(new-markup '())
-	(range))
+	(range)
+	(deleted nil))
     (while old-markup
       (setq range (car old-markup))
-      (when (not (and (equal (nth standoff-pos-markup-inst-id range) markup-inst-id)
+      (if (and (equal (nth standoff-pos-markup-inst-id range) markup-inst-id)
 		      (equal (nth standoff-pos-markup-type range) markup-type)
 		      (equal (nth standoff-pos-startchar range) startchar)
-		      (equal (nth standoff-pos-endchar range) endchar)))
+		      (equal (nth standoff-pos-endchar range) endchar))
+	  (setq deleted t)
 	(setq new-markup (cons range new-markup)))
       (setq old-markup (cdr old-markup)))
-    (if (= (length new-markup) old-length)
-	(error "No markup found")
-      (setq standoff-dummy-markup new-markup))))
+    (when deleted
+      (setq standoff-dummy-markup new-markup))
+    deleted))
 
 (defun standoff-dummy-markup-types (buf)
   "Return a list of the types of markup used in buffer BUF."
@@ -266,7 +271,7 @@ function."
   (setq-local standoff-dummy-relations '()))
 
 (defun standoff-dummy-backend-setup ()
-  (standoff-dummy-backend-reset))
+  (standoff-dummy--backend-reset))
 
 (add-hook 'standoff-mode-hook 'standoff-dummy-backend-setup)
 

@@ -1,4 +1,4 @@
-;;; standoff-mode.el --- Create stand-off markup
+;;; standoff-mode.el --- Create stand-off annotations and markup
 
 ;; Copyright (C) 2015 Christian Lueck
 
@@ -15,7 +15,8 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with SPARQL mode. If not, see <http://www.gnu.org/licenses/>.
+;; along with standoff-mode. If not, see
+;; <http://www.gnu.org/licenses/>.
 
 
 (require 'standoff-api)
@@ -90,7 +91,7 @@ backend, e.g. by automatic incrementation of an integer."
 	  "Name of markup element: "
 	  (standoff-markup-type-completion (current-buffer))
 	  nil
-	  standoff-markup-require-name-require-match)))
+	  standoff-markup-type-require-match)))
   (let ((markup-id nil))
     (save-restriction
       (widen)
@@ -105,30 +106,30 @@ backend, e.g. by automatic incrementation of an integer."
 			      (current-buffer) beg end markup-type markup-id))))
     (deactivate-mark)))
 
-(defun standoff-markup-region-continue (beg end markup-id)
+(defun standoff-markup-region-continue (beg end markup-number)
   "Add selected region as a new range continueing an existing markup element.
 The markup element is identified by MARKUP-ID. The range is given
 by BEG and END or point and mark, aka the region. This function
 enables the user to create discontinues markup."
   (interactive "r\nNIdentifying number of markup element to be continued: ")
-  (let* ((markup-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-id))))
+  (let* ((markup-id (or (standoff-markup-get-by-number (current-buffer) markup-number)
+			(error "No markup element with number %i found" markup-number)))
+	 (markup-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-id))))
 	 (duplicate (funcall standoff-markup-read-function (current-buffer) beg end markup-type markup-id))
 	 (markup-id-from-backend nil))
-    (if (not markup-type)
-	(error "No markup element with ID %i found" markup-id)
-      (if duplicate
-	  (error "Overlapping markup with the same id and element name! Not creating a duplicate")
-	(save-restriction
-	  (widen)
-	  (save-excursion
-	    (setq markup-id-from-backend (funcall standoff-markup-range-add-function (current-buffer) beg end markup-id))
-	    ;;(message "Hi: %s" markup-id-from-backend)
-	    (when markup-id-from-backend
-	      ;; highlight the new markup
-	      (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id-from-backend)
-	      ;; run hook to notify success
-	      (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-type markup-id-from-backend))))
-	(deactivate-mark)))))
+    (if duplicate
+	(error "Overlapping markup with the same id and element name! Not creating a duplicate")
+      (save-restriction
+	(widen)
+	(save-excursion
+	  (setq markup-id-from-backend (funcall standoff-markup-range-add-function (current-buffer) beg end markup-id))
+	  ;;(message "Hi: %s" markup-id-from-backend)
+	  (when markup-id-from-backend
+	    ;; highlight the new markup
+	    (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id-from-backend)
+	    ;; run hook to notify success
+	    (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-type markup-id-from-backend))))
+      (deactivate-mark))))
 
 (defun standoff-markup-notify (buf startchar endchar markup-type markup-id)
   "Notify the creation of a markup element or range.
@@ -137,7 +138,7 @@ This is a handler function that can be hooked to the
 an markup is being done. This function does nothing but notify
 the user with a message in the minibuffer (and in the *Messages*
 buffer)."
-  (message "Annotating from %i to %i as %s with id %i." 
+  (message "Annotating from %i to %i as %s with id %s." 
 	   startchar endchar markup-type markup-id))
 
 (add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
@@ -160,14 +161,18 @@ works only if there is one and exactly one overlay."
 	   (markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
 	   (markup-ranges (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-inst-id))
 	   (precondition)
-	   (deleted))
+	   (deleted nil)
+	   (last-range nil))
       ;; (message "%s" (length markup-ranges))
       (if (> (length markup-ranges) 1)
 	  (setq precondition (y-or-n-p (format "Do you really want to delete this range of '%s' %s? " markup-type markup-inst-id)))
-	(setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-inst-id markup-type))))
+	(setq precondition (yes-or-no-p (format "Do you really want to delete markup element %s, which is a '%s', and all it's related items? " markup-inst-id markup-type))
+	      last-range t))
       (when precondition
 	(setq deleted (funcall standoff-markup-delete-range-function (current-buffer) startchar endchar markup-type markup-inst-id))
 	(when deleted
+	  (when last-range
+	    (standoff-markup-remove-number-mapping (current-buffer) markup-inst-id))
 	  (delete-overlay ovly)
 	  (message "... deleted."))))))
 
@@ -304,11 +309,17 @@ If no ID maps to number, nil is returned."
 	     standoff-markup-number-mapping)
     markup-inst-id))
 
+(defun standoff-markup-remove-number-mapping (buf markup-inst-id)
+  "Remove a markup-inst-id to number mapping from the hashtable.
+This should be called when all ranges of a markup instance have
+been deleted."
+  (remhash markup-inst-id standoff-markup-number-mapping))
+
 (defun standoff-highlight-markup-range (buf startchar endchar markup-type markup-inst-id)
 "Highlight a markup range.
 This is the workhorse for highlightning markup in standoff
 mode. It highlights a range of text given by STARTCHAR and
-ENDCHAR in the context of buffer BUF. The range is highlightened
+ENDCHAR in the context of buffer BUF. The range is highlighted
 as MARKUP-TYPE and is assigned MARKUP-INST-ID. A number is also
 assigned to it for easy access by the user. This number is not
 stable over working sessions, but assigned on a per session
@@ -390,7 +401,7 @@ reused by more specific interactive functions for hiding markup."
 	  "Markup type to hide, <!> for all: "
 	  (append "!" (standoff-markup-type-completion (current-buffer)))
 	  nil
-	  standoff-markup-require-name-require-match)))
+	  nil)))
   (save-excursion
     (if (or (not markup-type) (equal markup-type "!"))
 	(standoff-hide-markup)
@@ -405,7 +416,7 @@ reused by more specific interactive functions for hiding markup."
 	  "Markup type to hide, <!> for all: "
 	  (append "!" (standoff-markup-type-completion (current-buffer)))
 	  nil
-	  standoff-markup-require-name-require-match)))
+	  nil)))
   (save-excursion
     (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
       (standoff-hide-markup area-start area-end markup-type-or-nil))))
@@ -438,7 +449,7 @@ functions for highlightning markup in the current buffer. It
 calls `standoff-highlight-markup-range' to actually highlight a
 markup element or range."
   (let ((markup-elements (funcall standoff-markup-read-function (current-buffer) beg end markup-type markup-inst-id)))
-    ;;(message "id: %s ; From Backend: %s" markup-inst-id markup-elements)
+    ;; (message "from backend: %s" markup-elements)
     ;; build a list from the markup returned by the backend and apply
     ;; it to standoff-highlight-markup-range
     (dolist (range markup-elements)
@@ -456,8 +467,8 @@ markup element or range."
     (region-beginning)
     (region-end)
     (completing-read "Type of markup to show up, <!> for all: "
-		     (cons "!" (funcall standoff-markup-type-completion (current-buffer)))
-		     nil t)))
+		     (cons "!" (standoff-markup-type-completion (current-buffer)))
+		     nil nil)))
   (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
     (standoff-highlight-markup beg end markup-type-or-nil)))
 
@@ -465,26 +476,24 @@ markup element or range."
   "Highlight markup in the backend optionally filtered by markup type."
   (interactive
    (list (completing-read "Type of markup to show up, <!> for all: "
-			  (cons "!" (funcall standoff-markup-type-completion (current-buffer)))
-			  nil t)))
+			  (cons "!" (standoff-markup-type-completion (current-buffer)))
+			  nil nil)))
   (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
     (standoff-highlight-markup nil nil markup-type-or-nil)))
 
 (defun standoff-highlight-markup-by-number (number)
   "Highlight the markup element which's id is mapping to NUMBER."
-  ;; Fixme!
   (interactive "NNumber of markup element to highlight: ")
   (let ((markup-inst-id (standoff-markup-get-by-number (current-buffer) number)))
     (unless markup-inst-id
       (error "No markup element mapping to number %s" number))
-    ;;(message "n: %s, id: %s" number markup-inst-id)
-    (standoff-highlight-markup (point-min) (point-max) nil markup-inst-id)))
+    (standoff-highlight-markup nil nil nil markup-inst-id)))
 
-;; Selection of highlightened markup
+;; Selection of highlighted markup
 
 (defun standoff-highlight-markup--select (point)
   "Returns the *overlay* for the markup range at point.
-This will throw an error if there's more than one highlightened
+This will throw an error if there's more than one highlighted
 standoff markup range at point, because the selection is
 ambiguous then."
   (let ((ovlys '()))
@@ -493,13 +502,13 @@ ambiguous then."
 			    (push x ovlys)))
 	    (overlays-at point))
     (unless (car ovlys)
-      (error "No highlightened markup element found"))
+      (error "No highlighted markup element found"))
     (when (cdr ovlys)
-      (error "More than one highlightened markup element found. Please use the functions for hiding markup to make your selection unambiguous"))
+      (error "More than one highlighted markup element found. Please use the functions for hiding markup to make your selection unambiguous"))
     (car ovlys)))
 
 (defun standoff-highlight-markup--get-id (point error-message)
-  "Returns the id of the highlightened markup element at POINT.
+  "Returns the id of the highlighted markup element at POINT.
 If there is not exactly one standoff highlightning at point, the
 show ERROR-MESSAGE."
   (let ((ovlys '()))
@@ -522,7 +531,7 @@ show ERROR-MESSAGE."
   (overlay-recenter (point))
   (let ((pos (next-overlay-change (point))))
     (if (equal pos (point-max))
-	(error "Last highlightened markup element in buffer")
+	(error "Last highlighted markup element in buffer")
       (goto-char pos))))
 
 (defun standoff-navigate-previous ()
@@ -530,7 +539,7 @@ show ERROR-MESSAGE."
   (overlay-recenter (point))
   (let ((pos (previous-overlay-change (point))))
     (if (equal pos (point-min))
-	(error "First highlightened markup element in buffer")
+	(error "First highlighted markup element in buffer")
       (goto-char pos))))
 
 ;;
@@ -580,7 +589,7 @@ given by the number mapping to its id."
    (let* ((subj-ovly (standoff-highlight-markup--select (point)))
 	  (subj-number (number-to-string (standoff--overlay-property-get subj-ovly "number")))
 	  (subj-id (standoff-markup-get-by-number (current-buffer) subj-number))
-	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlightend markup element at point"))
+	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlighted markup element at point"))
 	  (obj-number (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's number is %i. Please enter the number of the markup element that serves as the relation's object: " subj-id)))
 	  (obj-is-not-subj (or (not (= subj-number obj-number))
 			       (error "The relation's object must not be the relation's subject")))
@@ -588,7 +597,7 @@ given by the number mapping to its id."
 		      (error "Invalid markup number")))
 	  (predicate-type
 	   (completing-read "Predicate: "
-			    (standoff-predicate-completion (current-buffer))
+			    (standoff-predicate-completion (current-buffer) subj-id obj-id)
 			    nil
 			    standoff-markup-relation-name-require-match))
 	  (predicate (standoff-predicate-from-user-input (current-buffer) predicate-type)))
@@ -623,8 +632,8 @@ given by the number mapping to its id."
     map))
 
 (easy-menu-define standoff-menu standoff-mode-map
-  "Menu for standoff mode"
-  '("Standoff"
+  "Menu for standoff-mode"
+  '("Stand-Off"
     ["Create new markup element" standoff-markup-region]
     ["Continue markup element" standoff-markup-region-continue]
     ["--" nil]
@@ -644,8 +653,8 @@ given by the number mapping to its id."
     ["Hide markup at point" standoff-hide-markup-at-point]
     ["Hide markup with number" standoff-hide-markup-by-number]
     ["--" nil]
-    ["Navigate to next highlightened element" standoff-navigate-next]
-    ["Navigate to previous highlightened element" standoff-navigate-previous]
+    ["Navigate to next highlighted element" standoff-navigate-next]
+    ["Navigate to previous highlighted element" standoff-navigate-previous]
     ))
 
 (defvar standoff-markup-range-local-map
@@ -657,10 +666,10 @@ given by the number mapping to its id."
     map))
 
 
-(define-derived-mode standoff-mode special-mode "Standoff"
-  "Standoff mode is an Emacs major mode for creating standoff
-markup. It makes the file (the buffer) which is linked by the
-markup read only. 
+(define-derived-mode standoff-mode special-mode "Stand-Off"
+  "Stand-Off mode is an Emacs major mode for creating stand-off
+markup and annotations. It makes the file (the buffer) which the
+the markup refers to read only.
 
 Since text insertion to a file linked by standoff markup is not
 sensible at all, keyboard letters don't allow inserting text but
