@@ -587,10 +587,10 @@ the markup element at point serves as subject, the object must be
 given by the number mapping to its id."
   (interactive
    (let* ((subj-ovly (standoff-highlight-markup--select (point)))
-	  (subj-number (number-to-string (standoff--overlay-property-get subj-ovly "number")))
+	  (subj-number (string-to-number (standoff--overlay-property-get subj-ovly "number")))
 	  (subj-id (standoff-markup-get-by-number (current-buffer) subj-number))
 	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlighted markup element at point"))
-	  (obj-number (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's number is %i. Please enter the number of the markup element that serves as the relation's object: " subj-id)))
+	  (obj-number (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's number is %i. Please enter the number of the markup element that serves as the relation's object: " subj-number)))
 	  (obj-is-not-subj (or (not (= subj-number obj-number))
 			       (error "The relation's object must not be the relation's subject")))
 	  (obj-id (or (standoff-markup-get-by-number (current-buffer) obj-number)
@@ -599,13 +599,13 @@ given by the number mapping to its id."
 	   (completing-read "Predicate: "
 			    (standoff-predicate-completion (current-buffer) subj-id obj-id)
 			    nil
-			    standoff-markup-relation-name-require-match))
+			    standoff-predicate-require-match))
 	  (predicate (standoff-predicate-from-user-input (current-buffer) predicate-type)))
      (list subj-id predicate obj-id)))
   (message "Creating relation %s %s %s." subject-id predicate object-id)
   (if (funcall standoff-relation-create-function (current-buffer) subject-id predicate object-id)
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
-    (error "Creating relation failed")))
+    (error "Creation of relation failed")))
 
 ;;
 ;; Major mode
@@ -624,8 +624,8 @@ given by the number mapping to its id."
     (define-key map "H" 'standoff-hide-markup-buffer)
     (define-key map "l" 'standoff-highlight-markup-by-number)
     (define-key map "L" 'standoff-highlight-markup-buffer)
-    (define-key map "r" 'standoff-relate-markup-element-at-point)
-    (define-key map "s" 'standoff-store-markup-element-at-point)
+    (define-key map "r" 'standoff-markup-relate)
+    ;;(define-key map "s" 'standoff-store-markup-element-at-point)
     (define-key map "a" 'standoff-annotate-markup-element-at-point)
     (define-key map "n" 'standoff-navigate-next)
     (define-key map "p" 'standoff-navigate-previous)
@@ -640,8 +640,8 @@ given by the number mapping to its id."
     ["Delete markup at point" standoff-markup-delete-range-at-point]
     ;;["Delete markup element at point" standoff-markup-delete-element-at-point]
     ["--" nil]
-    ["Store markup element as relation object" standoff-store-markup-element-at-point]
-    ["Relate markup element to stored object" standoff-relate-markup-at-point]
+    ;;["Store markup element as relation object" standoff-store-markup-element-at-point]
+    ["Relate markup element at point to some other" standoff-markup-relate]
     ["--" nil]
     ["Annotate markup element" standoff-annotate-markup-element-at-point]
     ["--" nil]
