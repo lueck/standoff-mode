@@ -34,10 +34,12 @@ variable `standoff-dummy-create-id-function'."
   (let ((markup-inst-id (funcall standoff-dummy-create-id-function
 				 standoff-dummy-markup
 				 standoff-pos-markup-inst-id)))
-    (setq standoff-dummy-markup
-	  (cons (list markup-inst-id markup-type startchar endchar)
-		standoff-dummy-markup))
-    markup-inst-id))
+    (save-excursion
+      (set-buffer buf)
+      (setq standoff-dummy-markup
+	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring startchar endchar))
+		  standoff-dummy-markup))
+      markup-inst-id)))
 
 (defun standoff-dummy-add-range (buf startchar endchar markup-inst-id)
   "Add the range (interval) to an existing markup element.
@@ -49,12 +51,14 @@ to the dummy backend's variable `standoff-dummy-markup' yust as
 MARKUP-INST-ID instead of an new one. The markup type is
 determined from the backend."
   (let ((markup-type (standoff-dummy-markup-get-type-by-inst-id buf markup-inst-id)))
-    (unless markup-type
-      (error "Invalid ID. No markup type found"))
-    (setq standoff-dummy-markup
-	  (cons (list markup-inst-id markup-type startchar endchar)
-		standoff-dummy-markup))
-    markup-inst-id))
+    (save-excursion
+      (set-buffer buf)
+      (unless markup-type
+	(error "Invalid ID. No markup type found"))
+      (setq standoff-dummy-markup
+	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring startchar endchar))
+		  standoff-dummy-markup))
+      markup-inst-id)))
 
 (defun standoff-dummy-markup-get-type-by-inst-id (buf markup-inst-id)
   "Return the markup type for the markup element.
