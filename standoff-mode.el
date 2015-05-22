@@ -37,6 +37,7 @@
 ;;; Code:
 (require 'standoff-api)
 (require 'standoff-dummy)
+(require 'standoff-xml)
 
 ;;
 ;; Checksum of source document
@@ -751,6 +752,8 @@ further arguments."
     ["--" nil]
     ["Navigate to next highlighted element" standoff-navigate-next]
     ["Navigate to previous highlighted element" standoff-navigate-previous]
+    ["--" nil]
+    ["Hide/Show XML-tags" standoff-xml-tags-invisible]
     ["--" nil]
     ["Dump to file (SAVE)" standoff-dump-elisp]
     ))
