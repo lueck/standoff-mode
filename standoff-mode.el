@@ -18,7 +18,20 @@
 ;; along with standoff-mode. If not, see
 ;; <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
 
+;; Mode for creating and editing stand-off markup, aka external markup
+
+;; Usage:
+
+;; Add to your Emacs config:
+
+;;  (add-to-list 'load-path "/path/to/standoff-mode-dir")
+;;  (autoload 'standoff-mode "standoff-mode.el"
+;;    "Mode for creating and editing stand-off markup, aka external markup" t)
+;;  (add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
+
+;;; Code:
 (require 'standoff-api)
 (require 'standoff-dummy)
 
@@ -747,7 +760,7 @@ further arguments."
     (define-key map "H" 'standoff-hide-markup-by-number)
     map))
 
-
+;;;###autoload
 (define-derived-mode standoff-mode special-mode "Stand-Off"
   "Stand-Off mode is an Emacs major mode for creating stand-off
 markup and annotations. It makes the file (the buffer) which the
@@ -765,3 +778,5 @@ are bound to commands instead.
 
 
 (provide 'standoff-mode)
+
+;;; standoff-mode.el ends here
