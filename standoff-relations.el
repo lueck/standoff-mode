@@ -28,6 +28,59 @@
 
 ;;; Code
 
+(require 'standoff-api)
+
+(defcustom standoff-relations--markup-string-range-delimiter " … "
+  "A string that delimits the content of two markup ranges."
+  :group 'standoff
+  :type 'string)
+
+(defcustom standoff-relations-fields
+  '((:subj-number . 3)
+    (:subj-string . 20)
+    (:predicate-string . 20)
+    (:obj-number . 3)
+    (:obj-string . 20))
+  "A list of fields to be displayed in relation lists."
+  :group 'standoff)
+
+(defun standoff-relations--markup-string (ranges)
+  "Formats a string from markup given by RANGES."
+  (let ((markup-string (nth standoff-pos-markup-string (pop ranges))))
+    (while ranges
+      (setq markup-string (concat markup-string standoff-relations--markup-string-range-delimiter (nth standoff-pos-markup-string (pop ranges)))))
+    markup-string))
+
+(defun standoff-relations--predicate-label (predicate)
+  "Return the label for the predicate PREDICATE."
+  predicate)
+
+(defun standoff-relations--relation-handler (rel-id subj-id p-id obj-id source-buf rel-buf &optional invariant)
+  "Create a one line description of a relation for the relations list."
+  (let* ((subjs (funcall standoff-markup-read-function source-buf nil nil nil subj-id))
+	 (objs (funcall standoff-markup-read-function source-buf nil nil nil obj-id))
+	 (line ""))
+    (dolist (f-w standoff-relations-fields)
+      (let ((field (car f-w))
+	    (width (cdr f-w))
+	    (str))
+	(setq str
+	      (case field
+		(:subj-number (standoff-markup-get-number source-buf subj-id))
+		(:obj-number (standoff-markup-get-number source-buf obj-id))
+		(:subj-string (standoff-relations--markup-string subjs))
+		(:obj-string (standoff-relations--markup-string objs))
+		(:subj-type (standoff-markup--type-label (nth standoff-pos-markup-type (car subjs))))
+		(:obj-type (standoff-markup--type-label (nth standoff-pos-markup-type (car objs))))
+		(:predicate-string (standoff-relations--predicate-label p-id))))
+	(when str
+	  (setq line (concat line
+			     (if (not width)
+				 str
+			       (truncate-string-to-width str width)))))
+	;; TODO
+	))))
+
 (defun standoff-relations-for-markup (markup-number)
   (interactive "NNumber of markup element: ")
   (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
