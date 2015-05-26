@@ -131,4 +131,6 @@
 \\{standoff-relations-map}
 ")
 
+(provide 'standoff-relations)
+
 ;;; standoff-relations.el ends here.
