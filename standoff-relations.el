@@ -55,8 +55,8 @@
   "Return the label for the predicate PREDICATE."
   predicate)
 
-(defun standoff-relations--relation-handler (rel-id subj-id p-id obj-id source-buf rel-buf &optional invariant)
-  "Create a one line description of a relation for the relations list."
+(defun standoff-relations--relation-handler (rel-id subj-id p-id obj-id source-buf &optional invariant point)
+  "Create a one line description of a relation for the relations list in the current buffer."
   (let* ((subjs (funcall standoff-markup-read-function source-buf nil nil nil subj-id))
 	 (objs (funcall standoff-markup-read-function source-buf nil nil nil obj-id))
 	 (line ""))
@@ -66,8 +66,8 @@
 	    (str))
 	(setq str
 	      (case field
-		(:subj-number (standoff-markup-get-number source-buf subj-id))
-		(:obj-number (standoff-markup-get-number source-buf obj-id))
+		(:subj-number (number-to-string (standoff-markup-get-number source-buf subj-id)))
+		(:obj-number (number-to-string (standoff-markup-get-number source-buf obj-id)))
 		(:subj-string (standoff-relations--markup-string subjs))
 		(:obj-string (standoff-relations--markup-string objs))
 		(:subj-type (standoff-markup--type-label (nth standoff-pos-markup-type (car subjs))))
@@ -77,51 +77,47 @@
 	  (setq line (concat line
 			     (if (not width)
 				 str
-			       (truncate-string-to-width str width)))))
-	;; TODO
-	))))
+			       (truncate-string-to-width str width 0 ?\s "…")) " ")))
+	;; propertize it
+	;; TODO: makes sense only if we can mark a relation for e.g. deletion
+	))
+    (when point
+      (goto-char point))
+    (insert (concat line "\n"))
+    ))
+
+(defvar standoff-relations--relations-buffer "*Relations*"
+  "The name of the buffer in which relations are displayed.")
 
 (defun standoff-relations-for-markup (markup-number)
   (interactive "NNumber of markup element: ")
   (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
-	 (subj-relations)
-	 (obj-relations)
+	 (relations)
+	 (rel)
 	 (source-buffer (current-buffer))
-	 (rel-buffer (get-buffer-create "*Relations*"))
-	 (relations '())
-	 (rel))
-    (setq subj-relations (funcall standoff-relations-read-function (current-buffer) markup-inst-id nil nil))
-    (message "%s" subj-relations)
-    (while subj-relations
-      (message "Hier")
-      (setq rel (pop subj-relations))
-      (message "Hier2")
-      (setq subj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-subject rel))))
-      (message "%s" subj)
-      (setq obj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-object rel))))
-      (push (list ;;(nth standoff-pos-markup-type subj)
-		  (nth standoff-pos-markup-string subj)
-		  (nth standoff-pos-predicate rel)
-		  ;;(nth standoff-pos-markup-type obj)
-		  (nth standoff-pos-markup-string obj))
-	    relations))
-    (setq obj-relations (funcall standoff-relations-read-function (current-buffer) nil nil markup-inst-id))
-    (while obj-relations
-      (setq rel (pop obj-relations))
-      (setq subj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-subject rel))))
-      (setq obj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-object rel))))
-      (push (list ;;(nth standoff-pos-markup-type subj)
-		  (nth standoff-pos-markup-string subj)
-		  (nth standoff-pos-predicate rel)
-		  ;;(nth standoff-pos-markup-type obj)
-		  (nth standoff-pos-markup-string obj))
-	    relations))
-    (set-buffer rel-buffer)
+	 (rel-buffer (set-buffer (get-buffer-create standoff-relations--relations-buffer)))
+	 (buffer-read-only nil))
+    (setq relations (funcall standoff-relations-read-function source-buffer markup-inst-id nil nil))
+    (while relations
+      (setq rel (pop relations))
+      (standoff-relations--relation-handler
+       nil
+       (nth standoff-pos-subject rel)
+       (nth standoff-pos-predicate rel)
+       (nth standoff-pos-object rel)
+       source-buffer
+       'subject))
+    (setq relations (funcall standoff-relations-read-function source-buffer nil nil markup-inst-id))
+    (while relations
+      (setq rel (pop relations))
+      (standoff-relations--relation-handler
+       nil
+       (nth standoff-pos-subject rel)
+       (nth standoff-pos-predicate rel)
+       (nth standoff-pos-object rel)
+       source-buffer
+       'object))
     (standoff-relations-mode)
-    (let ((buffer-read-only nil))
-      (erase-buffer)
-      (dolist (r relations)
-	(print r rel-buffer)))
     (goto-char (point-min))
     (switch-to-buffer rel-buffer)))
 
