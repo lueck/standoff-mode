@@ -754,6 +754,7 @@ further arguments."
     ["Navigate to previous highlighted element" standoff-navigate-previous]
     ["--" nil]
     ["Hide/Show XML-tags" standoff-xml-tags-invisible]
+    ["Substitute character references with glyphs" standoff-xml-toggle-char-ref-glyph-substitute]
     ["--" nil]
     ["Dump to file (SAVE)" standoff-dump-elisp]
     ))
