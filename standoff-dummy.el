@@ -37,7 +37,7 @@ variable `standoff-dummy-create-id-function'."
     (save-excursion
       (set-buffer buf)
       (setq standoff-dummy-markup
-	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring startchar endchar))
+	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring-no-properties startchar endchar))
 		  standoff-dummy-markup))
       markup-inst-id)))
 
