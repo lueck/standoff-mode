@@ -24,6 +24,7 @@
 
 (require 'standoff-api)
 (require 'standoff-dummy)
+(require 'standoff-relations)
 
 ;;
 ;; Checksum of source document
@@ -633,46 +634,6 @@ given by the number mapping to its id."
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
     (error "Creation of relation failed")))
 
-(defun standoff-relations-show (markup-number)
-  (interactive "NNumber of markup element: ")
-  (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
-	 (subj-relations)
-	 (obj-relations)
-	 (source-buffer (current-buffer))
-	 (rel-buffer (get-buffer-create "*Relations*"))
-	 (relations '())
-	 (rel))
-    (setq subj-relations (funcall standoff-relations-read-function (current-buffer) markup-inst-id nil nil))
-    (message "%s" subj-relations)
-    (while subj-relations
-      (message "Hier")
-      (setq rel (pop subj-relations))
-      (message "Hier2")
-      (setq subj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-subject rel))))
-      (message "%s" subj)
-      (setq obj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-object rel))))
-      (push (list ;;(nth standoff-pos-markup-type subj)
-		  (nth standoff-pos-markup-string subj)
-		  (nth standoff-pos-predicate rel)
-		  ;;(nth standoff-pos-markup-type obj)
-		  (nth standoff-pos-markup-string obj))
-	    relations))
-    (setq obj-relations (funcall standoff-relations-read-function (current-buffer) nil nil markup-inst-id))
-    (while obj-relations
-      (setq rel (pop obj-relations))
-      (setq subj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-subject rel))))
-      (setq obj (car (funcall standoff-markup-read-function (current-buffer) nil nil nil (nth standoff-pos-object rel))))
-      (push (list ;;(nth standoff-pos-markup-type subj)
-		  (nth standoff-pos-markup-string subj)
-		  (nth standoff-pos-predicate rel)
-		  ;;(nth standoff-pos-markup-type obj)
-		  (nth standoff-pos-markup-string obj))
-	    relations))
-    (set-buffer rel-buffer)
-    (erase-buffer)
-    (dolist (r relations)
-      (print r rel-buffer))))
-
 
 ;;
 ;; Dumping
@@ -805,7 +766,6 @@ are bound to commands instead.
 \\{standoff-mode-map}
 "
   )
-
 
 
 (provide 'standoff-mode)
