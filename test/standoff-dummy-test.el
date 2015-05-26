@@ -5,6 +5,8 @@
 ;; not shure, that all configuration is restored correctly. You might
 ;; loose data! -- OR BETTER: Run this test file in batch mode.
 
+;;; Code
+
 (when noninteractive
   ;; set load path to . and ..
   (setq standoff-lib-dir (concat (file-name-directory load-file-name) "/.."))
@@ -18,9 +20,40 @@
 (require 'standoff-test-utils)
 (require 'standoff-dummy)
 
+;;; Functions for set up and tear down
+
+(defun standoff-dummy-test-setup-source-buffer ()
+  "Save the current configuration and setup testing environment.
+Returns a test buffer with some content."
+  (let ((test-buffer (generate-new-buffer "dummy-test")))
+    (standoff-test-utils-save-old-config)
+    ;; create and fill test buffer
+    (set-buffer test-buffer)
+    (insert "Was kann das Licht in unſer Auge mahlen?
+Was ſich mahlen laͤßt, Bilder. Wie auf der
+weißen Wand der dunklen Kammer, ſo faͤllt auf
+die Netzhaut des Auges ein Stralenpinſel von
+allem, was vor ihm ſtehet, und kann nichts, als
+was […] was da ſteht, eine Flaͤche, ein Nebeneinander
+aller und der verſchiedenſten ſichtbaren Gegenſtaͤnde
+zeichnen. Dinge hinter einander, oder ſolide,
+maſſive Dinge als ſolche dem Auge zu geben, iſt
+ſo unmoͤglich, als den Liebhaber hinter der dicken
+Tapete, den Bauer innerhalb der Windmuͤhle
+ſingend zu mahlen.")
+    ;; Return test buffer
+    test-buffer))
+
+(defun standoff-dummy-test-teardown (buf)
+  "Tear down the test setup for dummy testing."
+  (kill-buffer buf)
+  (standoff-test-utils-restore-old-config))
+
+;;; Tests
+
 (ert-deftest standoff-dummy-markup-create-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
-	(marrkup-id nil))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
+	(markup-id nil))
     (set-buffer test-buffer)
     ;;(setq standoff-dummy-create-id-function 'standoff-dummy-create-uuid)
     (standoff-dummy--backend-reset)
@@ -33,7 +66,7 @@
       (type-of markup-id)
       (type-of (funcall standoff-dummy-create-id-function standoff-dummy-markup 0))))
     ;;(standoff-dummy-backend-inspect)
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-create-uuid-test ()
   ;; return value should be a string
@@ -44,7 +77,7 @@
    (equal (string-match "[[:xdigit:]]\\{8\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{12\\}$" (standoff-dummy-create-uuid)) 0)))
 
 (ert-deftest standoff-dummy-create-intid-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test")))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer)))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
     (standoff-dummy--backend-reset)
@@ -68,10 +101,10 @@
      (= 
       (standoff-dummy-create-markup test-buffer 23 42 "example")
       2))    
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-markup-get-type-by-inst-id-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -82,10 +115,10 @@
      (equal
       (standoff-dummy-markup-get-type-by-inst-id test-buffer markup-id)
       "example"))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-add-range-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -101,10 +134,10 @@
     (should (equal (nth 1 (car standoff-dummy-markup))
 		   (nth 1 (cadr standoff-dummy-markup))))
     (should (equal (nth 1 (car standoff-dummy-markup)) "example"))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-delete-range-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -118,10 +151,10 @@
     ;; delete inexistant markup range
     (should-not (standoff-dummy-delete-range test-buffer 23 24 "example" markup-id))
     (should (equal (length standoff-dummy-markup) 2))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-read-markup-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -150,10 +183,10 @@
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "example")) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 nil markup-id)) 1))
     (should (= (length (standoff-dummy-read-markup test-buffer 22 32 "marker" markup-id)) 0))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-markup-types-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -167,13 +200,13 @@
     (should-not (member "fail" (standoff-dummy-markup-types test-buffer)))
     ;; duplicates should be removed
     (should (= (length (standoff-dummy-markup-types test-buffer)) 2))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
     
 
 ;; relations
 
 (ert-deftest standoff-dummy-create-relation-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -183,10 +216,10 @@
     (should (= (length standoff-dummy-relations) 0))
     (standoff-dummy-create-relation test-buffer markup-id2 "marks" markup-id1)
     (should (= (length standoff-dummy-relations) 1))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
   
 (ert-deftest standoff-dummy-used-predicates-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -217,10 +250,10 @@
      (equal
       (standoff-dummy-used-predicates test-buffer markup-id3 markup-id2)
       (list "marks")))    
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
   
 (ert-deftest standoff-dummy-read-relations-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -267,10 +300,10 @@
      (=
       (length (standoff-dummy-read-relations test-buffer markup-id2 nil markup-id1))
       1))
-    (kill-buffer test-buffer)))
+    (standoff-dummy-test-teardown test-buffer)))
 
 (ert-deftest standoff-dummy-delete-relation-test ()
-  (let ((test-buffer (generate-new-buffer "dummy-test"))
+  (let ((test-buffer (standoff-dummy-test-setup-source-buffer))
 	(markup-id nil))
     (set-buffer test-buffer)
     (setq standoff-dummy-create-id-function 'standoff-dummy-create-intid)
@@ -289,10 +322,10 @@
     ;; should remove duplicates
     (standoff-dummy-delete-relation test-buffer markup-id3 "marks" markup-id2)
     (should (= (length standoff-dummy-relations) 1))
-    (kill-buffer test-buffer)))
-
-
+    (standoff-dummy-test-teardown test-buffer)))
 
 ;; run tests and exit
 (when noninteractive
   (ert-run-tests-batch-and-exit (car argv)))
+
+;;; standoff-dummy-test.el ends here.
