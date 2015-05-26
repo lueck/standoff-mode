@@ -31,6 +31,10 @@
 
 ;; TODO: Should we make a minor mode from this?
 
+;;
+;; Show/hide tags
+;;
+
 (defconst standoff-xml-namespace-re "[_[:alpha:]][-_.[:alnum:]]*")
 (defconst standoff-xml-name-re "[_:[:alpha:]][-_.:[:alnum:]]*")
 (defconst standoff-xml-tag-name-re (concat "<\\([!/?]?" standoff-xml-name-re "\\)"))
@@ -131,6 +135,98 @@ Any terminating `>' or `/' is not matched.")
       (restore-buffer-modified-p modified))
     (run-hooks 'standoff-xml-tags-invisible-hook)
     (message "")))
+
+;;
+;; Show/hide character references
+;;
+
+(defvar standoff-xml-char-ref-re "&#x\\([[:xdigit:]]\\{2,4\\}\\);")
+
+(setq standoff-xml-char-ref-re "&#x\\([[:xdigit:]]\\{2,4\\}\\);\\|&#\\([[:digit:]]+\\);")
+
+(defvar standoff-xml-char-ref-glyph-display nil
+  "Non-nil means that character references are substituted by glyphs.")
+(make-variable-buffer-local 'standoff-xml-char-ref-glyph-display)
+
+(defface standoff-xml-glyph
+  '((((type x))
+     (:family
+      "misc-fixed"
+      :background
+      "light grey"
+      :foreground
+      "black"
+      :weight
+      normal
+      :slant
+      normal))
+    (t
+     (:background
+      "light grey"
+      :foreground
+      "black"
+      :weight
+      normal
+      :slant
+      normal)))
+  "Face used for glyph for char references."
+  :group 'standoff-faces)
+
+(defface standoff-xml-ref
+  '((t (:inherit font-lock-constant-face)))
+  "Face used to highlight character and entity references.
+This is not used directly, but only via inheritance by other faces."
+  :group 'standoff-faces)
+
+(defun standoff-xml-toggle-char-ref-glyph-substitute (arg)
+  "Toggle the displaying substitution of character references by glyphs."
+  (interactive "P")
+  (let ((new (if (null arg)
+		 (not standoff-xml-char-ref-glyph-display)
+	       (> (prefix-numeric-value arg) 0)))
+	(char-ref))
+    (when (not (eq new standoff-xml-char-ref-glyph-display))
+      (setq standoff-xml-char-ref-glyph-display new)
+      (save-excursion
+	(goto-char (point-min))
+	(while (re-search-forward standoff-xml-char-ref-re nil t)
+	  (if standoff-xml-char-ref-glyph-display
+	      (progn
+		(setq char-ref (cond ((match-string 1)
+				      (string-to-number (match-string 1) 16))
+				     ((strint-match 2)
+				      (string-to-number (match-string 2)))
+				     (t nil)))
+		(when char-ref
+		  (standoff-xml-char-ref-display-glyph (- (point) (length (match-string 0))) (point) char-ref)))
+	    (standoff-xml-clear-char-ref-glyph-display (- (point) (length (match-string 0))) (point))))))))
+
+(put 'standoff-xml-char-ref 'evaporate t)
+
+(defun standoff-xml-char-ref-display-glyph (start end n)
+  "Display glyph instead of char reference.
+Puts an overlay from START to END, makes the passage invisible
+and displays a character given by numerical value N instead."
+  (let ((glyph (char-to-string n))
+	ov)
+    (setq ov (make-overlay start end nil t))
+    (overlay-put ov 'category 'standoff-xml-char-ref)
+    (overlay-put ov 'help-echo glyph)
+    (overlay-put ov
+		 'after-string
+		 (propertize glyph 'face 'standoff-xml-glyph))
+    (overlay-put ov 'invisible t)))
+
+(defun standoff-xml-clear-char-ref-glyph-display (start end)
+  "Unhide a character reference hidden by an overlay."
+  (let ((ov (overlays-in start end)))
+    (while ov
+      (when (eq (overlay-get (car ov) 'category) 'standoff-xml-char-ref)
+	(delete-overlay (car ov)))
+      (setq ov (cdr ov)))
+    ;;(put-text-property start end 'face 'standoff-xml-ref)
+    ))
+
 
 (provide 'standoff-xml)
 
