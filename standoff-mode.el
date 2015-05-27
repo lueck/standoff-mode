@@ -601,12 +601,32 @@ allow other than already known names, but ask for confirmation."
   :type 'symbol)
 
 (defcustom standoff-predicates-allowed-function 'standoff-predicates-allowed-from-elisp
-  "")
+  "A pointer to the function that returns allowed predicates for a combination of subject and object.
+The function must take 3 arguments: The buffer BUF of the source
+document, the subject's id, the object's id.")
+
+(defcustom standoff-relations-allowed '()
+  "A list of allowed Combinations of subject, predicate object types."
+  :group 'standoff
+  :type 'list)
 
 (defun standoff-predicates-allowed-from-elisp (buf subj-id obj-id)
-  ""
-  ;; TODO
-  '())
+  "Filter predicates from `standoff-predicates-allowed' for combination of subject and object.
+Subject and object must be given by ids, SUBJ-ID and OBJ-ID
+respectively. The source document must be given in buffer BUF."
+  ;; TODO: use pos api for (nth ...)
+  (let ((subj-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function buf nil nil nil subj-id))))
+	(obj-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function buf nil nil nil obj-id))))
+	(relations-defined (or standoff-relations-allowed '()))
+	(rel)
+	(allowed '()))
+    (message "Type: sub: %s obj: %s" subj-type obj-type)
+    (while relations-defined
+      (setq rel (pop relations-defined))
+      (and (equal (nth 0 rel) subj-type)
+	   (equal (nth 2 rel) obj-type)
+	   (setq allowed (cons (nth 1 rel) allowed))))
+    allowed))
 
 (defun standoff-predicate-completion (buf subj-id obj-id)
   "Return a list of valid predicates for a combination of subject and object.
