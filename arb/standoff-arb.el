@@ -1,51 +1,139 @@
 (require 'standoff-mode)
-(add-hook 'standoff-mode-hook 'standoff-arb-config)
+
+(add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
+
+(defface standoff-arb-beispiel
+  '((((type x))
+     (:family
+      "misc-fixed"
+      :foreground
+      "dark red"
+      :weight
+      normal
+      :slant
+      normal))
+    (t
+     (:foreground
+      "dark red"
+      :weight
+      normal
+      :slant
+      normal)))
+  "Face used \"beispiel\" markup type."
+  :group 'standoff-faces)
+
+(defface standoff-arb-konzept
+  '((((type x))
+     (:family
+      "misc-fixed"
+      :foreground
+      "forest green"
+      :weight
+      normal
+      :slant
+      normal))
+    (t
+     (:foreground
+      "forest green"
+      :weight
+      normal
+      :slant
+      normal)))
+  "Face used \"konzept\" markup type."
+  :group 'standoff-faces)
+
+(defface standoff-arb-marker
+  '((((type x))
+     (:family
+      "misc-fixed"
+      :foreground
+      "dark orange"
+      :weight
+      normal
+      :slant
+      normal))
+    (t
+     (:foreground
+      "dark orange"
+      :weight
+      normal
+      :slant
+      normal)))
+  "Face used \"marker\" markup type."
+  :group 'standoff-faces)
+
+(defface standoff-arb-kontext
+  '((((type x))
+     (:family
+      "misc-fixed"
+      :foreground
+      "dark blue"
+      :weight
+      normal
+      :slant
+      normal))
+    (t
+     (:foreground
+      "dark blue"
+      :weight
+      normal
+      :slant
+      normal)))
+  "Face used \"kontext\" markup type."
+  :group 'standoff-faces)
+
+
 
 (defun standoff-arb-config ()
+ (interactive)
 
-  ;; use sqlite as persistent layer
-  (require 'standoff-sqlite)
-  (standoff-sqlite-register-backend)
-
-  ;; set how restrictive markup names are handled:
-  ;;(setq standoff-markup-require-name-require-match t)
-
+  ;; set how restrictive markup types and predicates are handled:
+  (setq standoff-markup-type-require-match t)
+  (setq standoff-predicate-require-match 'confirm)
 
   (setq standoff-markup-overlays
 	'(("beispiel" 
 	   ('priority 10)
-	   ('face (:foreground "red"))
+	   ('face 'standoff-arb-beispiel);;(:foreground "dark red"))
 	   )
 	  ("marker"
 	   ('priority 20)
-	   ('face (:background "light blue"))
+	   ('face 'standoff-arb-marker);;(:foreground "dark blue"))
 	   )
 	  ("konzept"
 	   ('priority 5)
-	   ('face (:foreground "green"))
+	   ('face 'standoff-arb-konzept);;(:foreground "forest green"))
+	   )
+	  ("kontext"
+	   ('priority 4)
+	   ('face 'standoff-arb-kontext)
 	   )
 	  ))
 
   (setq standoff-markup-overlays-front
 	'(("beispiel" 
-	   ('face (:foreground "red")))
+	   ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
 	  ("marker"
-	   ('face (:background "light blue")))
+	   ('face 'standoff-arb-marker));;(:foreground "dark blue")))
 	  ("konzept"
-	   ('face (:foreground "green")))
+	   ('face 'standoff-arb-konzept));;(:foreground "forest green")))
+	  ("kontext"
+	   ('face 'standoff-arb-kontext))
 	  ))
   
   (setq standoff-markup-overlays-after
 	'(("beispiel" 
-	   ('face (:foreground "red")))
+	   ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
 	  ("marker"
-	   ('face (:background "light blue")))
+	   ('face 'standoff-arb-marker));;(:foreground "dark blue")))
 	  ("konzept"
-	   ('face (:foreground "green")))
+	   ('face 'standoff-arb-konzept));;(:foreground "forest green")))
+	  ("kontext"
+	   ('face 'standoff-arb-kontext))
 	  ))
-  
-  (standoff-highlight-markup-buffer (current-buffer))
+
 )
+(add-hook 'standoff-mode-hook 'standoff-arb-config)
 
 ;; (setplist 'beispiel-tag 
 ;; 	  '(face (foreground-color . "red")))
