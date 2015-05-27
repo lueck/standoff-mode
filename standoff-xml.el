@@ -153,7 +153,7 @@ Any terminating `>' or `/' is not matched.")
      (:family
       "misc-fixed"
       :background
-      "light grey"
+      "gainsboro"
       :foreground
       "black"
       :weight
@@ -162,7 +162,7 @@ Any terminating `>' or `/' is not matched.")
       normal))
     (t
      (:background
-      "light grey"
+      "gainsboro"
       :foreground
       "black"
       :weight
