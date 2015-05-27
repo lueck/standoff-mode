@@ -64,15 +64,23 @@
       (let ((field (car f-w))
 	    (width (cdr f-w))
 	    (str))
+	(message "Field: %s, type: %s" field (type-of field))
 	(setq str
-	      (case field
-		(:subj-number (number-to-string (standoff-markup-get-number source-buf subj-id)))
-		(:obj-number (number-to-string (standoff-markup-get-number source-buf obj-id)))
-		(:subj-string (standoff-relations--markup-string subjs))
-		(:obj-string (standoff-relations--markup-string objs))
-		(:subj-type (standoff-markup--type-label (nth standoff-pos-markup-type (car subjs))))
-		(:obj-type (standoff-markup--type-label (nth standoff-pos-markup-type (car objs))))
-		(:predicate-string (standoff-relations--predicate-label p-id))))
+	      (cond
+	       ((eq field :subj-number)
+		(number-to-string (standoff-markup-get-number source-buf subj-id)))
+	       ((eq field :obj-number)
+		(number-to-string (standoff-markup-get-number source-buf obj-id)))
+	       ((eq field :subj-string)
+		(standoff-relations--markup-string subjs))
+	       ((eq field :obj-string)
+		(standoff-relations--markup-string objs))
+	       ((eq field :subj-type)
+		(standoff-markup--type-label (nth standoff-pos-markup-type (car subjs))))
+	       ((eq field :obj-type)
+		(standoff-markup--type-label (nth standoff-pos-markup-type (car objs))))
+	       ((eq field :predicate-string)
+		(standoff-relations--predicate-label p-id))))
 	(when str
 	  (setq line (concat line
 			     (if (not width)
