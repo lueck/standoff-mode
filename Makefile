@@ -1,7 +1,14 @@
 .PHONY: test compile clean standoff-mode-pkg.el
 
 #VERSION := $(shell git describe --tags)
-VERSION := "0.2.1"
+VERSION := "0.2.2"
+
+ELPKG := standoff-mode.el \
+	standoff-api.el \
+	standoff-dummy.el \
+	standoff-xml.el \
+	standoff-relations.el \
+	standoff-mode-pkg.el
 
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 
@@ -10,7 +17,7 @@ ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 
 package : standoff-mode-$(VERSION).tar
 
-standoff-mode-$(VERSION).tar: standoff-mode.el standoff-api.el standoff-dummy.el standoff-mode-pkg.el README.md LICENSE
+standoff-mode-$(VERSION).tar: ${ELPKG} README.md LICENSE
 	tar -cf $@ --transform "s,^,standoff-mode-$(VERSION)/," $^
 
 test:
