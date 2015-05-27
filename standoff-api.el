@@ -53,6 +53,10 @@ See `standoff-pos-markup-inst-id' for an example.")
   "Position of a markup element's end character's offset.
 See `standoff-pos-markup-inst-id' for an example.")
 
+(defconst standoff-pos-markup-string 4
+  "Position of the string that was annotated.
+See `standoff-pos-markup-inst-id' for an example.")
+
 ;; Structure of relation lists
 
 (defconst standoff-pos-subject 0

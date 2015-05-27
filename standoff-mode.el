@@ -38,6 +38,7 @@
 (require 'standoff-api)
 (require 'standoff-dummy)
 (require 'standoff-xml)
+(require 'standoff-relations)
 
 ;;
 ;; Checksum of source document
@@ -653,6 +654,7 @@ given by the number mapping to its id."
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
     (error "Creation of relation failed")))
 
+
 ;;
 ;; Dumping
 ;;
@@ -727,6 +729,7 @@ further arguments."
     (define-key map "l" 'standoff-highlight-markup-by-number)
     (define-key map "L" 'standoff-highlight-markup-buffer)
     (define-key map "r" 'standoff-markup-relate)
+    (define-key map "R" 'standoff-relations-for-markup)
     ;;(define-key map "s" 'standoff-store-markup-element-at-point)
     (define-key map "a" 'standoff-annotate-markup-element-at-point)
     (define-key map "n" 'standoff-navigate-next)
@@ -745,6 +748,7 @@ further arguments."
     ["--" nil]
     ;;["Store markup element as relation object" standoff-store-markup-element-at-point]
     ["Relate markup element at point to some other" standoff-markup-relate]
+    ["List relations for markup element" standoff-relations-for-markup]
     ["--" nil]
     ["Annotate markup element" standoff-annotate-markup-element-at-point]
     ["--" nil]
@@ -787,7 +791,6 @@ are bound to commands instead.
 \\{standoff-mode-map}
 "
   )
-
 
 
 (provide 'standoff-mode)
