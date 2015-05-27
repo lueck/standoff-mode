@@ -2,3 +2,4 @@
 *.[0-9]
 *.sqlite3
 *.tar
+standoff-config.el
