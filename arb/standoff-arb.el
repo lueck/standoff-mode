@@ -89,7 +89,7 @@
 
   ;; set how restrictive markup types and predicates are handled:
   (setq standoff-markup-type-require-match t)
-  (setq standoff-predicate-require-match 'confirm)
+  (setq standoff-predicate-require-match t);;'confirm)
 
   (setq standoff-markup-overlays
 	'(("beispiel" 
@@ -130,6 +130,17 @@
 	   ('face 'standoff-arb-konzept));;(:foreground "forest green")))
 	  ("kontext"
 	   ('face 'standoff-arb-kontext))
+	  ))
+
+  (setq standoff-relations-allowed
+	'(("marker" "markiert" "beispiel")
+	  ;; beispiel ... konzept
+	  ("beispiel" "istBeispielFür" "konzept")
+	  ("beispiel" "erläutert" "konzept")
+	  ;; beispiel ... kontext
+	  ("beispiel" "erläutert" "kontext")
+	  ("beispiel" "stelltVorAugen" "kontext")
+	  ("beispiel" "machtHandgreiflich" "kontext")
 	  ))
 
 )
