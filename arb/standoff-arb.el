@@ -132,16 +132,18 @@
 	   ('face 'standoff-arb-kontext))
 	  ))
 
-  (setq standoff-relations-allowed
-	'(("marker" "markiert" "beispiel")
-	  ;; beispiel ... konzept
-	  ("beispiel" "istBeispielFür" "konzept")
-	  ("beispiel" "erläutert" "konzept")
-	  ;; beispiel ... kontext
-	  ("beispiel" "erläutert" "kontext")
-	  ("beispiel" "stelltVorAugen" "kontext")
-	  ("beispiel" "machtHandgreiflich" "kontext")
-	  ))
+  ;; (setq standoff-relations-allowed
+  ;; 	'(("marker" "markiert" "beispiel")
+  ;; 	  ;; beispiel ... konzept
+  ;; 	  ("beispiel" "istBeispielFür" "konzept")
+  ;; 	  ("beispiel" "erläutert" "konzept")
+  ;; 	  ;; beispiel ... kontext
+  ;; 	  ("beispiel" "erläutert" "kontext")
+  ;; 	  ("beispiel" "stelltVorAugen" "kontext")
+  ;; 	  ("beispiel" "machtHandgreiflich" "kontext")
+  ;; 	  ))
+
+  (load "standoff-arb-owl.el")
 
 )
 (add-hook 'standoff-mode-hook 'standoff-arb-config)
