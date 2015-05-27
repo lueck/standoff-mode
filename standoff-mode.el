@@ -330,30 +330,36 @@ instances this functions might need to be rewritten."
 This returns an integer for the markup instance given by
 MARKUP-INST-ID in the buffer BUF. If there is not yet a number
 assiciated with this instance, a new unique number is created."
-  (let ((number (gethash markup-inst-id standoff-markup-number-mapping nil))
-	(numbers '()))
-    (if number
-	number
-      (maphash (lambda (k _v) (push _v numbers)) standoff-markup-number-mapping)
-      (puthash markup-inst-id
-	       ;; max fails for an empty list, so we cons 0
-	       (setq number (+ (apply 'max (cons 0 numbers)) 1))
-	       standoff-markup-number-mapping)
-      number)))
+  (save-excursion
+    (set-buffer buf)
+    (let ((number (gethash markup-inst-id standoff-markup-number-mapping nil))
+	  (numbers '()))
+      (if number
+	  number
+	(maphash (lambda (k _v) (push _v numbers)) standoff-markup-number-mapping)
+	(puthash markup-inst-id
+		 ;; max fails for an empty list, so we cons 0
+		 (setq number (+ (apply 'max (cons 0 numbers)) 1))
+		 standoff-markup-number-mapping)
+	number))))
 
 (defun standoff-markup-get-by-number (buf number)
   "Return the markup instance ID for a number.
 If no ID maps to number, nil is returned."
-  (let ((markup-inst-id nil))
-    (maphash (lambda (k _v) (when (equal _v number) (setq markup-inst-id k)))
-	     standoff-markup-number-mapping)
-    markup-inst-id))
+  (save-excursion
+    (set-buffer buf)
+    (let ((markup-inst-id nil))
+      (maphash (lambda (k _v) (when (equal _v number) (setq markup-inst-id k)))
+	       standoff-markup-number-mapping)
+      markup-inst-id)))
 
 (defun standoff-markup-remove-number-mapping (buf markup-inst-id)
   "Remove a markup-inst-id to number mapping from the hashtable.
 This should be called when all ranges of a markup instance have
 been deleted."
-  (remhash markup-inst-id standoff-markup-number-mapping))
+  (save-excursion
+    (set-buffer buf)
+    (remhash markup-inst-id standoff-markup-number-mapping)))
 
 (defun standoff-highlight-markup-range (buf startchar endchar markup-type markup-inst-id)
 "Highlight a markup range.
