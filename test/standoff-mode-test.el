@@ -32,9 +32,10 @@
   "Testing the completion list for markup types.
 This list depends on the value of
 `standoff-markup-require-name-require-match'."
-  (let ((test-buffer (standoff-test-utils-setup-source-buffer)))
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(standoff-markup-types-allowed-function 'standoff-markup-types-from-overlay-definition)
+	(standoff-markup-type-require-match t))
     (standoff-test-utils-setup-overlays)
-    (setq standoff-markup-type-require-match t)
     (standoff-dummy-create-markup test-buffer 445 482 "example")
     (should (member "beispiel" (standoff-markup-type-completion test-buffer)))
     (should-not (member "example" (standoff-markup-type-completion test-buffer)))
