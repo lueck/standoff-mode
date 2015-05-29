@@ -2,3 +2,17 @@
 *.[0-9]
 *.sqlite3
 *.tar
+
+# texinfo and texi2...
+*.aux
+*.cp
+*.dvi
+*.fn
+*.ky
+*.log
+*.pg
+*.tmp
+*.toc
+*.tp
+*.vr
+version.texi
