@@ -58,7 +58,7 @@ Documentation License.''
 @contents
 
 @ifnottex
-@node Top
+@node Top, Einführung, (dir), (dir)
 @top Stand-Off Mode
 
 Benutzerhandbuch für Stand-Off Mode, version @value{standoff-version}.
@@ -66,22 +66,62 @@ Benutzerhandbuch für Stand-Off Mode, version @value{standoff-version}.
 @insertcopying
 @end ifnottex
 
-
 @menu
 * Einführung::
 @ifset PRAKTIKUM @c
 * Hinweise zur Arbeit mit GNU Emacs::
 @end ifset
+* Stand-Off Mode starten und beenden::
 * Markup-Elemente::
 * Relationen::
 * Literale::
 * Kommentare::
 * Konfiguration::
 * GNU Free Documentation License::
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Stand-Off Mode starten und beenden
+
+* Stand-Off Mode aktivieren::
+* Lesbarkeit des Buffers::
+* Speichern::
+@ifset PRAKTIKUM
+* Buffer bzw. Datei schließen und Emacs beenden::
+@end ifset
+* Bereits früher erfasstes  Markup laden::
+
+Markup-Elemente
+
+* Erfassen::
+* Hervorheben und Ausblenden::
+* Navigieren::
+* Löschen::
+* Diskontinuierliches Markup::
+
+Relationen
+
+* Form::
+
+Konfiguration
+
+* Beschränkung der Nutzer-Eingaben::
+
+Beschränkung der Nutzer-Eingaben
+
+* Markup-Typ::
+* Relations-Prädikat::
+
+@end detailmenu
 @end menu
 
-
-@node Einführung
+@ifset PRAKTIKUM
+@node Einführung, Hinweise zur Arbeit mit GNU Emacs, Top, Top
+@end ifset
+@ifclear PRAKTIKUM
+@node Einführung, Stand-Off Mode starten und beenden, Top, Top
+@end ifclear
 @chapter Einführung
 
 Stand-Off Mode ist eine Erweiterung für den GNU Emacs Texteditor und
@@ -94,7 +134,7 @@ fraglichen Dokument `distanziert' gespeichert wird, daher der Name
 
 
 @ifset PRAKTIKUM
-@node Hinweise zur Arbeit mit GNU Emacs
+@node Hinweise zur Arbeit mit GNU Emacs, Stand-Off Mode starten und beenden, Einführung, Top
 @chapter Hinweise zur Arbeit mit GNU Emacs
 
 GNU Emacs ist ein sehr funktionsreiches Programm zur Verarbeitung von
@@ -249,15 +289,196 @@ Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
 
 @end itemize
 
-Eine eingehendere Darstellung sei auf die gute
+Für eine umfassende Darstellung sei auf die gute
 @url{www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
 von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen} und auf das
 englischsprachige Manual zu @xref{Top,,, emacs, GNU Emacs} verwiesen.
 
 @end ifset
 
+@ifset PRAKTIKUM
+@node Stand-Off Mode starten und beenden, Markup-Elemente, Hinweise zur Arbeit mit GNU Emacs, Top
+@end ifset
+@ifclear PRAKTIKUM
+@node Stand-Off Mode starten und beenden, Markup-Elemente, Einführung, Top
+@end ifclear
+@chapter Stand-Off Mode starten und beenden
 
-@node Markup-Elemente
+
+@menu
+* Stand-Off Mode aktivieren::
+* Lesbarkeit des Buffers::
+* Speichern::
+@ifset PRAKTIKUM
+* Buffer bzw. Datei schließen und Emacs beenden::
+@end ifset
+* Bereits früher erfasstes  Markup laden::
+@end menu
+
+
+
+@node Stand-Off Mode aktivieren, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden, Stand-Off Mode starten und beenden
+@section Stand-Off Mode aktivieren
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab 
+@tab @code{standoff-mode}
+@end multitable
+
+Nach dem Öffnen einer Datei und ihrer Darstellung in einem Buffer kann
+für diesen Buffer der Stand-Off Mode aktiviert werden durch Eingabe von
+@kbd{M-x standoff-mode @kbd{RET}}, also kurzes Drücken von
+@kbd{@key{ESC}} gefolgt von einem kurzen Drücken von @kbd{x}, gefolgt
+von der Eingabe von @code{standoff-mode} im dann aktiven Minibuffer und
+anschließendes Betätigen der Eingabe-Taste.
+
+@ifset PRAKTIKUM
+Die Konfigurationsdateien, die im Rahmen des Praktikums im Archiv des
+Beispiels mitgeliefert werden, veranlassen Emacs beim Öffnen der
+verwendeten Quell-Dokumente mit der Endung @code{.TEI-P5.xml}
+automatisch in den Stand-Off Mode zu wechseln. Deswegen sollte nicht
+nötig sein, dieses Kommando interaktiv aufzurufen.
+@end ifset
+
+Im Stand-Off Mode ist der Buffer read-only, ein Editieren des Textes ist
+also nicht möglich. In der Modeline wird (Stand-Off) als aktiver Modus
+angezeigt. Zudem erscheint im Hauptmenü der Punkt @emenu{Stand-Off}.
+
+Bei Aktivierung von Stand-Off Mode wird bereits frühe erfasste
+Annotationen geladen. @xref{Bereits früher erfasstes Markup laden}.
+
+
+@node Lesbarkeit des Buffers, Speichern, Stand-Off Mode aktivieren, Stand-Off Mode starten und beenden
+@section Lesbarkeit des Buffers
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab @emenu{Hide/Show XML-tags}
+@tab @code{standoff-xml-tags-invisible}
+@item
+@tab @emenu{Substitute character references with glyphs}
+@tab @code{standoff-xml-toggle-char-ref-glyph-substitute}
+@end multitable
+
+Mit diesen beiden Kommandos kann die Lesbarkeit des Buffers verbessert
+werden. Tags, d.h. Zeichenketten in spitzen Klammern wie @code{<p>},
+lassen sich ausblenden. Character References der Form @code{&#xNNNN;}
+lassen sich durch das entsprechende Unicode-Zeichen in der Darstellung
+ersetzen. Nochmaliges Aufrufen des Kommandos macht die Tags
+bzw. Character References wieder sichtbar.
+
+@ifset PRAKTIKUM
+Bei der Arbeit mit den @code{TEI-P5.xml}-Dateien des Archivs des
+Beispiels sind das Ausblenden der Tags wie das Ersetzen der Character
+References sehr zu empfehlen, weil diese Dateien sonst für das
+menschliche Auge kaum lesbar ist.
+
+Insbesondere das Ersetzen der Character-References ist bei den größeren,
+ein ganzes Buch umfassenden Dateien im Archiv des Beispiels
+rechen-aufwendig und kann mitunter eine Minute dauern.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Speichern, Buffer bzw. Datei schließen und Emacs beenden, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden
+@end ifset
+@ifclear PRAKTIKUM
+@node Speichern, Bereits früher erfasstes Markup laden, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden
+@end ifclear
+@section Speichern
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{u}
+@tab @emenu{Dump to file (SAVE)}
+@tab @code{standoff-dump-elisp}
+@end multitable
+
+Mit diesem Kommando wird das erfasste Markup gespeichert. Da es sich um
+Stand-Off-Markup handelt, wird es nicht in der bearbeitete Datei,
+sondern extern gespeichert. Die Datei, in der es gespeichert wird, ist
+nach Aufruf des Kommandos im Minibuffer bzw. in einem Datei-Dialog
+anzugeben. Voreingestellt ist eine Datei, die denselben Dateinamen
+trägt, wie das Quelldokument, jedoch erweitert durch die Endung
+@code{.dump.el}. Wenn eine Datei dieses Namens vorliegt, wird sie bei
+Aktivierung von Stand-Off Mode geladen.
+
+@ifset PRAKTIKUM
+Deshalb ist es sehr empfehlenswert, beim Speichern einfach diesen
+voreingestellten Namen durch Drücken der Return-Taste @kbd{@key{RET}} zu
+bestätigen.
+@end ifset
+
+Sofern bereits eine Datei dieses Namens existiert, erstellt Emacs vor
+dem Überschreiben der Datei eine Sicherungskopie mit dem Dateinamen
+@code{.dump.el~}.
+
+@ifset PRAKTIKUM
+Kopieren Sie bitte die @code{dump.el}-Datei regelmäßig während Ihrer
+Arbeit im Archiv des Beispiels, indem Sie den Dateinamen beispielsweise
+vorn um ein Datum ergänzen,
+z.B. @code{2015-06-02-rosenkranz_aesthetik_1853.TEI-P5.xml.dump.el} für
+den Stand Ihrer Arbeit vom 2ten Juni 2015. (Die Form JJJJ-MM-TT -- also
+vierstelliges Jahr, zweistelliger Monat und zweistelliger Tag -- kann
+durch den Computer anders als das im Deutschen gesprochene Datum
+Tag-Monat-Jahr sinnvoll sortiert werden.) Wenn Sie an einem Tag mehrere
+Sicherungen machen wollen, empfiehlt sich hinter dem Datum die Ergänzung
+durch die Uhrzeit oder durch eine Zähl-Ziffer,
+z.B. @code{2015-06-02_3_rosenkranz_aesthetik_1853.TEI-P5.xml.dump.el}
+für die dritte Sicherungskopie am 2. Juni.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Buffer bzw. Datei schließen und Emacs beenden, Bereits früher erfasstes  Markup laden, Speichern, Stand-Off Mode starten und beenden
+@section Buffer bzw. Datei schließen und Emacs beenden
+
+@multitable @columnfractions .09 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{C-x k}
+@tab @emenu{File --> Close}
+@tab @code{kill-buffer}
+@item @kbd{C-x C-c} 
+@tab @emenu{File --> Quit}
+@tab @code{save-buffers-kill-terminal}
+@end multitable
+
+Mit diesen Kommandos schließen Sie die Datei bzw. Emacs.
+
+Denken Sie daran, vorher Ihre Arbeiten zu sichern. @xref{Speichern}.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Bereits früher erfasstes  Markup laden,  , Buffer bzw. Datei schließen und Emacs beenden, Stand-Off Mode starten und beenden
+@end ifset
+@ifclear PRAKTIKUM
+@node Bereits früher erfasstes  Markup laden,  , Speichern, Stand-Off Mode starten und beenden
+@end ifclear
+@section Bereits früher erfasstes Markup laden
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab
+@tab @code{standoff-dummy-load-dumped}
+@end multitable
+
+Mit diesem Befehl lassen sich Markup-Daten aus einer Emacs-lisp-Datei
+mit der Endung @code{.el} laden. Das Kommando fragt im Minibuffer
+bzw. in einem Datei-Dialog-Fenster nach der zu ladenden Datei.
+
+Beim Aktivieren von Stand-Off Mode wird dieses Kommando automatisch
+ausgeführt und versucht, die Datei zu laden, die denselben Dateinamen
+wie das geöffnete Quell-Dokument erweitert durch die Endung
+@code{.dump.el} hat. Der Befehl wird also nur benötigt, um in einer
+anders benannten Datei gespeichertes Markup zu laden.
+
+
+@node Markup-Elemente, Relationen, Stand-Off Mode starten und beenden, Top
 @chapter Markup-Elemente
 
 Markup-Elemente sind die Grund-Bausteine der Text-Annotation. Mit ihnen
@@ -268,14 +489,15 @@ Kommentare -- beziehen sich auf Markup-Elemente.
 
 
 @menu
-* Neues Markup-Element erfassen::
+* Erfassen::
 * Hervorheben und Ausblenden::
+* Navigieren::
 * Löschen::
 * Diskontinuierliches Markup::
 @end menu
 
-@node Neues Markup-Element erfassen
-@section Neues Markup-Element erfassen
+@node Erfassen, Hervorheben und Ausblenden, Markup-Elemente, Markup-Elemente
+@section Erfassen
 
 @multitable @columnfractions .05 .40 .50
 @headitem Tast. @tab Menü @tab Kommando 
@@ -292,8 +514,8 @@ Elements gefragt. Durch Drücken von @kbd{@key{TAB}}
 Eingabe wird vervollständigt. Das neu erstellte Element wird visuell
 hervorgehoben (highlight).
 
-@xref{standoff-markup-type-require-match}, wo eine Beschränkung der
-Eingabe des Typs konfiguriert wird.
+@xref{Markup-Typ}, wo eine Beschränkung der Eingabe des Typs
+konfiguriert wird.
 
 @ifset PRAKTIKUM
 Für das Praktikum im Archiv des Beispiels ist Emacs so konfiguriert,
@@ -301,7 +523,7 @@ dass die Auswahl des Types auf vordefinierte Typen beschränkt ist.
 @end ifset
 
 
-@node Hervorheben und Ausblenden
+@node Hervorheben und Ausblenden, Navigieren, Erfassen, Markup-Elemente
 @section Hervorheben und Ausblenden
 
 @multitable @columnfractions .05 .40 .50
@@ -341,7 +563,24 @@ angewiesen, dass man den @emph{Point} über genau einem hervorgehobenem
 Element positioniert. Das Ausschalten der Hervorhebung von anderen
 überlappenden Elementen dient dann der Desambiguierung der Auswahl.
 
-@node Löschen
+@node Navigieren, Löschen, Hervorheben und Ausblenden, Markup-Elemente
+@section Navigieren
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{n}
+@tab @emenu{Navigate to next highlighted element}
+@tab @code{standoff-navigate-next}
+@item @kbd{p}
+@tab @emenu{Navigate to previous highlighted element}
+@tab @code{standoff-navigate-previous}
+@end multitable
+
+Mit diesen beiden Kommandos kann einem hervorgehobenem Markup-Element
+zum nächsten und zurück navigiert werden, d.h. der @emph{Point} springt.
+
+
+@node Löschen, Diskontinuierliches Markup, Navigieren, Markup-Elemente
 @section Löschen
 
 @multitable @columnfractions .08 .40 .50
@@ -358,7 +597,7 @@ von @emph{Point} sein Überlappende andere Elemente sind also
 auszublenden. Wird nicht genau ein hervorgehobenes Element an
 @emph{Point} gefunden, erfolgt eine Fehlermeldung.
 
-@node Diskontinuierliches Markup
+@node Diskontinuierliches Markup,  , Löschen, Markup-Elemente
 @section Diskontinuierliches Markup
 
 @multitable @columnfractions .08 .40 .50
@@ -386,7 +625,7 @@ häufig nötig.
 @end ifset
 
 
-@node Relationen
+@node Relationen, Literale, Markup-Elemente, Top
 @chapter Relationen
 
 Relationen setzen zwei Markup-Elemente miteinander in
@@ -411,7 +650,7 @@ ihr sogenanntes Prädikat.
 * Form::
 @end menu
 
-@node Form
+@node Form,  , Relationen, Relationen
 @section Form
 
 Ihrer Form nach sind Relationen in Stand-Off Mode dreiwertige,
@@ -449,32 +688,40 @@ Objekt-Subjekt-Kombination erlaubt ist. Bei der Erfassung einer Relation
 mit einem solchen Prädikat muss eine Entscheidung getroffen werden,
 welches Element Subjekt, welches Objekt sein soll.
 
-@node Literale
+@node Literale, Kommentare, Relationen, Top
 @chapter Literale
 
 
-@node Kommentare
+@node Kommentare, Konfiguration, Literale, Top
 @chapter Kommentare
 
 
-@node Konfiguration
+@node Konfiguration, GNU Free Documentation License, Kommentare, Top
 @chapter Konfiguration
 
 @menu
-* Beschränkung der Typen::
+* Beschränkung der Nutzer-Eingaben::
 @end menu
 
-@node Beschränkung der Typen
-@section Beschränkung der Typen
+
+@node Beschränkung der Nutzer-Eingaben,  , Konfiguration, Konfiguration
+@section Beschränkung der Nutzer-Eingaben
+
 
 @menu
-* standoff-markup-type-require-match::
+* Markup-Typ::
+* Relations-Prädikat::
 @end menu
 
-@node standoff-markup-type-require-match
-@subsection standoff-markup-type-require-match
+@node Markup-Typ, Relations-Prädikat, Beschränkung der Nutzer-Eingaben, Beschränkung der Nutzer-Eingaben
+@subsection Markup-Typ
 
-@node GNU Free Documentation License
+@node Relations-Prädikat,  , Markup-Typ, Beschränkung der Nutzer-Eingaben
+@subsection Relations-Prädikat
+
+
+
+@node GNU Free Documentation License,  , Konfiguration, Top
 @appendix GNU Free Documentation License
 @documentlanguage en_US
 @include fdl.texi
