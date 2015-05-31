@@ -70,6 +70,23 @@ using this setup function."
 	   ('priority 5)
 	   ('face (:foreground "green"))))))
 
+(defun standoff-test-utils-return-markup-types-allowed ()
+  "Return some markup types."
+  '("begriff"
+    "beispiel"
+    "grundsatz"
+    "kontext"
+    "konzept"
+    "marker"
+    "person"))
+
+(defun standoff-test-utils-return-markup-labels ()
+  '(("begriff" . "Begriff")
+    ("beispiel" . "Beispiel")
+    ("grundsatz" . "Grundsatz")
+    ("kontext" . "Kontext")
+    ("konzept" . "Begriff")))
+
 (defun standoff-test-utils-return-relations-allowed ()
   "Set up `standoff-relations-allowed'."
   '((("marker") "markiert" ("beispiel"))

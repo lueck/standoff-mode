@@ -101,12 +101,29 @@ This might serve as simple handler called using
   :group 'standoff
   :type 'list)
 
+(defcustom standoff-markup-labels '()
+  "A alist mapping the (some) members of `standoff-markup-types-allowed' to labels."
+  :group 'standoff
+  :type 'list)
+
 (defun standoff-markup-types-from-elisp ()
   "Return the list of allowed markup types.
 This function just returns the global variable
 `standoff-markup-types-allowed', which should be set in
 configuration."
   standoff-markup-types-allowed)
+
+(defun standoff-markup-labels-or-types-from-elisp ()
+  "Return a list of labels for allowed markup types.
+This function is like `standoff-markup-types-from-elisp', but
+tries to hide the real type Ids with labels."
+  (let ((labels-or-types '()))
+    (dolist (typ standoff-markup-types-allowed)
+      (setq label (cdr (assoc typ standoff-markup-labels)))
+      (if (and label (not (member label labels-or-types)))
+	  (push label labels-or-types)
+	(push typ labels-or-types)))
+    labels-or-types))
 
 (defun standoff-markup-type-completion (buf)
   "Returns a list of completions for the markup type.

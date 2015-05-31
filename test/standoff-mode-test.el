@@ -28,6 +28,29 @@
   (should-not (member "fail" (standoff-markup-types-from-overlay-definition)))
   (standoff-test-utils-restore-old-config))
 
+(ert-deftest standoff-markup-labels-or-types-from-elisp-test ()
+  "Test the mapping of markup types to labels."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(standoff-markup-types-allowed (standoff-test-utils-return-markup-types-allowed))
+	(standoff-markup-labels nil))
+    ;; should have no labels
+    (dolist (label (standoff-markup-labels-or-types-from-elisp))
+      (should (member label standoff-markup-types-allowed)))
+    (let ((standoff-markup-labels (standoff-test-utils-return-markup-labels)))
+      ;; should have Beispiel instead of beispiel
+      (should-not (member "beispiel" (standoff-markup-labels-or-types-from-elisp)))
+      (should (member "Beispiel" (standoff-markup-labels-or-types-from-elisp)))
+      ;; should have replaced one and exactly one of begriff and konzept
+      (should-not (and (member "begriff" (standoff-markup-labels-or-types-from-elisp))
+		       (member "konzept" (standoff-markup-labels-or-types-from-elisp))))
+      (should (or (member "begriff" (standoff-markup-labels-or-types-from-elisp))
+		  (member "konzept" (standoff-markup-labels-or-types-from-elisp))))
+      (should (member "Begriff" (standoff-markup-labels-or-types-from-elisp)))
+      ;; should not have a label for marker
+      (should (member "marker" (standoff-markup-labels-or-types-from-elisp)))
+      )
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
 (ert-deftest standoff-markup-type-completion-test ()
   "Testing the completion list for markup types.
 This list depends on the value of
@@ -268,6 +291,7 @@ This list depends on the value of
     ;; should have created a relation
     (should (= (length (funcall standoff-relations-read-function test-buffer)) 1))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
+
 
 ;; run tests and exit
 (when noninteractive
