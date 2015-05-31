@@ -636,8 +636,11 @@ respectively. The source document must be given in buffer BUF."
     ;;(message "Type: sub: %s obj: %s" subj-type obj-type)
     (while relations-defined
       (setq rel (pop relations-defined))
-      (and (member subj-type (nth 0 rel))
-	   (member obj-type (nth 2 rel))
+      ;; when COND: empty subj/obj list allows any type of subj/obj OR
+      ;; sub/obj-type member of sub/obj list
+      (and (or (null (nth 0 rel)) (member subj-type (nth 0 rel)))
+	   (or (null (nth 2 rel)) (member obj-type (nth 2 rel)))
+	   ;; BODY
 	   (setq allowed (cons (nth 1 rel) allowed))))
     allowed))
 

@@ -229,6 +229,27 @@ This list depends on the value of
     (should (= (length (standoff-predicate-completion test-buffer id3 id2)) 0))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
+(ert-deftest standoff-predicates-allowed-from-elisp-test ()
+  "Test the restriction of predicates by `standoff-predicates-allowed-from-elisp'."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3))
+    (standoff-markup-number-mapping-setup)
+    (standoff-test-utils-setup-relations-allowed)
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "beispiel"))
+    (setq id2 (standoff-dummy-create-markup test-buffer 1 443 "konzept"))
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    ;; should only return one, i.e. "markiert"
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id3 id1)) 1))
+    (should (equal (standoff-predicates-allowed-from-elisp test-buffer id3 id1) '("markiert")))
+    ;; there are 2 in the setup, with beispiel as subject an nil or '() as object
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id1 id3)) 2))
+    ;; there is 0 in the setup, with marker as subject and konzept as object
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id3 id2)) 0))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
 (ert-deftest standoff-relation-creation-deletion-test ()
   "Test highlightning markup from dummy backend."
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
