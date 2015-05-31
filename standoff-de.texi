@@ -103,6 +103,8 @@ Markup-Elemente
 Relationen
 
 * Form::
+* Erfassen: Relationen erfassen.
+* Anzeigen: Relationen anzeigen.
 
 Konfiguration
 
@@ -290,9 +292,15 @@ Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
 @end itemize
 
 Für eine umfassende Darstellung sei auf die gute
-@url{www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
+@url{http://www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
 von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen} und auf das
-englischsprachige Manual zu @xref{Top,,, emacs, GNU Emacs} verwiesen.
+englischsprachige 
+@ifinfo
+Manual zu GNU Emacs verwiesen. @xref{Top,,, emacs}.
+@end ifinfo 
+@ifnotinfo
+@url{https://www.gnu.org/software/emacs/manual/emacs.html,Manual zu GNU Emacs} verwiesen.
+@end ifnotinfo
 
 @end ifset
 
@@ -634,23 +642,25 @@ zwischen Elementen an Ausdrucksstärke.
 
 @ifset PRAKTIKUM
 Im Archiv des Beispiels sind Relationen ganz besonders wichtig, denn
-ohne sie würden die ausgezeichneten Markup-Elemente
+ohne sie blieben die ausgezeichneten Markup-Elemente
 @markuptype{Beispiel}, @markuptype{Marker}, @markuptype{Konzept} und
 @markuptype{Kontext} ganz unverbunden. Die Datenbank wäre nicht in der
 Lage, einen @markuptype{Marker} einem @markuptype{Beispiel}
-zuzuordnen. Und mehr noch: Über die Relation erfolgt auch die
-Kategorisierung der Beispiele, denn ein @markuptype{Beispiel} kann
-erläuternd, belegend, suggestiv etc. in einem @markuptype{Kontext}
-angeführt werden, und dieses Erläutern, Belegen, Suggerieren etc. ist
-neben den beiden Markup-Elementen der dritte Bestandteil einer Relation,
-ihr sogenanntes Prädikat.
+zuzuordnen. Und über die Verbindung der Elemente untereinander hinaus:
+Über die Relation erfolgt auch die Kategorisierung der Beispiele, denn
+ein @markuptype{Beispiel} kann erläuternd, belegend, suggestiv etc. in
+einem @markuptype{Kontext} angeführt werden, und dieses Erläutern,
+Belegen, Suggerieren etc. ist neben den beiden Markup-Elementen der
+dritte Bestandteil einer Relation, ihr sogenanntes Prädikat.
 @end ifset
 
 @menu
 * Form::
+* Erfassen: Relationen erfassen.
+* Anzeigen: Relationen anzeigen.
 @end menu
 
-@node Form,  , Relationen, Relationen
+@node Form, Relationen erfassen, Relationen, Relationen
 @section Form
 
 Ihrer Form nach sind Relationen in Stand-Off Mode dreiwertige,
@@ -676,25 +686,76 @@ Eine Relation ist also wesentlich durch ihr Prädikat bestimmt. Es
 beschränkt die Typen von Markup-Elementen, die als Subjekt und als
 Objekt vorkommen können.
 
-Bei der Aufnahme einer Relation in Stand-Off Mode sind zunächst Subjekt
-und Objekt einzugeben. Das Prädikat ist anschließend aus einer Liste von
-bei dieser Kombination von Subjekt und Objekt passenden Prädikaten
+In Stand-Off Mode sind beim Erfassen einer Relation zunächst Subjekt und
+Objekt einzugeben. Das Prädikat ist anschließend aus einer Liste von bei
+dieser Kombination von Subjekt und Objekt passenden Prädikaten
 auszuwählen.
 
 Es gibt auch Prädikate, die ihrer Semantik nach nicht gerichtet
 sind. Technisch gesehen heißt das jedoch nur, dass jede
 Subjekt-Objekt-Kombination für das Prädikat auch als
-Objekt-Subjekt-Kombination erlaubt ist. Bei der Erfassung einer Relation
-mit einem solchen Prädikat muss eine Entscheidung getroffen werden,
-welches Element Subjekt, welches Objekt sein soll.
+Objekt-Subjekt-Kombination erlaubt ist. Beim Erfassen einer Relation mit
+einem solchen Prädikat muss eine Entscheidung getroffen werden, welches
+Element Subjekt, welches Objekt sein soll.
+
+
+@node Relationen erfassen, Relationen anzeigen, Form, Relationen
+@section Erfassen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{r}
+@tab @emenu{Relate markup element at point to some other}
+@tab @code{standoff-markup-relate}
+@end multitable
+
+Mit diesem Kommando wird eine Relation erfasst. Vor dem Aufruf ist der
+@emph{Point} über dem hervorgehobenen Markup-Element zu positionieren,
+das Subjekt der Relation sein soll. Nach Aufruf des Kommmandos ist im
+Minibuffer die Nummer des Markup-Elements einzugeben, das Objekt der
+Relation sein soll. Anschließend ist im Minibuffer noch das Prädikat
+anzugeben, wobei bei Drücken der Tabulator-Taste @kbd{@key{TAB}} eine
+Auswahl erlaubter Prädikate angezeigt wird, aus der man entweder durch
+Maus-Klick oder durch Tastatureingabe auswählen kann, oder eine bereits
+begonnene Eingabe wird vervollständigt.
+
+
+@node Relationen anzeigen,  , Relationen erfassen, Relationen
+@section Anzeigen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{R}
+@tab @emenu{List relations for markup element}
+@tab @code{standoff-relations-for-markup}
+@end multitable
+
+Mit diesem Befehl werden die Relationen eines Markup-Elements
+angezeigt. Nach Aufruf ist im Minibuffer die Nummer des Elements
+anzugeben. Anschließend werden die Relationen in einem neuen Buffer
+namens @code{*Relations*} angezeigt. Angezeigt werden Relationen, in
+denen das angegebene Markup-Element als Subjekt oder als Objekt
+vorkommt. Jede Relationen wird in einer Zeile des Buffers
+dargestellt. Zum Verlassen des Buffers kann die Taste @kbd{q} (quit)
+gedrückt werden, oder der gewünschte Buffer aus im Hauptmenü
+@emenu{Buffers} ausgewählt werden.
+
+Weil der Buffer @code{*Relations*} nicht in Stand-Off Mode ist, steht
+das Stand-Off-Menü nicht zur Verfügung. 
+
+@c Stattdessen stehen folgende Kommandos zur Verfügung.
+
+
 
 @node Literale, Kommentare, Relationen, Top
 @chapter Literale
 
+Dieses Feature ist noch nicht implementiert.
 
 @node Kommentare, Konfiguration, Literale, Top
 @chapter Kommentare
 
+Dieses Feature ist noch nicht implementiert.
 
 @node Konfiguration, GNU Free Documentation License, Kommentare, Top
 @chapter Konfiguration
