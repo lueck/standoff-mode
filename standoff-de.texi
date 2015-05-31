@@ -1,6 +1,5 @@
 \input texinfo.tex @c -*-texinfo-*-
 @include version.texi
-@c %**start of header
 
 @c Diese Datei enthält eine Standard-Version des Handbuches und eine
 @c Version für das Praktikum im Archiv des Beispiels. Letztere Version
@@ -10,18 +9,22 @@
 @c gedacht, aber nicht als Info-File. Zur Erzeugung der
 @c Praktikum-Version muss das flag PRAKTIKUM gesetzt werden.
 
-@c Erzeugung für des PDFs für das Praktikum: 
-@c texi2dvi -t "@set PRAKTIKUM" standoff.texi
+@c Erzeugung des PDFs für das Praktikum:
+@c texi2pdf -t "@set PRAKTIKUM" standoff-de.texi
 
 @setfilename standoff-de.info
 @documentencoding UTF-8
 @documentlanguage de
+@ifclear PRAKTIKUM
 @settitle Stand-Off Mode @value{standoff-version} Benutzerhandbuch (deutsch)
+@end ifclear
+@ifset PRAKTIKUM
+@settitle Stand-Off Mode @value{standoff-version} Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels
+@end ifset
 
-@c Kommando für Emacs Menu
-@alias emenu = samp
-
-@alias markuptype = samp
+@c semantisches Markup
+@alias emenu = samp @c Menü-Eintrag
+@alias markuptype = samp @c Markup-Typ
 
 @copying
 Copyright @copyright{} 2015 Christian Lück

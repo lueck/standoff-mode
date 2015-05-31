@@ -1,9 +1,15 @@
 *~
 *.[0-9]
 *.sqlite3
-*.tar
+standoff-*.tar
 
-# texinfo and texi2...
+# Info files
+standoff-de.info
+standoff-de.pdf
+standoff-de
+standoff-praktikum.pdf
+standoff-praktikum
+version.texi
 *.aux
 *.cp
 *.dvi
@@ -15,4 +21,3 @@
 *.toc
 *.tp
 *.vr
-version.texi
