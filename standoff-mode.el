@@ -78,12 +78,13 @@ user may exit his input with any type. If set to
 to confirm his input. Cf. `completing-read'."
   :group 'standoff)
 
-(defcustom standoff-markup-types-allowed-function 'standoff-markup-types-from-overlay-definition
+(defcustom standoff-markup-types-allowed-function 'standoff-markup-types-from-elisp
   "Points to the function called for a list of allowed markup types.
 This variable must be set to the function's symbol (name)."
   :group 'standoff
   :type 'function
-  :options '('standoff-markup-types-from-overlay-definition))
+  :options '('standoff-markup-types-from-overlay-definition
+	     'standoff-markup-types-from-elisp))
 
 (defcustom standoff-markup-overlays '()
   "The overlay definition. This should be defined by the user."
@@ -94,6 +95,18 @@ This variable must be set to the function's symbol (name)."
 This might serve as simple handler called using
 `standoff-markup-types-allowed-function'. "
   (mapcar 'car standoff-markup-overlays))
+
+(defcustom standoff-markup-types-allowed '()
+  "A list of allowed markup types evaluated by `standoff-markup-types-from-elisp'."
+  :group 'standoff
+  :type 'list)
+
+(defun standoff-markup-types-from-elisp ()
+  "Return the list of allowed markup types.
+This function just returns the global variable
+`standoff-markup-types-allowed', which should be set in
+configuration."
+  standoff-markup-types-allowed)
 
 (defun standoff-markup-type-completion (buf)
   "Returns a list of completions for the markup type.
@@ -620,11 +633,14 @@ respectively. The source document must be given in buffer BUF."
 	(relations-defined (or standoff-relations-allowed '()))
 	(rel)
 	(allowed '()))
-    (message "Type: sub: %s obj: %s" subj-type obj-type)
+    ;;(message "Type: sub: %s obj: %s" subj-type obj-type)
     (while relations-defined
       (setq rel (pop relations-defined))
-      (and (equal (nth 0 rel) subj-type)
-	   (equal (nth 2 rel) obj-type)
+      ;; when COND: empty subj/obj list allows any type of subj/obj OR
+      ;; sub/obj-type member of sub/obj list
+      (and (or (null (nth 0 rel)) (member subj-type (nth 0 rel)))
+	   (or (null (nth 2 rel)) (member obj-type (nth 2 rel)))
+	   ;; BODY
 	   (setq allowed (cons (nth 1 rel) allowed))))
     allowed))
 

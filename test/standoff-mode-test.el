@@ -32,9 +32,10 @@
   "Testing the completion list for markup types.
 This list depends on the value of
 `standoff-markup-require-name-require-match'."
-  (let ((test-buffer (standoff-test-utils-setup-source-buffer)))
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(standoff-markup-types-allowed-function 'standoff-markup-types-from-overlay-definition)
+	(standoff-markup-type-require-match t))
     (standoff-test-utils-setup-overlays)
-    (setq standoff-markup-type-require-match t)
     (standoff-dummy-create-markup test-buffer 445 482 "example")
     (should (member "beispiel" (standoff-markup-type-completion test-buffer)))
     (should-not (member "example" (standoff-markup-type-completion test-buffer)))
@@ -226,6 +227,29 @@ This list depends on the value of
     ;; should not include used predicate
     (setq standoff-predicate-require-match t)
     (should (= (length (standoff-predicate-completion test-buffer id3 id2)) 0))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
+(ert-deftest standoff-predicates-allowed-from-elisp-test ()
+  "Test the restriction of predicates by `standoff-predicates-allowed-from-elisp'."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3)
+	(standoff-relations-allowed (standoff-test-utils-return-relations-allowed)))
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "beispiel"))
+    (setq id2 (standoff-dummy-create-markup test-buffer 1 443 "konzept"))
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    ;; should only return one, i.e. "markiert"
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id3 id1)) 1))
+    (should (equal (standoff-predicates-allowed-from-elisp test-buffer id3 id1) '("markiert")))
+    ;; there are 2 in the setup, with beispiel as subject an nil or '() as object
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id1 id3)) 2))
+    ;; there is 0 in the setup, with marker as subject and konzept as object
+    (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id3 id2)) 0))
+    ;; should not if no relations are allowed 
+    (let ((standoff-relations-allowed nil))
+      (should-not (standoff-predicates-allowed-from-elisp test-buffer id1 id3)))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
 (ert-deftest standoff-relation-creation-deletion-test ()
