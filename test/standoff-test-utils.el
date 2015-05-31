@@ -70,13 +70,12 @@ using this setup function."
 	   ('priority 5)
 	   ('face (:foreground "green"))))))
 
-(defun standoff-test-utils-setup-relations-allowed ()
+(defun standoff-test-utils-return-relations-allowed ()
   "Set up `standoff-relations-allowed'."
-  (setq standoff-relations-allowed
-	'((("marker") "markiert" ("beispiel"))
-	  (("beispiel") "illustriert" ("konzept" "kontext"))
-	  (("beispiel") "belegt" ())
-	  (("beispiel" "beruf" "stand" "person") "stehtFür" nil))))
+  '((("marker") "markiert" ("beispiel"))
+    (("beispiel") "illustriert" ("konzept" "kontext"))
+    (("beispiel") "belegt" ())
+    (("beispiel" "beruf" "stand" "person") "stehtFür" nil)))
 
 ;; Tear down utility functions
 

@@ -234,9 +234,8 @@ This list depends on the value of
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
 	(id1)
 	(id2)
-	(id3))
-    (standoff-markup-number-mapping-setup)
-    (standoff-test-utils-setup-relations-allowed)
+	(id3)
+	(standoff-relations-allowed (standoff-test-utils-return-relations-allowed)))
     ;; create some markup in the backend
     (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "beispiel"))
     (setq id2 (standoff-dummy-create-markup test-buffer 1 443 "konzept"))
@@ -248,6 +247,9 @@ This list depends on the value of
     (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id1 id3)) 2))
     ;; there is 0 in the setup, with marker as subject and konzept as object
     (should (= (length (standoff-predicates-allowed-from-elisp test-buffer id3 id2)) 0))
+    ;; should not if no relations are allowed 
+    (let ((standoff-relations-allowed nil))
+      (should-not (standoff-predicates-allowed-from-elisp test-buffer id1 id3)))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
 (ert-deftest standoff-relation-creation-deletion-test ()
