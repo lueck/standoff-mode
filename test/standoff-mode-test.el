@@ -82,6 +82,8 @@
   "Testing the completion list for markup types.
 This list depends on the value of
 `standoff-markup-require-name-require-match'."
+  ;; This test is obsolete. Test standoff-markup-type-from-user-input instead!
+  :expected-result :failed
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
 	(standoff-markup-types-allowed-function 'standoff-markup-types-from-elisp)
 	(standoff-markup-labels (standoff-test-utils-return-markup-labels))

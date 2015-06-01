@@ -162,26 +162,32 @@ LABEL-OR-TYPE is returned, if no label is found."
 	(car mapping)
       label-or-type)))
 
-(defun standoff-markup-type-completion (buf)
-  "Returns a list of completions for the markup type.
-Depending on `standoff-markup-type-require-match' the list is
-composed of a markup from a schema definition and markup types
-used in the (current) buffer BUF."
-  (let ((types (funcall standoff-markup-types-allowed-function))
-	(types-used (if (equal standoff-markup-type-require-match t)
-			'()
-		      (funcall standoff-markup-types-used-function buf))))
-    ;; add used types to types list, if not in there
-    (dolist (typ types-used)
-      (unless (member typ types)
-	(push typ types)))
-    ;; map to labels depending customization and mappability
-    ;; TODO: should we check mappability on a per-label basis?
-    (when (and standoff-show-labels
-	       (standoff-labels-mappable-p types standoff-markup-labels))
-      (setq types (standoff-labels-for-types types standoff-markup-labels)))
-    ;; sort and return types
-    (sort types 'string-lessp)))
+(defun standoff-markup-type-from-user-input (buf &optional prompt require-match)
+  "Prompt the user for a markup type."
+  (let* (;; 1. make completion list
+	 (types-def (funcall standoff-markup-types-allowed-function))
+	 (types-used (if (equal standoff-markup-type-require-match t)
+			 '()
+		       (funcall standoff-markup-types-used-function buf)))
+	 ;; add used types to defined types, remove duplicates
+	 (types (standoff--append-remove-duplicates types-def types-used))
+	 ;; depending on custom var and mappability replace with labels
+	 (mappable (and standoff-show-labels
+			(standoff-labels-mappable-p types standoff-markup-labels)))
+	 (labels (if mappable
+		     (standoff-labels-for-types types standoff-markup-labels)
+		   types))
+	 ;; sort label or types
+	 (sorted-labels (sort labels 'string-lessp))
+	 ;; 2. get user input
+	 (type (completing-read (or prompt "Markup type: ")
+				sorted-labels
+				nil
+				require-match)))
+    ;; 3. get type if replaced with labels
+    (if mappable
+	(standoff-type-from-label-or-type type standoff-markup-labels)
+      type)))
 
 (defcustom standoff-markup-post-functions nil
   "A hook for handlers called when markup was successfully stored to some backend.
@@ -203,23 +209,12 @@ The region is given by BEG and END, the type of the markup is
 given by MARKUP-TYPE. The id is automatically assigned by the
 backend, e.g. by automatic incrementation of an integer."
   (interactive
-   (let* ((beg (region-beginning))
-	  (end (region-end))
-	  (type-or-label
-	   (completing-read
-	    "Name of markup element: "
-	    (standoff-markup-type-completion (current-buffer))
-	    nil
-	    standoff-markup-type-require-match))
-	  (types-used (if (equal standoff-markup-type-require-match t)
-			  '()
-			(funcall standoff-markup-types-used-function buf)))
-	  (types (append (funcall standoff-markup-types-allowed-function)
-			 types-used)))
-     (list beg end (if (and standoff-show-labels
-			    (standoff-labels-mappable-p types standoff-markup-labels))
-		       (standoff-type-from-label-or-type type-or-label standoff-markup-labels)
-		     type-or-label))))
+   (list (region-beginning)
+	 (region-end)
+	 (standoff-markup-type-from-user-input
+	  (current-buffer)
+	  "Markup type: "
+	  standoff-markup-type-require-match)))
   (let ((markup-id nil))
     (save-restriction
       (widen)
@@ -534,10 +529,9 @@ reused by more specific interactive functions for hiding markup."
 (defun standoff-hide-markup-buffer (&optional markup-type)
   "Hide markup in the current buffer, i.e. remove all overlays."
   (interactive
-   (list (completing-read
+   (list (standoff-markup-type-from-user-input
+	  (current-buffer)
 	  "Markup type to hide, <!> for all: "
-	  (append "!" (standoff-markup-type-completion (current-buffer)))
-	  nil
 	  nil)))
   (save-excursion
     (if (or (not markup-type) (equal markup-type "!"))
@@ -549,10 +543,9 @@ reused by more specific interactive functions for hiding markup."
   (interactive
    (list (region-beginning)
 	 (region-end)
-	 (completing-read
+	 (standoff-markup-type-from-user-input
+	  (current-buffer)
 	  "Markup type to hide, <!> for all: "
-	  (append "!" (standoff-markup-type-completion (current-buffer)))
-	  nil
 	  nil)))
   (save-excursion
     (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
@@ -603,18 +596,21 @@ markup element or range."
    (list
     (region-beginning)
     (region-end)
-    (completing-read "Type of markup to show up, <!> for all: "
-		     (cons "!" (standoff-markup-type-completion (current-buffer)))
-		     nil nil)))
+    (standoff-markup-type-from-user-input
+     (current-buffer)
+     "Type of markup to show up, <!> for all: "
+     nil)))
   (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
     (standoff-highlight-markup beg end markup-type-or-nil)))
 
 (defun standoff-highlight-markup-buffer (&optional markup-type)
   "Highlight markup in the backend optionally filtered by markup type."
   (interactive
-   (list (completing-read "Type of markup to show up, <!> for all: "
-			  (cons "!" (standoff-markup-type-completion (current-buffer)))
-			  nil nil)))
+   (list
+    (standoff-markup-type-from-user-input
+     (current-buffer)
+     "Markup type to show up, <!> for all: "
+     nil)))
   (let ((markup-type-or-nil (if (equal markup-type "!") nil markup-type)))
     (standoff-highlight-markup nil nil markup-type-or-nil)))
 
