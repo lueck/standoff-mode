@@ -205,7 +205,7 @@ backend, e.g. by automatic incrementation of an integer."
 	  (types (append (funcall standoff-markup-types-allowed-function)
 			 types-used)))
      (list beg end (if (and standoff-markup-types-mapped-to-labels
-			    (standoff-labels-mappable-p (types standoff-markup-labels)))
+			    (standoff-labels-mappable-p types standoff-markup-labels))
 		       (standoff-type-from-label-or-type type-or-label standoff-markup-labels)
 		     type-or-label))))
   (let ((markup-id nil))
@@ -476,7 +476,10 @@ overlay is assigned the key value `\"standoff\" t'."
 	    (number (standoff-markup-get-number buf markup-inst-id))
 	    (front-str (format "[%i" number))
 	    (after-str (format "%i]" number))
-	    (hlp-echo (format "%s no=%i ID=%s" markup-type number markup-inst-id))
+	    (hlp-type (or (and standoff-markup-types-mapped-to-labels
+			       (cdr (assoc markup-type standoff-markup-labels)))
+			  markup-type))
+	    (hlp-echo (format "Type: %s\nNo: %i\nID:%s" hlp-type number markup-inst-id))
 	    (front-string (car (mapcar #'(lambda (x) (propertize front-str (car(cdar x)) (cadr x))) front-props)))
 	    (after-string (car (mapcar #'(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props))))
 	    ;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
