@@ -51,9 +51,17 @@
       (setq markup-string (concat markup-string standoff-relations--markup-string-range-delimiter (nth standoff-pos-markup-string (pop ranges)))))
     markup-string))
 
+(defun standoff-relations--markup-type-label (typ)
+  "Return the label for the markup type TYP."
+  (if standoff-show-labels
+      (or (cdr (assoc predicate standoff-markup-labels)) typ)
+    typ))
+
 (defun standoff-relations--predicate-label (predicate)
   "Return the label for the predicate PREDICATE."
-  predicate)
+  (if standoff-show-labels
+      (or (cdr (assoc predicate standoff-predicate-labels)) predicate)
+    predicate))
 
 (defun standoff-relations--relation-handler (rel-id subj-id p-id obj-id source-buf &optional invariant point)
   "Create a one line description of a relation for the relations list in the current buffer."
@@ -76,9 +84,9 @@
 	       ((eq field :obj-string)
 		(standoff-relations--markup-string objs))
 	       ((eq field :subj-type)
-		(standoff-markup--type-label (nth standoff-pos-markup-type (car subjs))))
+		(standoff-relations--markup-type-label (nth standoff-pos-markup-type (car subjs))))
 	       ((eq field :obj-type)
-		(standoff-markup--type-label (nth standoff-pos-markup-type (car objs))))
+		(standoff-relations--markup-type-label (nth standoff-pos-markup-type (car objs))))
 	       ((eq field :predicate-string)
 		(standoff-relations--predicate-label p-id))))
 	(when str
