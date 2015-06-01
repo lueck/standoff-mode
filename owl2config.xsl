@@ -67,6 +67,11 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
     <xsl:apply-templates select="*" mode="standoff-relations-allowed"/>
     <xsl:text>&#10;  ))&#10;</xsl:text>
 
+    <!-- labels for predicates -->
+    <xsl:text>&#10;(setq standoff-predicate-labels '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-predicate-labels"/>
+    <xsl:text>&#10;  ))&#10;</xsl:text>
+    
     <xsl:text>&#10;;;; </xsl:text>
     <xsl:value-of select="$config-file"/>
     <xsl:text> ends here.&#10;</xsl:text>
@@ -145,6 +150,19 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
   </xsl:template>
   
   <xsl:template match="text()|@*" mode="standoff-relations-allowed.object"/>
+
+  
+  <!-- templates for standoff-predicate-labels -->
+  
+  <xsl:template match="owl:ObjectProperty" mode="standoff-predicate-labels">
+    <xsl:text>&#10;  ("</xsl:text>
+    <xsl:value-of select="@rdf:about"/>
+    <xsl:text>" . "</xsl:text>
+    <xsl:value-of select="rdfs:label"/>
+    <xsl:text>")</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="text()|@*" mode="standoff-predicate-labels"/>
 
   
 </xsl:stylesheet>
