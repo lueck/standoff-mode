@@ -28,45 +28,93 @@
   (should-not (member "fail" (standoff-markup-types-from-overlay-definition)))
   (standoff-test-utils-restore-old-config))
 
-(ert-deftest standoff-markup-labels-or-types-from-elisp-test ()
+(ert-deftest standoff-labels-for-types-test ()
   "Test the mapping of markup types to labels."
-  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
-	(standoff-markup-types-allowed (standoff-test-utils-return-markup-types-allowed))
-	(standoff-markup-labels nil))
+  (let ((types (standoff-test-utils-return-markup-types-allowed))
+	(labels nil))
     ;; should have no labels
-    (dolist (label (standoff-markup-labels-or-types-from-elisp))
-      (should (member label standoff-markup-types-allowed)))
-    (let ((standoff-markup-labels (standoff-test-utils-return-markup-labels)))
-      ;; should have Beispiel instead of beispiel
-      (should-not (member "beispiel" (standoff-markup-labels-or-types-from-elisp)))
-      (should (member "Beispiel" (standoff-markup-labels-or-types-from-elisp)))
-      ;; should have replaced one and exactly one of begriff and konzept
-      (should-not (and (member "begriff" (standoff-markup-labels-or-types-from-elisp))
-		       (member "konzept" (standoff-markup-labels-or-types-from-elisp))))
-      (should (or (member "begriff" (standoff-markup-labels-or-types-from-elisp))
-		  (member "konzept" (standoff-markup-labels-or-types-from-elisp))))
-      (should (member "Begriff" (standoff-markup-labels-or-types-from-elisp)))
-      ;; should not have a label for marker
-      (should (member "marker" (standoff-markup-labels-or-types-from-elisp)))
-      )
-    (standoff-test-utils-teardown-source-buffer test-buffer)))
+    (dolist (label (standoff-labels-for-types types labels))
+      (should (member label types)))
+    (setq labels (standoff-test-utils-return-markup-labels))
+    ;; should have Beispiel instead of beispiel
+    (should-not (member "beispiel" (standoff-labels-for-types types labels)))
+    (should (member "Beispiel" (standoff-labels-for-types types labels)))
+    ;; should not have a label for marker
+    (should (member "marker" (standoff-labels-for-types types labels)))
+    ))
+
+(ert-deftest standoff-labels-for-types-test ()
+  "Test the mapping of markup types to labels."
+  (let ((types (standoff-test-utils-return-markup-types-allowed))
+	(labels nil))
+    ;; should return the argument as long as there are no labels
+    (should (equal (standoff-type-from-label-or-type "beispiel" labels) "beispiel"))
+    (should (equal (standoff-type-from-label-or-type "Beispiel" labels) "Beispiel"))
+    (let ((labels (standoff-test-utils-return-markup-labels)))
+      ;; should return type for type and type for label
+      (should (equal (standoff-type-from-label-or-type "beispiel" labels) "beispiel"))
+      (should (equal (standoff-type-from-label-or-type "Beispiel" labels) "beispiel"))
+      ;; should return argument for unknown label or type
+      (should (equal (standoff-type-from-label-or-type "unknown" labels) "unknown"))
+      )))
+
+(ert-deftest standoff-labels-mappable-p-test ()
+  "Test the mappable test for labels."
+  (let ((types (standoff-test-utils-return-markup-types-allowed))
+	(labels '()))
+    ;; an empty labels list should be mappable
+    (should (standoff-labels-mappable-p types labels))
+    ;; an labels list with pairwise distinct labels should be mappable
+    (setq labels (standoff-test-utils-return-markup-labels))
+    (should (standoff-labels-mappable-p types labels))
+    ;; should return nil if labels are not pairwise distinct
+    (add-to-list 'labels '("konzept2" . "Konzept"))
+    (should-not (standoff-labels-mappable-p types labels))
+    ;; remove konzept2
+    (setq labels (standoff-test-utils-return-markup-labels))
+    (should (standoff-labels-mappable-p types labels))
+    ;; should return nil if label in types
+    (add-to-list 'types "Konzept")
+    (should-not (standoff-labels-mappable-p types labels))
+    ))
 
 (ert-deftest standoff-markup-type-completion-test ()
   "Testing the completion list for markup types.
 This list depends on the value of
 `standoff-markup-require-name-require-match'."
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
-	(standoff-markup-types-allowed-function 'standoff-markup-types-from-overlay-definition)
-	(standoff-markup-type-require-match t))
-    (standoff-test-utils-setup-overlays)
+	(standoff-markup-types-allowed-function 'standoff-markup-types-from-elisp)
+	(standoff-markup-labels (standoff-test-utils-return-markup-labels))
+	(standoff-markup-types-mapped-to-labels nil)
+	(standoff-markup-type-require-match t)
+	(standoff-markup-types-allowed nil))
     (standoff-dummy-create-markup test-buffer 445 482 "example")
-    (should (member "beispiel" (standoff-markup-type-completion test-buffer)))
+    ;; should allow nothing because markup-types-allowed empty an match required
+    (should-not (member "beispiel" (standoff-markup-type-completion test-buffer)))
     (should-not (member "example" (standoff-markup-type-completion test-buffer)))
+    ;; should allow "beispiel" after setting markup-types-allowed
+    (setq standoff-markup-types-allowed (standoff-test-utils-return-markup-types-allowed))
+    (should (member "beispiel" (standoff-markup-type-completion test-buffer)))
+    ;; should allow "examples" after if match is not required but input must be confirmed
     (setq standoff-markup-type-require-match 'confirm)
     (should (member "example" (standoff-markup-type-completion test-buffer)))
+    ;; should allow "examples" after if match is not required
     (setq standoff-markup-type-require-match nil)
     (should (member "example" (standoff-markup-type-completion test-buffer)))
     (should (member "beispiel" (standoff-markup-type-completion test-buffer)))
+    ;; should not allow label
+    (should-not (member "Beispiel" (standoff-markup-type-completion test-buffer)))
+    ;; should allow label after configuring mapping
+    (setq standoff-markup-types-mapped-to-labels t)
+    (should (member "Konzept" (standoff-markup-type-completion test-buffer)))
+    ;; should not allow label if no labels
+    (setq standoff-markup-labels nil)
+    (should-not (member "Konzept" (standoff-markup-type-completion test-buffer)))
+    ;; should still allow used types
+    (should (member "example" (standoff-markup-type-completion test-buffer)))
+    ;; should not allow labels if a label occurs in types
+    (standoff-dummy-create-markup test-buffer 445 482 "Beispiel")
+    (should-not (member "Konzept" (standoff-markup-type-completion test-buffer)))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
 (ert-deftest standoff-markup-number-mapping-test ()

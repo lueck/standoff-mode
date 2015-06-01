@@ -106,6 +106,11 @@ This might serve as simple handler called using
   :group 'standoff
   :type 'list)
 
+(defcustom standoff-markup-types-mapped-to-labels nil
+  "Whether or not to show labels instead of markup types."
+  :group 'standoff
+  :type 'boolean)
+
 (defun standoff-markup-types-from-elisp ()
   "Return the list of allowed markup types.
 This function just returns the global variable
@@ -113,28 +118,58 @@ This function just returns the global variable
 configuration."
   standoff-markup-types-allowed)
 
-(defun standoff-markup-labels-or-types-from-elisp ()
+(defun standoff-labels-mappable-p (types types-labels-alist)
+  "Returns t only if none of labels is in types AND labels are
+pairwise unequal."
+  (let ((mappable t)
+	(labels '()))
+    (dolist (mapping types-labels-alist)
+      (progn
+	(when (or (member (cdr mapping) labels) (member (cdr mapping) types))
+	  (setq mappable nil))
+	(push (cdr mapping) labels)))
+    mappable))
+
+(defun standoff-labels-for-types (types types-labels-alist)
   "Return a list of labels for allowed markup types.
 This function is like `standoff-markup-types-from-elisp', but
 tries to hide the real type Ids with labels."
   (let ((labels-or-types '()))
-    (dolist (typ standoff-markup-types-allowed)
-      (setq label (cdr (assoc typ standoff-markup-labels)))
+    (dolist (typ types)
+      (setq label (cdr (assoc typ types-labels-alist)))
       (if (and label (not (member label labels-or-types)))
 	  (push label labels-or-types)
 	(push typ labels-or-types)))
     labels-or-types))
+
+(defun standoff-type-from-label-or-type (label-or-type types-labels-alist)
+  "Return the markup type for the given LABEL-OR-TYPE appling the map given by TYPES-LABELS-ALIST.
+LABEL-OR-TYPE is returned, if no label is found."
+  (let ((mapping (rassoc label-or-type types-labels-alist)))
+    (if mapping
+	(car mapping)
+      label-or-type)))
 
 (defun standoff-markup-type-completion (buf)
   "Returns a list of completions for the markup type.
 Depending on `standoff-markup-type-require-match' the list is
 composed of a markup from a schema definition and markup types
 used in the (current) buffer BUF."
-  (cond ((equal standoff-markup-type-require-match t)
-	 (funcall standoff-markup-types-allowed-function))
-	(t ;; 'confirm OR nil
-	 (append (funcall standoff-markup-types-used-function buf)
-		 (funcall standoff-markup-types-allowed-function)))))
+  (let ((types (funcall standoff-markup-types-allowed-function))
+	(types-used (if (equal standoff-markup-type-require-match t)
+			'()
+		      (funcall standoff-markup-types-used-function buf))))
+    ;; add used types to types list, if not in there
+    (dolist (typ types-used)
+      (unless (member typ types)
+	(push typ types)))
+    ;; map to labels depending customization and mappability
+    ;; TODO: should we check mappability on a per-label basis?
+    (when (and standoff-markup-types-mapped-to-labels
+	       (standoff-labels-mappable-p types standoff-markup-labels))
+      (setq types (standoff-labels-for-types types standoff-markup-labels)))
+    ;; sort and return types
+    (sort types 'string-lessp)))
 
 (defcustom standoff-markup-post-functions nil
   "A hook for handlers called when markup was successfully stored to some backend.
@@ -156,13 +191,23 @@ The region is given by BEG and END, the type of the markup is
 given by MARKUP-TYPE. The id is automatically assigned by the
 backend, e.g. by automatic incrementation of an integer."
   (interactive
-   (list (region-beginning)
-	 (region-end)
-	 (completing-read
-	  "Name of markup element: "
-	  (standoff-markup-type-completion (current-buffer))
-	  nil
-	  standoff-markup-type-require-match)))
+   (let* ((beg (region-beginning))
+	  (end (region-end))
+	  (type-or-label
+	   (completing-read
+	    "Name of markup element: "
+	    (standoff-markup-type-completion (current-buffer))
+	    nil
+	    standoff-markup-type-require-match))
+	  (types-used (if (equal standoff-markup-type-require-match t)
+			  '()
+			(funcall standoff-markup-types-used-function buf)))
+	  (types (append (funcall standoff-markup-types-allowed-function)
+			 types-used)))
+     (list beg end (if (and standoff-markup-types-mapped-to-labels
+			    (standoff-labels-mappable-p (types standoff-markup-labels)))
+		       (standoff-type-from-label-or-type type-or-label standoff-markup-labels)
+		     type-or-label))))
   (let ((markup-id nil))
     (save-restriction
       (widen)

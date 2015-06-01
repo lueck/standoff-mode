@@ -85,7 +85,7 @@ using this setup function."
     ("beispiel" . "Beispiel")
     ("grundsatz" . "Grundsatz")
     ("kontext" . "Kontext")
-    ("konzept" . "Begriff")))
+    ("konzept" . "Konzept")))
 
 (defun standoff-test-utils-return-relations-allowed ()
   "Set up `standoff-relations-allowed'."
