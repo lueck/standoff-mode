@@ -106,10 +106,22 @@ This might serve as simple handler called using
   :group 'standoff
   :type 'list)
 
-(defcustom standoff-markup-types-mapped-to-labels nil
+(defcustom standoff-show-labels nil
   "Whether or not to show labels instead of markup types."
   :group 'standoff
   :type 'boolean)
+
+(defun standoff--append-remove-duplicates (&rest sequences)
+  "Concatenate all the arguments, remove duplicates and make the result a list.
+Tested with lists."
+  (let ((return-list '())
+	(sequence))
+    (while sequences
+      (setq sequence (pop sequences))
+      (dolist (el sequence)
+	(unless (member el return-list)
+	  (push el return-list))))
+    return-list))
 
 (defun standoff-markup-types-from-elisp ()
   "Return the list of allowed markup types.
@@ -165,7 +177,7 @@ used in the (current) buffer BUF."
 	(push typ types)))
     ;; map to labels depending customization and mappability
     ;; TODO: should we check mappability on a per-label basis?
-    (when (and standoff-markup-types-mapped-to-labels
+    (when (and standoff-show-labels
 	       (standoff-labels-mappable-p types standoff-markup-labels))
       (setq types (standoff-labels-for-types types standoff-markup-labels)))
     ;; sort and return types
@@ -204,7 +216,7 @@ backend, e.g. by automatic incrementation of an integer."
 			(funcall standoff-markup-types-used-function buf)))
 	  (types (append (funcall standoff-markup-types-allowed-function)
 			 types-used)))
-     (list beg end (if (and standoff-markup-types-mapped-to-labels
+     (list beg end (if (and standoff-show-labels
 			    (standoff-labels-mappable-p types standoff-markup-labels))
 		       (standoff-type-from-label-or-type type-or-label standoff-markup-labels)
 		     type-or-label))))
@@ -476,7 +488,7 @@ overlay is assigned the key value `\"standoff\" t'."
 	    (number (standoff-markup-get-number buf markup-inst-id))
 	    (front-str (format "[%i" number))
 	    (after-str (format "%i]" number))
-	    (hlp-type (or (and standoff-markup-types-mapped-to-labels
+	    (hlp-type (or (and standoff-show-labels
 			       (cdr (assoc markup-type standoff-markup-labels)))
 			  markup-type))
 	    (hlp-echo (format "Type: %s\nNo: %i\nID:%s" hlp-type number markup-inst-id))
@@ -688,6 +700,11 @@ document, the subject's id, the object's id.")
   :group 'standoff
   :type 'list)
 
+(defcustom standoff-predicate-labels '()
+  "Alist of predicate labels."
+  :group 'standoff
+  :type 'list)
+
 (defun standoff-predicates-allowed-from-elisp (buf subj-id obj-id)
   "Filter predicates from `standoff-predicates-allowed' for combination of subject and object.
 Subject and object must be given by ids, SUBJ-ID and OBJ-ID
@@ -709,21 +726,32 @@ respectively. The source document must be given in buffer BUF."
 	   (setq allowed (cons (nth 1 rel) allowed))))
     allowed))
 
-(defun standoff-predicate-completion (buf subj-id obj-id)
-  "Return a list of valid predicates for a combination of subject and object.
-This may add labels to improve usability."
-  ;; TODO: add labels
-  (cond ((equal standoff-predicate-require-match t)
-	 (funcall standoff-predicates-allowed-function buf subj-id obj-id))
-	(t ;; 'confirm OR nil
-	 (append (funcall standoff-predicates-used-function buf subj-id obj-id)
-		 (funcall standoff-predicates-allowed-function buf subj-id obj-id)))))
-
-(defun standoff-predicate-from-user-input (buf predicate)
-  "Make a real predicate from user input.
-User input may still contain the predicates label."
-  ;; TODO: remove labels
-  predicate)
+(defun standoff-predicate-from-user-input (buf subj-id obj-id &optional prompt)
+  "Prompt the user for a predicate."
+  (let* (;; 1. make completion list
+	 (predicates-def (funcall standoff-predicates-allowed-function buf subj-id obj-id))
+	 (predicates-used (if (equal standoff-predicate-require-match t)
+			      '()
+			    (funcall standoff-predicates-used-function buf subj-id obj-id)))
+	 ;; add used predicates to predicates, but without duplicates
+	 (predicates (standoff--append-remove-duplicates predicates-def predicates-used))
+	 ;; depending on custom var and mappability do mapping
+	 (mappable (and standoff-show-labels
+			(standoff-labels-mappable-p predicates standoff-predicate-labels)))
+	 (labels (if mappable
+		     (standoff-labels-for-types predicates standoff-predicate-labels)
+		   predicates))
+	 ;; sort and return predicates
+	 (sorted-labels (sort labels 'string-lessp))
+	 ;; 2. get user input
+	 (predicate (completing-read (or prompt "Predicate: ")
+				     sorted-labels
+				     nil
+				     standoff-predicate-require-match)))
+    ;; 3. get
+    (if mappable
+	(standoff-type-from-label-or-type predicate standoff-predicate-labels)
+      predicate)))
 
 (defun standoff-markup-relate (subject-id predicate object-id)
   "Create a directed graph modelling a relation between two markup elements.
@@ -738,17 +766,12 @@ given by the number mapping to its id."
 	  (subj-number (string-to-number (standoff--overlay-property-get subj-ovly "number")))
 	  (subj-id (standoff-markup-get-by-number (current-buffer) subj-number))
 	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlighted markup element at point"))
-	  (obj-number (read-number (format "A relation has the form <subject> <predicate> <object>. The subject is identified by the point (aka curser), it's number is %i. Please enter the number of the markup element that serves as the relation's object: " subj-number)))
+	  (obj-number (read-number (format "The subject was identified by the point, its number is %i.\nPlease enter the number of the relation's object: " subj-number)))
 	  (obj-is-not-subj (or (not (= subj-number obj-number))
 			       (error "The relation's object must not be the relation's subject")))
 	  (obj-id (or (standoff-markup-get-by-number (current-buffer) obj-number)
 		      (error "Invalid markup number")))
-	  (predicate-type
-	   (completing-read "Predicate: "
-			    (standoff-predicate-completion (current-buffer) subj-id obj-id)
-			    nil
-			    standoff-predicate-require-match))
-	  (predicate (standoff-predicate-from-user-input (current-buffer) predicate-type)))
+	  (predicate (standoff-predicate-from-user-input (current-buffer) subj-id obj-id)))
      (list subj-id predicate obj-id)))
   (message "Creating relation %s %s %s." subject-id predicate object-id)
   (if (funcall standoff-relation-create-function (current-buffer) subject-id predicate object-id)

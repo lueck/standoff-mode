@@ -91,6 +91,8 @@
   (setq standoff-markup-type-require-match t)
   (setq standoff-predicate-require-match t);;'confirm)
 
+  (setq standoff-show-labels t)
+
   (setq standoff-markup-overlays
 	'(("beispiel" 
 	   ('priority 10)

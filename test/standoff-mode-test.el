@@ -85,7 +85,7 @@ This list depends on the value of
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
 	(standoff-markup-types-allowed-function 'standoff-markup-types-from-elisp)
 	(standoff-markup-labels (standoff-test-utils-return-markup-labels))
-	(standoff-markup-types-mapped-to-labels nil)
+	(standoff-show-labels nil)
 	(standoff-markup-type-require-match t)
 	(standoff-markup-types-allowed nil))
     (standoff-dummy-create-markup test-buffer 445 482 "example")
@@ -105,7 +105,7 @@ This list depends on the value of
     ;; should not allow label
     (should-not (member "Beispiel" (standoff-markup-type-completion test-buffer)))
     ;; should allow label after configuring mapping
-    (setq standoff-markup-types-mapped-to-labels t)
+    (setq standoff-show-labels t)
     (should (member "Konzept" (standoff-markup-type-completion test-buffer)))
     ;; should not allow label if no labels
     (setq standoff-markup-labels nil)
@@ -279,10 +279,13 @@ This list depends on the value of
 
 (ert-deftest standoff-relation-completion-test ()
   "Test highlightning markup from dummy backend."
+  ;; This Test is obsolete. Test standoff-predicate-from-user-input instead!
+  :expected-result :failed
   (let ((test-buffer (standoff-test-utils-setup-source-buffer))
 	(id1)
 	(id2)
-	(id3))
+	(id3)
+	(standoff-predicate-require-match 'confirm))
     (standoff-markup-number-mapping-setup)
     ;; create some markup in the backend
     (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
