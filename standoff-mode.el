@@ -3,7 +3,8 @@
 ;; Copyright (C) 2015 Christian Lück
 
 ;; Author: Christian Lück <christian.lueck@ruhr-uni-bochum.de>
-;; Homepage: https://github.com/lueck/standoff-mode
+;; URL: https://github.com/lueck/standoff-mode
+;; Keywords: text, annotations, NER, humanities
 
 ;; This file is not part of GNU Emacs.
 
