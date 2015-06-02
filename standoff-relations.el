@@ -54,7 +54,7 @@
 (defun standoff-relations--markup-type-label (typ)
   "Return the label for the markup type TYP."
   (if standoff-show-labels
-      (or (cdr (assoc predicate standoff-markup-labels)) typ)
+      (or (cdr (assoc typ standoff-markup-labels)) typ)
     typ))
 
 (defun standoff-relations--predicate-label (predicate)
