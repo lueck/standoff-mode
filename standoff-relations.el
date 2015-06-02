@@ -122,6 +122,7 @@
 	 (source-buffer (current-buffer))
 	 (rel-buffer (set-buffer (get-buffer-create standoff-relations--relations-buffer)))
 	 (buffer-read-only nil))
+    (erase-buffer)
     (setq relations (funcall standoff-relations-read-function source-buffer markup-inst-id nil nil))
     (while relations
       (setq rel (pop relations))
