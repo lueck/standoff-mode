@@ -95,6 +95,11 @@ Benutzerhandbuch für Stand-Off Mode, version @value{VERSION}.
 @detailmenu
  --- The Detailed Node Listing ---
 
+Einführung
+
+* Stand-Off Markup::
+* Character Offsets::
+
 Stand-Off Mode starten und beenden
 
 * Stand-Off Mode aktivieren::
@@ -119,15 +124,6 @@ Relationen
 * Erfassen: Relationen erfassen.
 * Anzeigen: Relationen anzeigen.
 
-Konfiguration
-
-* Beschränkung der Nutzer-Eingaben::
-
-Beschränkung der Nutzer-Eingaben
-
-* Markup-Typ::
-* Relations-Prädikat::
-
 @end detailmenu
 @end menu
 
@@ -147,6 +143,119 @@ das erstellte Markup wird extern gespeichert. Man sagt auch, dass es vom
 fraglichen Dokument `distanziert' gespeichert wird, daher der Name
 @emph{stand-off}.
 
+Jede Art solch externen Markups muss auf irgendeine Art und Weise auf
+das verarbeitete Dokument, auch Quell-Dokument genannt,
+@emph{verweisen}. In Stand-Off Mode geschieht dieser Verweis über Namen
+und Prüfsummen des Quell-Dokuments und @emph{character offsets}
+verweisen auf die Position innerhalb des Dokuments.
+
+@menu
+* Stand-Off Markup::
+* Character Offsets::
+@end menu
+
+
+@node Stand-Off Markup, Character Offsets, , Einführung
+@section Stand-Off Markup
+
+Im Zusammenhang mit @emph{stand-off markup} sind folgende Begriffe von
+grundlegender Bedeutung, die im weiteren Verlauf dieser
+Benutzerhandbuches systematisch verwendet werden:
+
+@table @b
+
+@item Quell-Dokument
+das Dokument, worauf das stand-off Markup verweist; es enthält den zu
+annotierenden Text; es kann sich um eine reine Text-Datei handeln
+(plaintext) oder sie kann ihrerseits Markup, z.B. XML-Tags, enthalten
+
+@item internes Markup
+das im Quell-Dokument enthaltene Markup, also bei XML-Dateien die
+XML-Tags
+
+@item stand-off Markup / externes Markup
+Markup, das entweder außerhalb des Quell-Dokuments vorliegt und auf das
+Quell-Dokument verweist, oder alternativ Markup, das zwar in derselben
+Datei wie das Quell-Dokument vorliegt, aber auf einen anderen Teil darin
+verweist (Die zweite Alternative ist an dieser Stelle nicht relevant,
+Stand-Off Mode wurde für den ersten Fall entwickelt.)
+
+@item externes Dokument
+ein Dokument, das stand-off Markup enthält, das auf ein Quell-Dokument
+in einer anderen Datei verweist (Stand-Off Mode erzeugt beim Speichern
+bzw. durch ``dump'' ein externes Dokument.)
+
+@item internalisieren
+ein Verfahren, um das Quell-Dokument mit stand-off Markup auszustatten
+und z.B. ein resultierendes XML-Dokument erzeugen (Das ist Aufgabe eines
+anderen Tools.)
+
+@item externalisieren
+ein Verfahren, um ein vorliegendes Dokument mit Markup, z.B. ein
+XML-Dokument, in ein Quell-Dokument im obigen Sinne und externes Markup
+aufzuspalten.
+
+@end table
+
+Siehe auch
+@url{http://www.tei-c.org/release/doc/tei-p5-doc/de/html/SA.html#SASO}
+und @url{http://www.openannotation.org/spec/core/}.
+
+@node Character Offsets,  , Stand-Off Markup, Einführung
+@section Character Offsets
+
+@ifset PRAKTIKUM
+Folgende Ausführungen sind eher technischer Natur und werden während des
+Praktikum im Archiv des Beispiels kaum relevant sein.
+@end ifset
+
+Ein von Stand-Off Mode erzeugtes @emph{externes Dokument} könnte so aussehen: 
+
+@example
+(setq standoff-markup-read-function-dumped
+ (quote
+  (("ac06be81-d86e-4fe5-b84e-4952b1e571c9"
+    "http://beispiel.fernuni-hagen.de/ontologies/beispiel#beispiel"
+    28095
+    28100
+    "Dante")
+   ("a29ca667-0f99-4933-b0aa-8a7b1c1929e9"
+    "http://beispiel.fernuni-hagen.de/ontologies/beispiel#konzept"
+    28057
+    28070
+    "Große Dichter")
+   ...)))
+
+(setq standoff-source-md5-dumped "a2997fcd8c318048abf34889212c1982")
+@end example
+
+Alle im Quell-Dokument ausgezeichneten Passagen befinden sich in einer
+Variablen namens @code{standoff-markup-read-function-dumped}. Die
+Einzelnen Einträge für die Auszeichnungen (Markup) befinden sich dann
+verschachtelt in mehreren Klammerebenen in den jeweils inneren
+Klammern.
+
+Der erste Werte, der sich fünf Blöcken aus Buchstaben und Zahlen
+zusammensetzt, ist die Identifikationsnummer (ID) des Markup-Elements.
+
+Beim zweiten Eintrag, der die Form einer URI hat, handelt es sich um die
+Angaben des Markup-Types; hier handelt es sich um den Typ ``konzept''
+aus dem Namensraum
+@code{http://beispiel.fernuni-hagen.de/ontologies/beispiel}, also aus um
+ein ``Konzept'' im Sinne von Leuten, die vermutlich irgendetwas mit der
+Fernuni Hagen zu tun haben.
+
+Bei den folgenden beiden Einträgen handelt es sich um die
+@emph{character offsets} des Anfangs und des Endes der Passage im
+Quell-Dokument. Hier beschreiben die Zahlen die Passage zwischen dem
+28095ten und dem 28100ten Zeichen im Quelldokument.
+
+Der fünfte Eintrag ist genau dieses Zeichenkette aus dem
+Quell-Dokument. Der Lateinische Großbuchtabe @code{D} in @code{Dante}
+hat die Position 28095, das @code{e} am Ende des Namens die Position
+28099.
+
+Weiter unten ist die Prüfsumme des Quell-Dokuments dargestellt.
 
 @ifset PRAKTIKUM
 @node Hinweise zur Arbeit mit GNU Emacs, Stand-Off Mode starten und beenden, Einführung, Top
@@ -423,7 +532,7 @@ Stand-Off-Markup handelt, wird es nicht in der bearbeitete Datei,
 sondern extern gespeichert. Die Datei, in der es gespeichert wird, ist
 nach Aufruf des Kommandos im Minibuffer bzw. in einem Datei-Dialog
 anzugeben. Voreingestellt ist eine Datei, die denselben Dateinamen
-trägt, wie das Quelldokument, jedoch erweitert durch die Endung
+trägt, wie das Quell-Dokument, jedoch erweitert durch die Endung
 @code{.dump.el}. Wenn eine Datei dieses Namens vorliegt, wird sie bei
 Aktivierung von Stand-Off Mode geladen.
 
@@ -535,8 +644,8 @@ Elements gefragt. Durch Drücken von @kbd{@key{TAB}}
 Eingabe wird vervollständigt. Das neu erstellte Element wird visuell
 hervorgehoben (highlight).
 
-@xref{Markup-Typ}, wo eine Beschränkung der Eingabe des Typs
-konfiguriert wird.
+@c @xref{Markup-Typ}, wo eine Beschränkung der Eingabe des Typs
+@c konfiguriert wird.
 
 @ifset PRAKTIKUM
 Für das Praktikum im Archiv des Beispiels ist Emacs so konfiguriert,
@@ -773,27 +882,8 @@ Dieses Feature ist noch nicht implementiert.
 @node Konfiguration, GNU Free Documentation License, Kommentare, Top
 @chapter Konfiguration
 
-@menu
-* Beschränkung der Nutzer-Eingaben::
-@end menu
-
-
-@node Beschränkung der Nutzer-Eingaben,  , Konfiguration, Konfiguration
-@section Beschränkung der Nutzer-Eingaben
-
-
-@menu
-* Markup-Typ::
-* Relations-Prädikat::
-@end menu
-
-@node Markup-Typ, Relations-Prädikat, Beschränkung der Nutzer-Eingaben, Beschränkung der Nutzer-Eingaben
-@subsection Markup-Typ
-
-@node Relations-Prädikat,  , Markup-Typ, Beschränkung der Nutzer-Eingaben
-@subsection Relations-Prädikat
-
-
+Über die Konfiguration gibt die englischsprachige Fassung des
+Benutzerhandbuches Auskunft.
 
 @node GNU Free Documentation License,  , Konfiguration, Top
 @appendix GNU Free Documentation License
