@@ -1,4 +1,4 @@
-.PHONY: test compile clean version.texi
+.PHONY: test compile clean
 
 #VERSION := $(shell git describe --tags)
 VERSION := "0.2.2"
@@ -29,9 +29,6 @@ ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 	emacs -Q -batch -L `pwd` -f batch-byte-compile $<
 
 doc-de : ${DOC_DE}
-
-version.texi :
-	echo "@set standoff-version ${VERSION}\n@c End:\n" > version.texi
 
 standoff-de.info : standoff-de.texi version.texi
 	makeinfo standoff-de.texi
