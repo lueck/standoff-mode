@@ -53,15 +53,24 @@
 
 (defun standoff-relations--markup-type-label (typ)
   "Return the label for the markup type TYP."
-  (if standoff-show-labels
-      (or (cdr (assoc typ standoff-markup-labels)) typ)
+  ;; silince the compiler with a boundp test
+  (if (and (boundp 'standoff-show-labels) (boundp 'standoff-markup-labels))
+      (if standoff-show-labels
+	  (or (cdr (assoc typ standoff-markup-labels)) typ)
+	typ)
     typ))
 
 (defun standoff-relations--predicate-label (predicate)
   "Return the label for the predicate PREDICATE."
-  (if standoff-show-labels
-      (or (cdr (assoc predicate standoff-predicate-labels)) predicate)
+  ;; silince the compiler with a boundp test
+  (if (and (boundp 'standoff-show-labels) (boundp 'standoff-predicate-labels))
+      (if standoff-show-labels
+	  (or (cdr (assoc predicate standoff-predicate-labels)) predicate)
+	predicate)
     predicate))
+
+(declare-function standoff-markup-get-number "standoff-mode.el" (buf markup-inst-id))
+(declare-function standoff-markup-get-by-number "standoff-mode.el" (buf number))
 
 (defun standoff-relations--relation-handler (rel-id subj-id p-id obj-id source-buf &optional invariant point)
   "Create a one line description of a relation for the relations list in the current buffer."
