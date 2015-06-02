@@ -1,4 +1,4 @@
-;; standoff-api.el --- API for back-ends in standoff-mode
+;;; standoff-api.el --- API for back-ends in standoff-mode
 
 ;; Copyright (C) 2015 Christian Lueck
 
@@ -20,7 +20,10 @@
 
 ;;; Commentary:
 
-;; See standoff-dummy.el for a reference implementation
+;; This file contains an API for back-ends for standoff-mode. See
+;; standoff-dummy.el for a reference implementation.
+
+;;; Code
 
 ;;
 ;; Structure of lists returned by a backend
@@ -217,3 +220,5 @@ The relation that is to be deleted is given by the three last
 arguments. All duplicates of the relation should be removed.")
 
 (provide 'standoff-api)
+
+;;; standoff-api.el ends here.
