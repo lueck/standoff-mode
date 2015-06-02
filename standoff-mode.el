@@ -44,14 +44,18 @@
 ;; Checksum of source document
 ;;
 
+(defvar standoff-source-md5 nil
+  "The md5 checksum of the source buffer.
+Stand-off markup makes sense, only if the source document is
+stable. Otherwise the references to it via character offsets get
+broken.")
+
 (make-variable-buffer-local 'standoff-source-md5)
 
 (defun standoff-source-checksum ()
   (interactive)
   "Set the checksum of the source document if and only if not yet set.
-Stand-off markup only makes sense, if the source document is
-stable. Otherwise the references to it via character offsets get
-broken. This function makes an md5 hash and stores it to the
+This function makes an md5 hash and stores it to the
 buffer-local variable `standoff-source-md5'.  This function will
 be called via a mode hook, so that the checksum is there right
 away for running checks against it. It can be called
@@ -146,7 +150,8 @@ pairwise unequal."
   "Return a list of labels for allowed markup types.
 This function is like `standoff-markup-types-from-elisp', but
 tries to hide the real type Ids with labels."
-  (let ((labels-or-types '()))
+  (let ((labels-or-types '())
+	(label))
     (dolist (typ types)
       (setq label (cdr (assoc typ types-labels-alist)))
       (if (and label (not (member label labels-or-types)))
@@ -343,6 +348,9 @@ overlays. This is used for markup elements not defined in
   :group 'standoff
   :type 'alist)
 
+(defvar standoff--overlay-property-obarray nil
+  "An obarray for symbols used to store overlay properties.")
+
 (defun standoff--overlay-property-obarray-init ()
   "When we store the parameters of markup elements as key value
 pairs of overlay properties, they are interned to a special
@@ -402,6 +410,10 @@ save. But depending on the the format of the IDs for markup
 instances this functions might need to be rewritten."
   (format "%s" id))
 
+(defvar standoff-markup-number-mapping)
+
+(make-variable-buffer-local 'standoff-markup-number-mapping)
+
 (defun standoff-markup-number-mapping-setup ()
   "Make a new hashtable for mapping markup instance ids to numbers."
   (setq-local standoff-markup-number-mapping (make-hash-table :test 'equal)))
@@ -413,8 +425,7 @@ instances this functions might need to be rewritten."
 This returns an integer for the markup instance given by
 MARKUP-INST-ID in the buffer BUF. If there is not yet a number
 assiciated with this instance, a new unique number is created."
-  (save-excursion
-    (set-buffer buf)
+  (with-current-buffer buf
     (let ((number (gethash markup-inst-id standoff-markup-number-mapping nil))
 	  (numbers '()))
       (if number
@@ -429,8 +440,7 @@ assiciated with this instance, a new unique number is created."
 (defun standoff-markup-get-by-number (buf number)
   "Return the markup instance ID for a number.
 If no ID maps to number, nil is returned."
-  (save-excursion
-    (set-buffer buf)
+  (with-current-buffer buf
     (let ((markup-inst-id nil))
       (maphash (lambda (k _v) (when (equal _v number) (setq markup-inst-id k)))
 	       standoff-markup-number-mapping)
@@ -440,8 +450,7 @@ If no ID maps to number, nil is returned."
   "Remove a markup-inst-id to number mapping from the hashtable.
 This should be called when all ranges of a markup instance have
 been deleted."
-  (save-excursion
-    (set-buffer buf)
+  (with-current-buffer buf
     (remhash markup-inst-id standoff-markup-number-mapping)))
 
 (defun standoff-highlight-markup-range (buf startchar endchar markup-type markup-inst-id)
@@ -489,10 +498,9 @@ overlay is assigned the key value `\"standoff\" t'."
 	    (hlp-echo (format "Type: %s\nNo: %i\nID:%s" hlp-type number markup-inst-id))
 	    (front-string (car (mapcar #'(lambda (x) (propertize front-str (car(cdar x)) (cadr x))) front-props)))
 	    (after-string (car (mapcar #'(lambda (x) (propertize after-str (car(cdar x)) (cadr x))) after-props))))
-	    ;;(after (propertize after-str (quote face) (quote(:background "light grey"))))
-       ;;(mapcar #'(lambda (x) (overlay-put ovly (car (cdar x)) (car (cdr x)))) ovly-props)
-       ;;(message (format "%s" ovly-props))
-       (mapcar #'(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
+       ;;(mapcar #'(lambda (x) (overlay-put ovly (car (cdar x)) (cadr x))) ovly-props)
+       (dolist (prop ovly-props)
+	 (overlay-put ovly (car (cdar prop)) (cadr prop)))
        (overlay-put ovly 'help-echo hlp-echo)
        (overlay-put ovly 'before-string front-string)
        (overlay-put ovly 'after-string after-string)
@@ -624,36 +632,22 @@ markup element or range."
 
 ;; Selection of highlighted markup
 
-(defun standoff-highlight-markup--select (point)
-  "Returns the *overlay* for the markup range at point.
-This will throw an error if there's more than one highlighted
-standoff markup range at point, because the selection is
-ambiguous then."
+(defun standoff-highlight-markup--select (point &optional non-message ambiguous-message)
+  "Returns the *overlay* for the markup range at POINT.
+The function will throw an error with AMBIGUOUS-MESSAGE, if
+there's more than one highlighted standoff markup range at POINT,
+because the selection is ambiguous then. It will thow an error
+with NON-MESSAGE, if there's no highlighted markup at POINT."
   (let ((ovlys '()))
-    (mapcar #'(lambda (x) (when (equal (standoff--overlay-property-get x "standoff")
-				       (symbol-name t))
-			    (push x ovlys)))
-	    (overlays-at point))
+    (dolist (ovly (overlays-at point))
+      (when (equal (standoff--overlay-property-get ovly "standoff")
+		   (symbol-name t))
+	(push ovly ovlys)))
     (unless (car ovlys)
-      (error "No highlighted markup element found"))
+      (error (or non-message "No highlighted markup element found")))
     (when (cdr ovlys)
-      (error "More than one highlighted markup element found. Please use the functions for hiding markup to make your selection unambiguous"))
+      (error (or ambiguous-message "More than one highlighted markup element found. Please use the functions for hiding markup to make your selection non-ambiguous")))
     (car ovlys)))
-
-(defun standoff-highlight-markup--get-id (point error-message)
-  "Returns the id of the highlighted markup element at POINT.
-If there is not exactly one standoff highlightning at point, the
-show ERROR-MESSAGE."
-  (let ((ovlys '()))
-    (mapcar #'(lambda (x) (when (equal (standoff--overlay-property-get x "standoff")
-				       (symbol-name t))
-			    (push x ovlys)))
-	    (overlays-at point))
-    (if (= (length ovlys) 1)
-	(standoff-markup-get-by-number
-	 (current-buffer)
-	 (string-to-number (standoff--overlay-property-get (car ovlys) "number")))
-      (error error-message))))
 
 ;;
 ;; Navigate
@@ -689,7 +683,9 @@ allow other than already known names, but ask for confirmation."
 (defcustom standoff-predicates-allowed-function 'standoff-predicates-allowed-from-elisp
   "A pointer to the function that returns allowed predicates for a combination of subject and object.
 The function must take 3 arguments: The buffer BUF of the source
-document, the subject's id, the object's id.")
+document, the subject's id, the object's id."
+  :group 'standoff
+  :type 'function)
 
 (defcustom standoff-relations-allowed '()
   "A list of allowed Combinations of subject, predicate object types."
@@ -761,7 +757,6 @@ given by the number mapping to its id."
    (let* ((subj-ovly (standoff-highlight-markup--select (point)))
 	  (subj-number (string-to-number (standoff--overlay-property-get subj-ovly "number")))
 	  (subj-id (standoff-markup-get-by-number (current-buffer) subj-number))
-	  ;;(subj-id (standoff-highlight-markup--get-id (point) "This needs exactly one highlighted markup element at point"))
 	  (obj-number (read-number (format "The subject was identified by the point, its number is %i.\nPlease enter the number of the relation's object: " subj-number)))
 	  (obj-is-not-subj (or (not (= subj-number obj-number))
 			       (error "The relation's object must not be the relation's subject")))
@@ -811,25 +806,24 @@ further arguments."
 			 (file-relative-name (standoff-dump-filename-default)))))
   (let ((source-buf (current-buffer))
 	(dump-buf (find-file-noselect dump-file)))
-    (save-excursion
-      (set-buffer dump-buf)
-      (erase-buffer)
-      ;; make source buffer the current buffer, because the back-end
-      ;; may be buffer-local like the dummy back-end
-      (set-buffer source-buf)
-      (dolist (var standoff-dump-vars)
-	(let ((dump-var-name (intern (format "%s-dumped" var))))
-	  (if (symbolp (symbol-value var))
-	      (cond ((functionp (symbol-value var))
-		     (standoff-dump--print-quoted dump-buf dump-var-name (funcall (symbol-value var) source-buf)))
-		    (t (message "Left type %s: %s" var (type-of (symbol-value var)))))
-	    (cond
-	     ((stringp (symbol-value var))
-	      (standoff-dump--print dump-buf dump-var-name (symbol-value var)))
-	     (t (message "Left type %s: %s" var (type-of (symbol-value var))))))))
-      (set-buffer dump-buf)
-      (save-buffer)
-      (kill-buffer))))
+    (with-current-buffer dump-buf
+      (erase-buffer))
+    ;; make source buffer the current buffer, because the back-end
+    ;; may be buffer-local like the dummy back-end
+    ;; (set-buffer source-buf)
+    (dolist (var standoff-dump-vars)
+      (let ((dump-var-name (intern (format "%s-dumped" var))))
+	(if (symbolp (symbol-value var))
+	    (cond ((functionp (symbol-value var))
+		   (standoff-dump--print-quoted dump-buf dump-var-name (funcall (symbol-value var) source-buf)))
+		  (t (message "Left type %s: %s" var (type-of (symbol-value var)))))
+	  (cond
+	   ((stringp (symbol-value var))
+	    (standoff-dump--print dump-buf dump-var-name (symbol-value var)))
+	   (t (message "Left type %s: %s" var (type-of (symbol-value var))))))))
+    (with-current-buffer dump-buf
+      (save-buffer))
+    (kill-buffer dump-buf)))
 
 ;;
 ;; Major mode
