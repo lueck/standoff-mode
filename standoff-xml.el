@@ -21,7 +21,11 @@
 ;; along with standoff-mode. If not, see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Code was taken from sgml-mode.el written James clark and licensed
+;;; Commentary:
+
+;; Hide XML-tags and XML character references in standoff-mode.
+
+;; Code is inspired by sgml-mode.el written James clark and licensed
 ;; under the GNU General Public License, and from nxml-mode.el, also
 ;; written by James Clark and licensed under the GNU General Public
 ;; License v3. The code was adapted to the needs of standoff-mode and
@@ -194,7 +198,7 @@ This is not used directly, but only via inheritance by other faces."
 	      (progn
 		(setq char-ref (cond ((match-string 1)
 				      (string-to-number (match-string 1) 16))
-				     ((strint-match 2)
+				     ((match-string 2)
 				      (string-to-number (match-string 2)))
 				     (t nil)))
 		(when char-ref
