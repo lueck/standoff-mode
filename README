@@ -1,4 +1,5 @@
-# standoff-mode#
+standoff-mode
+=============
 
 `standoff-mode` is a major mode for
 [GNU Emacs](http://www.gnu.org/software/emacs/) that lets you create
