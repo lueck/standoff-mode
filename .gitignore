@@ -1,6 +1,7 @@
 *~
 *.[0-9]
 *.sqlite3
+*.elc
 
 # Package
 standoff-*.tar
