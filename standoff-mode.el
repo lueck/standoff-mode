@@ -1,9 +1,9 @@
-;;; standoff-mode.el --- Create stand-off markup, also called external markup.
+;;; standoff-mode.el --- Create stand-off markup, also called external markup
 
 ;; Copyright (C) 2015 Christian Lück
 
 ;; Author: Christian Lück <christian.lueck@ruhr-uni-bochum.de>
-;; URL: https://github.com/lueck/standoff-mode
+;; Homepage: https://github.com/lueck/standoff-mode
 
 ;; This file is not part of GNU Emacs.
 
