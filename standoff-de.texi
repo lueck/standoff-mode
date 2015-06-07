@@ -321,7 +321,9 @@ Kommando @code{info} interaktiv über seinen Namen aufrufen.
 Um in Emacs ein Kommando interaktiv über seinen Namen aufzurufen, geben
 Sie die Tastenkombination @kbd{M-x} gefolgt vom Namen des Kommandos,
 gefolgt von @kbd{@key{RET}} (= Eingabetaste) ein, in diesem Fall also
-@kbd{M-x} @code{standoff-display-manual} @kbd{@key{RET}}.
+@kbd{M-x} @code{standoff-display-manual} @kbd{@key{RET}}. Die der
+Tastenkombination @kbd{M-x} folgende Eingabe des Kommandonamens ist am
+unteren Ende des Emacs-Fensters, im sogenannten Minibuffer, mitlesbar.
 
 @kbd{M-x} ist die Kombination aus Meta-Taste und @kbd{x}. Die Meta-Taste
 ist der zweite @emph{modifier key} neben @kbd{@key{CTRL}}. Auf
@@ -333,6 +335,12 @@ Taste @kbd{@key{ESC}} einmal kurz gedrückt werden (nicht halten).
 @ifinfo
 @xref{User Input,,, emacs}
 @end ifinfo
+
+Nach der Aktivierung von Stand-Off Mode ist das Aufrufen eines Kommandos
+über seinen Namen bei den allerwenigsten Befehlen von Stand-Off Mode
+nötig. Nur solche Befehle, die riskant für Ihre Daten sind und die Sie
+nur anwenden sollten, wenn Sie genau wissen, was Sie tun, sind nicht
+über das Menü erreichbar.
 
 
 @ifset PRAKTIKUM
@@ -349,32 +357,31 @@ Anwendungsfelder erschließt.
 Der Gebrauch von GNU Emacs ist gewöhnungsbedürftig, weswegen hier einige
 Grund-Konzepte vorgestellt werden.
 
-@itemize @bullet
+@table @b
 
-@item 
-@b{Kommandos} Über die Menü-Leiste, Icons oder Tastenkombinationen eine
-Operation ausführen, heißt, dass ein Kommando aufgerufen und ausgeführt
-wird.
+@item Kommandos
+Über die Menü-Leiste, Icons oder Tastenkombinationen eine Operation
+ausführen, heißt, dass ein Kommando aufgerufen und ausgeführt wird.
 
-@item
-@b{Echo Area/Minibuffer} Am unteren Ende des Fensters befindet sich der
-sogenannte @emph{Minibuffer} bzw. die @emph{Echo Area}. Hier werden von
-Kommandos erzeugte Meldungen angezeigt (@emph{Echo}), oder ein
-aufgerufenes Kommando wartet auf die Eingabe weiterer Parameter durch
-den Benutzer (@emph{Minibuffer}).
+@item Echo Area/Minibuffer
+Am unteren Ende des Fensters befindet sich der sogenannte
+@emph{Minibuffer} bzw. die @emph{Echo Area}. Hier werden von Kommandos
+erzeugte Meldungen angezeigt (@emph{Echo}), oder ein aufgerufenes
+Kommando wartet auf die Eingabe weiterer Parameter durch den Benutzer
+(@emph{Minibuffer}).
 
-@item
-@b{@kbd{C-g}} Ein teilweise ausgeführtes Kommando, das auf weitere
-Eingaben durch den Benutzer wartet, kann durch die Tasten-Kombination
-@kbd{C-g} abgebrochen werden. @kbd{C-g} heißt: Die Taste @key{CTRL}
-(=@key{STRG}) gedrückt halten und zusätzlich kurz einmal die Taste
-@kbd{g} drücken. Dieses Kommando zum Abbruch eines Kommandos ist das
-wichtigste Kommando bei der Arbeit mit Emacs. Sie sollten sich die
-Tastenkombination merken und nicht scheuen, sie zu nutzen. Die Eingabe
-von @kbd{C-g} führt zum Echo ``Quit'' in der Echo Area.
+@item @kbd{C-g} 
+Ein teilweise ausgeführtes Kommando, das auf weitere Eingaben durch den
+Benutzer wartet, kann durch die Tasten-Kombination @kbd{C-g} abgebrochen
+werden. @kbd{C-g} heißt: Die Taste @key{CTRL} (=@key{STRG}) gedrückt
+halten und zusätzlich kurz einmal die Taste @kbd{g} drücken. Dieses
+Kommando zum Abbruch eines Kommandos ist das wichtigste Kommando bei der
+Arbeit mit Emacs. Sie sollten sich die Tastenkombination merken und
+nicht scheuen, sie zu nutzen. Die Eingabe von @kbd{C-g} führt zum Echo
+``Quit'' in der Echo Area.
 
-@item
-@b{Buffer} Buffer sind ein Grund-Konzept von Emacs. In einem Buffer wird
+@item Buffer
+Buffer sind ein Grund-Konzept von Emacs. In einem Buffer wird
 beispielsweise der Inhalt einer Datei angezeigt. Aber ein Buffer kann
 auch andere Daten darstellen. So werden in Stand-Off etwa die
 Eigenschaften eines ausgewählten Markup-Elements in einem Buffer
@@ -384,31 +391,31 @@ Zur Laufzeit von Emacs gibt es nicht nur einen Buffer, sondern eine
 ganze Reihe von Buffern. Über das Menü @emenu{Buffers} kann man
 auswählen, welcher Buffer in den Vordergrund gehoben werden soll.
 
-@item
-@b{Window} Buffer werden in einem Window dargestellt. Normalerweise wird
-im Fenster von Emacs ein Window mit einem Buffer dargestellt. Aber es
-kann auch eine (vertikale oder horizontale) Teilung vorgenommen werden,
-so dass verschiedene Buffer gleichzeitig im Vordergrund sind. Solche
-Teilungen können im Menü @emenu{Datei} unter @emenu{New Window ...}
-vor- oder unter @emenu{Remove other Window} zurückgenommen werden.
+@item Window
+Buffer werden in einem Window dargestellt. Normalerweise wird im Fenster
+von Emacs ein Window mit einem Buffer dargestellt. Aber es kann auch
+eine (vertikale oder horizontale) Teilung vorgenommen werden, so dass
+verschiedene Buffer gleichzeitig im Vordergrund sind. Solche Teilungen
+können im Menü @emenu{Datei} unter @emenu{New Window ...}  vor- oder
+unter @emenu{Remove other Window} zurückgenommen werden.
 
-@item
-@b{Frame} Frames in Emacs entsprechen Fenstern in Windows. Probieren Sie
-aus, was sich im Menü @emenu{File} hinter den Kommandos @emenu{New Frame}
+@item Frame
+Frames in Emacs entsprechen Fenstern in Windows. Probieren Sie aus, was
+sich im Menü @emenu{File} hinter den Kommandos @emenu{New Frame}
 bzw. @emenu{Delete Frame} verbirgt.
 
-@item
-@b{Point} Point in Emacs ist die Position des mit der Tastatur
-gesteuerten Cursers (also nicht der Mauszeiger).
+@item Point
+Point in Emacs ist die Position des mit der Tastatur gesteuerten Cursers
+(also nicht der Mauszeiger).
 
-@item
-@b{Mark} Emacs kann sich Positionen in einer Datei (bzw. in einem
-Buffer) merken (und auf Kommando mit dem Point dahin
-zurückkehren). Zudem wird ein Mark benötigt, um eine Text-Passage
-auszuwählen. Eine Art einen Mark zu setzen, ist die Auswahl einer
-Text-Passage mit der Maus. Dabei wird ein Mark auf die Stelle gesetzt,
-an welcher die linke Maustaste zuerst gedrückt wurde; der Point wird
-dann auf die Position gesetzt, wo die Maustaste wieder losgelassen wird.
+@item Mark
+Emacs kann sich Positionen in einer Datei (bzw. in einem Buffer) merken
+(und auf Kommando mit dem Point dahin zurückkehren). Zudem wird ein Mark
+benötigt, um eine Text-Passage auszuwählen. Eine Art einen Mark zu
+setzen, ist die Auswahl einer Text-Passage mit der Maus. Dabei wird ein
+Mark auf die Stelle gesetzt, an welcher die linke Maustaste zuerst
+gedrückt wurde; der Point wird dann auf die Position gesetzt, wo die
+Maustaste wieder losgelassen wird.
 
 Statt mit der Maus kann ein Mark auch mit der Tastatur gesetzt werden,
 nämlich mit der Tastenkombination @kbd{C-@key{SPC}}, also: @kbd{CTRL}
@@ -423,30 +430,29 @@ zurückkehren. @b{Zur Übung:} Experimentieren Sie so lange, bis sie
 verstehen, worin der Unterschied zwischen der einfachen und der
 doppelten Anwendung der Tastenkombination @kbd{C-@key{SPC}} besteht.
 
-@item
-@b{Region} Die Region oder @emph{active Region} bezeichnet die
-Text-Passage zwischen dem aktiven Mark am einen Ende und Point am
-anderen, also den Bereich, der durch Maus-Auswahl oder durch die eben
-beschriebenen Tastenkombinationen hervorgehogen wird. Die Region
-benötigen Sie in Stand-Off Mode, um eine Text-Passage mit Markup
-auszuzeichnen.
+@item Region
+Die Region oder @emph{active Region} bezeichnet die Text-Passage
+zwischen dem aktiven Mark am einen Ende und Point am anderen, also den
+Bereich, der durch Maus-Auswahl oder durch die eben beschriebenen
+Tastenkombinationen hervorgehogen wird. Die Region benötigen Sie in
+Stand-Off Mode, um eine Text-Passage mit Markup auszuzeichnen.
 
-@item
-@b{Modeline} Direkt über dem Minibuffer befindet sich die (grau
-hinterlegte) Modeline, eine Statuszeile, in der Informationen zum drüber
-angezeigten Buffer angezeigt werden. Von links nach rechts: Datei
-geändert etc.; Name des Buffers bzw. der Datei; vertikale Position
-innerhalb des Buffers in Prozent; Nummer der Zeile, in der sich Point
-befindet; Emacs Mode in Klammern, z.B. Stand-Off Mode.
+@item Modeline
+Direkt über dem Minibuffer befindet sich die (grau hinterlegte)
+Modeline, eine Statuszeile, in der Informationen zum drüber angezeigten
+Buffer angezeigt werden. Von links nach rechts: Datei geändert etc.;
+Name des Buffers bzw. der Datei; vertikale Position innerhalb des
+Buffers in Prozent; Nummer der Zeile, in der sich Point befindet; Emacs
+Mode in Klammern, z.B. Stand-Off Mode.
 
-@item
-@b{Mode} @emph{Modes} gibt es für die verschiedensten Dateiformate und
-für die verschiedensten Operationen. Modes stellen Kommandos mit
+@item Mode
+@emph{Modes} gibt es für die verschiedensten Dateiformate und für die
+verschiedensten Operationen. Modes stellen Kommandos mit
 unterschiedlichen Funktionen bereit. Der aktive Modus wird in der
 Modeline angezeigt.
 
-@item
-@b{Menüs} Anders als in vielen anderen Programmen mit graphischer
+@item Menüs
+Anders als in vielen anderen Programmen mit graphischer
 Benutzeroberfläche sind die Menüs in Emacs nicht statisch, sondern
 hängen vom Mode ab. Weil das @emenu{Stand-Off}-Menü nur im Stand-Off
 Mode sinnvoll ist, ist es auch nur vorhanden, wenn sich der im aktiven
@@ -459,37 +465,34 @@ Kommandos mittels @kbd{C-g} und gegebenenfalls das einfache Klicken mit
 dem Mauszeiger auf den Buffer mit dem zu annotierenden Quell-Dokument
 das Menü @emenu{Stand-Off} wieder zurückbringen.
 
-@item
-@b{read-only Buffer} Ein Ändern des Quell-Dokuments für stand-off
-Annotationen ist nicht sinnvoll, weil mit jeder Änderung die
-Referenzierung des Stand-Off Markups neu adjustiert werden müsste. Daher
-ist ein Buffer im Stand-Off Mode read-only.
+@item read-only Buffer
+Ein Ändern des Quell-Dokuments ist nicht sinnvoll, weil mit jeder
+Änderung die Referenzierung des externen Markups neu adjustiert werden
+müsste. Daher ist ein Buffer im Stand-Off Mode read-only.
 
-@item
-@b{Tastenkombinationen} GNU Emacs macht umfänglich Gebrauch von
-Tastenkombinationen.
+@item Tastenkombinationen
+GNU Emacs macht umfänglich Gebrauch von Tastenkombinationen.
 
 In solchen Buffern, die read-only sind, können Kommandos einfach ohne
 @kbd{@key{STRG}}-Kombination mit Tasten verbunden werden, weil diese ja
 nicht für das Einfügen von Zeichen benötigt werden. Stand-Off Mode macht
 davon Gebrauch. Die entsprechenden Tasten sind im Menü vermerkt.
 
-@item
-@b{@kbd{M-x}} Kommandos können nicht nur über das Menü, Icons oder
-Tastenkombinationen aufgerufen werden, sondern auch durch Aufruf im
-Minibuffer. Wechseln Sie dazu zunächst in den Buffer, mit den Daten, die
-Sie mit dem Kommando verarbeiten wollen. Geben Sie dann die
-Tastenkombination @kbd{M-x} ein, d.h. @kbd{@key{ALT}} halten und @kbd{x}
-drücken (oder alternativ @kbd{@key{ESC}} drücken und dann @kbd{x}
-drücken), und geben Sie im dann aktiven Minibuffer den Namen des Befehls
-ein.
+@c @item @kbd{M-x}
+@c Kommandos können nicht nur über das Menü, Icons oder Tastenkombinationen
+@c aufgerufen werden, sondern auch über ihren Namen. Wechseln Sie dazu
+@c zunächst in den Buffer, mit den Daten, die Sie mit dem Kommando
+@c verarbeiten wollen. Geben Sie dann die Tastenkombination @kbd{M-x} ein,
+@c d.h. @kbd{@key{ALT}} halten und @kbd{x} drücken (oder alternativ
+@c @kbd{@key{ESC}} drücken und dann @kbd{x} drücken), und geben Sie im dann
+@c aktiven Minibuffer den Namen des Befehls ein.
 
-Nach der Aktivierung von Stand-Off Mode ist dieses Vorgehen bei den
-allerwenigsten Befehlen von Stand-Off Mode nötig. Nur solche Befehle,
-die riskant für Ihre Daten sind und die Sie nur anwenden sollten, wenn
-Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
+@c Nach der Aktivierung von Stand-Off Mode ist dieses Vorgehen bei den
+@c allerwenigsten Befehlen von Stand-Off Mode nötig. Nur solche Befehle,
+@c die riskant für Ihre Daten sind und die Sie nur anwenden sollten, wenn
+@c Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
 
-@end itemize
+@end table
 
 Für eine umfassende Darstellung sei auf die gute
 @url{http://www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
