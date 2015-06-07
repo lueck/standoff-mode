@@ -35,6 +35,12 @@
 @c semantisches Markup
 @alias emenu = samp @c Menü-Eintrag
 @alias markuptype = samp @c Markup-Typ
+@alias markuplabel = samp @c Markup-Label
+
+@macro nsarb{TYPE}
+@c @markuptype{http://beispiel.fernuni-hagen.de/ontologies/beispiel#\TYPE\}
+@markuptype{http://arb.fernuni-hagen.de/owl/bsp#\TYPE\}
+@end macro
 
 @copying
 Copyright @copyright{} 2015 Christian Lück
@@ -99,6 +105,7 @@ Einführung
 
 * Stand-Off Markup::
 * Character Offsets::
+* Dieses Handbuch::
 
 Stand-Off Mode starten und beenden
 
@@ -152,6 +159,7 @@ verweisen auf die Position innerhalb des Dokuments.
 @menu
 * Stand-Off Markup::
 * Character Offsets::
+* Dieses Handbuch::
 @end menu
 
 
@@ -175,14 +183,15 @@ XML-Tags
 
 @item stand-off Markup / externes Markup
 Markup, das entweder außerhalb des Quell-Dokuments vorliegt und auf das
-Quell-Dokument verweist, oder alternativ Markup, das zwar in derselben
-Datei wie das Quell-Dokument vorliegt, aber auf einen anderen Teil darin
-verweist (Die zweite Alternative ist an dieser Stelle nicht relevant,
-Stand-Off Mode wurde für den ersten Fall entwickelt.)
+Quell-Dokument verweist. (Alternativ wäre auch solches Markup, das zwar
+in derselben Datei wie das Quell-Dokument vorliegt, aber auf einen
+anderen Teil darin verweist, externes Markup; dieser Fall ist an dieser
+Stelle aber nicht relevant, denn Stand-Off Mode wurde für den ersten
+Fall entwickelt.)
 
 @item externes Dokument
 ein Dokument, das stand-off Markup enthält, das auf ein Quell-Dokument
-in einer anderen Datei verweist (Stand-Off Mode erzeugt beim Speichern
+in einer anderen Datei verweist. (Stand-Off Mode erzeugt beim Speichern
 bzw. durch ``dump'' ein externes Dokument.)
 
 @item internalisieren
@@ -201,7 +210,7 @@ Siehe auch
 @url{http://www.tei-c.org/release/doc/tei-p5-doc/de/html/SA.html#SASO}
 und @url{http://www.openannotation.org/spec/core/}.
 
-@node Character Offsets,  , Stand-Off Markup, Einführung
+@node Character Offsets, Dieses Handbuch, Stand-Off Markup, Einführung
 @section Character Offsets
 
 @ifset PRAKTIKUM
@@ -231,11 +240,11 @@ Ein von Stand-Off Mode erzeugtes @emph{externes Dokument} könnte so aussehen:
 
 Alle im Quell-Dokument ausgezeichneten Passagen befinden sich in einer
 Variablen namens @code{standoff-markup-read-function-dumped}. Die
-Einzelnen Einträge für die Auszeichnungen (Markup) befinden sich dann
+einzelnen Einträge für die Auszeichnungen (Markup) befinden sich dann
 verschachtelt in mehreren Klammerebenen in den jeweils inneren
 Klammern.
 
-Der erste Werte, der sich fünf Blöcken aus Buchstaben und Zahlen
+Der erste Wert, der sich aus fünf Blöcken aus Buchstaben und Zahlen
 zusammensetzt, ist die Identifikationsnummer (ID) des Markup-Elements.
 
 Beim zweiten Eintrag, der die Form einer URI hat, handelt es sich um die
@@ -250,12 +259,81 @@ Bei den folgenden beiden Einträgen handelt es sich um die
 Quell-Dokument. Hier beschreiben die Zahlen die Passage zwischen dem
 28095ten und dem 28100ten Zeichen im Quelldokument.
 
-Der fünfte Eintrag ist genau dieses Zeichenkette aus dem
+Der fünfte Eintrag ist genau diese Zeichenkette aus dem
 Quell-Dokument. Der Lateinische Großbuchtabe @code{D} in @code{Dante}
 hat die Position 28095, das @code{e} am Ende des Namens die Position
 28099.
 
-Weiter unten ist die Prüfsumme des Quell-Dokuments dargestellt.
+Weiter unten ist die Prüfsumme des Quell-Dokuments dargestellt. Sie wird
+zu Beginn der Bearbeitung des Quell-Dokuments errechnet und
+gespeichert. Sobald das Quell-Dokument geändert wird, ändert sich seine
+Prüfsumme und Stand-Off Mode meldet einen Fehler, denn die
+@emph{character offsets} stimmen möglicherweise nicht mehr.
+
+@node Dieses Handbuch, , Character Offsets, Einführung
+@section Dieses Handbuch
+
+Dieses Handbuch liegt in drei Formaten vor: als PDF für den Druck, als
+HTML-Dokument und im sogenannten Info-Format, das Sie im Info-Browser
+von GNU Emacs ansehen können.
+
+@ifset PRAKTIKUM
+Es gibt zwei Fassungen des Handbuches, einmal die Standard-Version,
+deren Info-Datei mit Stand-Off Mode installiert wird, und dann eine
+erweiterte Version für den Gebrauch im Praktikum beim Archiv des
+Beispiels. Bei dem vorliegenden Dokument, handelt es sich um diese
+erweiterte Fassung.
+@end ifset 
+
+Die Kommandos, d.h. Funktionen, von Stand-Off Mode werden im Handbuch
+durchweg in dreispaltigen Tabellen vorgestellt: die Tasten-Kombination
+für das Kommando in der ersten Spalte, der Eintrag im Stand-Off-Menü in
+der zweiten, und der Name des Kommandos in der dritten. So sind das
+vorliegende Benutzerhandbuch sowie eine Liste weiterer Handbücher
+folgendermaßen aufrufbar:
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{?}
+@tab @emenu{Manual}
+@tab @code{standoff-display-manual}
+@item @kbd{C-h i}
+@tab @emenu{Help --> More Manuals --> All other (info)}
+@tab @code{info}
+@end multitable
+
+Dieses Manual können Sie über die Taste @kbd{?} öffnen, vorausgesetzt
+der gerade aktive Buffer befindet sich in Stand-Off Mode. Alternativ
+können Sie den Eintrag @emenu{Manual} unter dem Menü-Punkt
+@emenu{Stand-Off} anklicken. Als weitere Alternative können Sie das
+Kommando @code{standoff-display-manual} interaktiv über seinen Namen
+ausführen.
+
+Alle installierten Manuale können Sie jederzeit über die
+Tasten-Kombination @kbd{C-h i} ansehen, also durch Halten der Taste
+@kbd{@key{CTRL}} (= @kbd{@key{STRG}}) und Drücken der Taste @key{h}, und
+anschließendes Drücken der Taste @key{i} (ohne dass @kbd{@key{CTRL}}
+noch gehalten wird). Alternativ können Sie unter dem Menü-Punkt
+@emenu{Help} den Punkt @emenu{More Manuals} auswählen und darin wiederum
+@emenu{All Other Manuals (info)}. Als dritte Alternative können Sie das
+Kommando @code{info} interaktiv über seinen Namen aufrufen.
+
+Um in Emacs ein Kommando interaktiv über seinen Namen aufzurufen, geben
+Sie die Tastenkombination @kbd{M-x} gefolgt vom Namen des Kommandos,
+gefolgt von @kbd{@key{RET}} (= Eingabetaste) ein, in diesem Fall also
+@kbd{M-x} @code{standoff-display-manual} @kbd{@key{RET}}.
+
+@kbd{M-x} ist die Kombination aus Meta-Taste und @kbd{x}. Die Meta-Taste
+ist der zweite @emph{modifier key} neben @kbd{@key{CTRL}}. Auf
+herkömmlichen Tastaturen trägt die Meta-Taste die Aufschrift
+@kbd{@key{ALT}}. @kbd{M-x} heißt also @kbd{@key{ALT}} halten und dabei
+einmal @kbd{x} tippen. Ist auf der Tastatur die Taste @kbd{@key{ALT}}
+nicht vorhanden, kann für die Meta-Kombination @kbd{M-} ersatzweise die
+Taste @kbd{@key{ESC}} einmal kurz gedrückt werden (nicht halten).
+@ifinfo
+@xref{User Input,,, emacs}
+@end ifinfo
+
 
 @ifset PRAKTIKUM
 @node Hinweise zur Arbeit mit GNU Emacs, Stand-Off Mode starten und beenden, Einführung, Top
@@ -263,7 +341,7 @@ Weiter unten ist die Prüfsumme des Quell-Dokuments dargestellt.
 
 GNU Emacs ist ein sehr funktionsreiches Programm zur Verarbeitung von
 Text-Dateien unterschiedlichster Formate. Konzipiert als Text-Editor und
-Werkzeug für Programmierer hat es aufgrund seiner
+Werkzeug für Programmierer, hat es aufgrund seiner
 Programmierschnittstelle Erweiterung und Anwendung in verschiedenen
 Bereichen gefunden. Stand-Off Mode ist solch eine Erweiterung, die neue
 Anwendungsfelder erschließt.
@@ -282,7 +360,7 @@ wird.
 @b{Echo Area/Minibuffer} Am unteren Ende des Fensters befindet sich der
 sogenannte @emph{Minibuffer} bzw. die @emph{Echo Area}. Hier werden von
 Kommandos erzeugte Meldungen angezeigt (@emph{Echo}), oder ein
-aufgerufenes Kommando warted auf die Eingabe weiterer Parameter durch
+aufgerufenes Kommando wartet auf die Eingabe weiterer Parameter durch
 den Benutzer (@emph{Minibuffer}).
 
 @item
@@ -327,7 +405,7 @@ gesteuerten Cursers (also nicht der Mauszeiger).
 @b{Mark} Emacs kann sich Positionen in einer Datei (bzw. in einem
 Buffer) merken (und auf Kommando mit dem Point dahin
 zurückkehren). Zudem wird ein Mark benötigt, um eine Text-Passage
-auszuwählen. Eine Art einen Mark zu setzen ist die Auswahl einer
+auszuwählen. Eine Art einen Mark zu setzen, ist die Auswahl einer
 Text-Passage mit der Maus. Dabei wird ein Mark auf die Stelle gesetzt,
 an welcher die linke Maustaste zuerst gedrückt wurde; der Point wird
 dann auf die Position gesetzt, wo die Maustaste wieder losgelassen wird.
@@ -378,7 +456,7 @@ erscheinen), ist das Stand-Off-Menü verschwunden, weil sich der
 Minibuffer eben nicht im Stand-Off Mode befindet. Wenn das Menü gerade
 nicht sichtbar ist, dann sollte der Abbruch des gerade ausgeführten
 Kommandos mittels @kbd{C-g} und gegebenenfalls das einfache Klicken mit
-dem Mauszeiger auf den Buffer mit dem zu annotierenden Quell-Dokument,
+dem Mauszeiger auf den Buffer mit dem zu annotierenden Quell-Dokument
 das Menü @emenu{Stand-Off} wieder zurückbringen.
 
 @item
@@ -402,8 +480,8 @@ Tastenkombinationen aufgerufen werden, sondern auch durch Aufruf im
 Minibuffer. Wechseln Sie dazu zunächst in den Buffer, mit den Daten, die
 Sie mit dem Kommando verarbeiten wollen. Geben Sie dann die
 Tastenkombination @kbd{M-x} ein, d.h. @kbd{@key{ALT}} halten und @kbd{x}
-drücken oder alternativ @kbd{@key{ESC}} drücken und dann @kbd{x}
-drücken, und geben Sie im dann aktiven Minibuffer den Namen des Befehls
+drücken (oder alternativ @kbd{@key{ESC}} drücken und dann @kbd{x}
+drücken), und geben Sie im dann aktiven Minibuffer den Namen des Befehls
 ein.
 
 Nach der Aktivierung von Stand-Off Mode ist dieses Vorgehen bei den
@@ -415,10 +493,10 @@ Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
 
 Für eine umfassende Darstellung sei auf die gute
 @url{http://www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
-von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen} und auf das
-englischsprachige 
+von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen} verwiesen und
+auf das englischsprachige
 @ifinfo
-Manual zu GNU Emacs verwiesen. @xref{Top,,, emacs}.
+Manual zu GNU Emacs. @xref{Top,,, emacs}.
 @end ifinfo 
 @ifnotinfo
 @url{https://www.gnu.org/software/emacs/manual/emacs.html,Manual zu GNU Emacs} verwiesen.
@@ -460,13 +538,13 @@ Manual zu GNU Emacs verwiesen. @xref{Top,,, emacs}.
 Nach dem Öffnen einer Datei und ihrer Darstellung in einem Buffer kann
 für diesen Buffer der Stand-Off Mode aktiviert werden durch Eingabe von
 @kbd{M-x standoff-mode @kbd{RET}}, also kurzes Drücken von
-@kbd{@key{ESC}} gefolgt von einem kurzen Drücken von @kbd{x}, gefolgt
+@kbd{@key{ESC}}, gefolgt von einem kurzen Drücken von @kbd{x}, gefolgt
 von der Eingabe von @code{standoff-mode} im dann aktiven Minibuffer und
 anschließendes Betätigen der Eingabe-Taste.
 
 @ifset PRAKTIKUM
 Die Konfigurationsdateien, die im Rahmen des Praktikums im Archiv des
-Beispiels mitgeliefert werden, veranlassen Emacs beim Öffnen der
+Beispiels mitgeliefert werden, veranlassen Emacs, beim Öffnen der
 verwendeten Quell-Dokumente mit der Endung @code{.TEI-P5.xml}
 automatisch in den Stand-Off Mode zu wechseln. Deswegen sollte nicht
 nötig sein, dieses Kommando interaktiv aufzurufen.
@@ -476,7 +554,7 @@ Im Stand-Off Mode ist der Buffer read-only, ein Editieren des Textes ist
 also nicht möglich. In der Modeline wird (Stand-Off) als aktiver Modus
 angezeigt. Zudem erscheint im Hauptmenü der Punkt @emenu{Stand-Off}.
 
-Bei Aktivierung von Stand-Off Mode wird bereits frühe erfasste
+Bei Aktivierung von Stand-Off Mode werden bereits früher erfasste
 Annotationen geladen. @xref{Bereits früher erfasstes Markup laden}.
 
 
@@ -497,14 +575,15 @@ Mit diesen beiden Kommandos kann die Lesbarkeit des Buffers verbessert
 werden. Tags, d.h. Zeichenketten in spitzen Klammern wie @code{<p>},
 lassen sich ausblenden. Character References der Form @code{&#xNNNN;}
 lassen sich durch das entsprechende Unicode-Zeichen in der Darstellung
-ersetzen. Nochmaliges Aufrufen des Kommandos macht die Tags
+ersetzen, zum Beispiel @code{&#x017F;} durch das lange s der alten
+Fraktur-Schrift. Nochmaliges Aufrufen des Kommandos macht die Tags
 bzw. Character References wieder sichtbar.
 
 @ifset PRAKTIKUM
 Bei der Arbeit mit den @code{TEI-P5.xml}-Dateien des Archivs des
 Beispiels sind das Ausblenden der Tags wie das Ersetzen der Character
 References sehr zu empfehlen, weil diese Dateien sonst für das
-menschliche Auge kaum lesbar ist.
+menschliche Auge kaum lesbar sind.
 
 Insbesondere das Ersetzen der Character-References ist bei den größeren,
 ein ganzes Buch umfassenden Dateien im Archiv des Beispiels
@@ -603,8 +682,8 @@ bzw. in einem Datei-Dialog-Fenster nach der zu ladenden Datei.
 
 Beim Aktivieren von Stand-Off Mode wird dieses Kommando automatisch
 ausgeführt und versucht, die Datei zu laden, die denselben Dateinamen
-wie das geöffnete Quell-Dokument erweitert durch die Endung
-@code{.dump.el} hat. Der Befehl wird also nur benötigt, um in einer
+wie das geöffnete Quell-Dokument, erweitert durch die Endung
+@code{.dump.el}, hat. Der Befehl wird also nur benötigt, um in einer
 anders benannten Datei gespeichertes Markup zu laden.
 
 
@@ -616,7 +695,43 @@ wird eine Passage eines Textes ausgezeichnet. Alle anderen in den
 folgenden Kapiteln beschriebenen Bausteine -- Relationen, Literale und
 Kommentare -- beziehen sich auf Markup-Elemente.
 
+Jedes Markup-Element hat einen Start- und einen End-Punkt im
+Quell-Dokument, zeichnet darin also eine bestimmte Text-Passage
+aus. Zudem ist es einem Typ zugehörig (ist Instanz einer Klasse in
+bestimmter Hinsicht gleichartige Dinge auszeichnender Markup-Elemente),
+d.h. es zeichnet die Passage als @emph{etwas} aus, z.B. als
+@emph{Person}, als @emph{Ort}, als @emph{Beispiel} etc. Außerdem hat es
+eine Kennziffer, mit der es identifiziert werden kann.
 
+Nach dem Erstellen wird ein Markup-Element im Buffer des Quell-Dokuments
+dargestellt, indem die entsprechende Text-Passage farblich hervorgehoben
+wird. Außerdem werden am Start- und End-Punkt Klammern sowie die
+Kennziffer in den Text eingeschoben. Klammern und Kennziffern sind aber
+nur in der Darstellung vorhanden (technisch als Overlay), nicht
+tatsächlich in die Datei des Quell-Dokuments; deswegen kann man den
+@emph{Point} auch nicht an einer Klammer oder Kennziffer
+positionieren. Der Typ wird als Tooltip angezeigt, also in einem gelben
+Kasten, der erscheint, nachdem der Mauszeiger über dem Element
+positioniert worden ist.
+
+@ifset PRAKTIKUM
+Im Praktikum sollen Sie Passagen des Textes als @markuptype{Beispiel}
+auszeichnen, andere Passagen als @markuptype{Beispiel-Markierung},
+wieder andere als @markuptype{Konzept} oder @markuptype{Kontext}. Dafür
+stehen Ihnen folgende Markup-Typen zur Verfügung:
+
+@table @markuplabel
+@item Beispiel
+@nsarb{beispiel}
+@item Beispiel-Markierung
+@nsarb{marker}
+@item Konzept
+@nsarb{konzept}
+@item Kontext
+@nsarb{kontext}
+@end table
+
+@end ifset
 
 @menu
 * Erfassen::
@@ -689,9 +804,10 @@ Das Ausschalten von Hervorhebungen kann bisweilen von Vorteil sein, wenn
 dadurch die Übersichtlichkeit steigt und exakter festgelegt werden kann,
 von wo bis wo ein neu aufzunehmendes Markup-Element sich erstrecken
 soll. Außerdem sind einige Kommandos, etwa das zum Löschen, darauf
-angewiesen, dass man den @emph{Point} über genau einem hervorgehobenem
-Element positioniert. Das Ausschalten der Hervorhebung von anderen
-überlappenden Elementen dient dann der Desambiguierung der Auswahl.
+angewiesen, dass man den @emph{Point} über @emph{genau einem}
+hervorgehobenem Element positioniert. Das Ausschalten der Hervorhebung
+von anderen überlappenden Elementen dient dann der Desambiguierung der
+Auswahl.
 
 @node Navigieren, Löschen, Hervorheben und Ausblenden, Markup-Elemente
 @section Navigieren
@@ -706,8 +822,9 @@ Element positioniert. Das Ausschalten der Hervorhebung von anderen
 @tab @code{standoff-navigate-previous}
 @end multitable
 
-Mit diesen beiden Kommandos kann einem hervorgehobenem Markup-Element
-zum nächsten und zurück navigiert werden, d.h. der @emph{Point} springt.
+Mit diesen beiden Kommandos kann von einem hervorgehobenem
+Markup-Element zum nächsten und zurück navigiert werden, d.h. der
+@emph{Point} springt.
 
 
 @node Löschen, Diskontinuierliches Markup, Navigieren, Markup-Elemente
@@ -723,7 +840,7 @@ zum nächsten und zurück navigiert werden, d.h. der @emph{Point} springt.
 Zum Löschen eines Markup-Elements ist der @emph{Point} auf dieses
 Element zu positionieren. Es muss zudem hervorgehoben sein (highlight),
 und es muss sich um das einzige hervorgehobene Element an der Position
-von @emph{Point} sein Überlappende andere Elemente sind also
+von @emph{Point} handeln, überlappende andere Elemente sind also
 auszublenden. Wird nicht genau ein hervorgehobenes Element an
 @emph{Point} gefunden, erfolgt eine Fehlermeldung.
 
@@ -890,3 +1007,5 @@ Benutzerhandbuches Auskunft.
 @documentlanguage en_US
 @include fdl.texi
 @bye 
+
+@c  LocalWords:  Emacs Meta kbd ifinfo xref
