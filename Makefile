@@ -1,7 +1,7 @@
 .PHONY: test compile clean
 
 #VERSION := $(shell git describe --tags)
-VERSION := "0.2.2"
+VERSION := "0.4.1"
 
 ELPKG := standoff-mode.el \
 	standoff-api.el \
