@@ -90,7 +90,7 @@ This `standoff-pos-markup-inst-id' etc.")
 
 (defcustom standoff-dummy-user-logging t
   "Whether or not to log time and user information when creating markup.
-You can turn off big brother by setting this to nil."
+You can keep out big brother by setting this to nil."
   :group 'standoff-dummy
   :type 'boolean)
 
