@@ -85,7 +85,9 @@
 
 
 (defun standoff-arb-config ()
- (interactive)
+  (interactive)
+
+  (setq standoff-info-language "de")
 
   ;; set how restrictive markup types and predicates are handled:
   (setq standoff-markup-type-require-match t)

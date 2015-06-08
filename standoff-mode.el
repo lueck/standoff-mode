@@ -57,9 +57,7 @@
 (require 'standoff-xml)
 (require 'standoff-relations)
 
-;;
-;; Checksum of source document
-;;
+;;;; Checksum of source document
 
 (defvar standoff-source-md5 nil
   "The md5 checksum of the source buffer.
@@ -84,9 +82,7 @@ calculated. The hash will show up in the minibuffer."
 
 (add-hook 'standoff-mode-hook 'standoff-source-checksum)
 
-;;
-;; creating and deleting markup
-;;
+;;;; Creating and Deleting Markup
 
 (defcustom standoff-markup-type-require-match 'confirm
   "Defines how restrictive the markup schema is handled.
@@ -321,9 +317,7 @@ works only if there is one and exactly one overlay."
 	  (delete-overlay ovly)
 	  (message "... deleted."))))))
 
-;;
-;; Highlighning and hiding markup
-;;
+;;;; Highlighning and Hiding Markup
 
 ;; We use overlays to highlight markup elements
 
@@ -666,9 +660,7 @@ with NON-MESSAGE, if there's no highlighted markup at POINT."
       (error (or ambiguous-message "More than one highlighted markup element found. Please use the functions for hiding markup to make your selection non-ambiguous")))
     (car ovlys)))
 
-;;
-;; Navigate
-;;
+;;;; Navigate
 
 (defun standoff-navigate-next ()
   (interactive)
@@ -686,9 +678,7 @@ with NON-MESSAGE, if there's no highlighted markup at POINT."
 	(error "First highlighted markup element in buffer")
       (goto-char pos))))
 
-;;
-;; Relations
-;;
+;;;; Relations
 
 (defcustom standoff-predicate-require-match 'confirm
   "Defines how restrictive relation types are handled.
@@ -786,10 +776,7 @@ given by the number mapping to its id."
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
     (error "Creation of relation failed")))
 
-
-;;
-;; Dumping
-;;
+;;;; Dumping
 
 (defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-source-md5)
   "A list of variables and function pointers to be dumped to elisp expressions.
@@ -842,9 +829,27 @@ further arguments."
       (save-buffer))
     (kill-buffer dump-buf)))
 
-;;
-;; Major mode
-;;
+;;;; Displaying the Manual
+
+(defcustom standoff-info-language nil
+  "The language of the manual to show up with `standoff-display-manual'."
+  :group 'standoff
+  :type 'string)
+
+(defun standoff-display-manual ()
+  "Display the manual for stand-off mode.
+Depending on language and current mode an info page is opened."
+  (interactive)
+  (let ((lang (or standoff-info-language
+		  system-messages-locale
+		  (getenv "LANG"))))
+    (cond
+     ((string-prefix-p "de" lang)
+      (cond ((equal major-mode "*Relations*") (info "(standoff-de)Relationen anzeigen"))
+	    (t (info "(standoff-de)"))))
+     (t (message "There is no other manual yet but the one in German language.")))))
+
+;;;; Major Mode
 
 ;; Keymap and Menu
 
@@ -866,6 +871,7 @@ further arguments."
     (define-key map "n" 'standoff-navigate-next)
     (define-key map "p" 'standoff-navigate-previous)
     (define-key map "u" 'standoff-dump-elisp)
+    (define-key map "?" 'standoff-display-manual)
     map))
 
 (easy-menu-define standoff-menu standoff-mode-map
@@ -898,6 +904,8 @@ further arguments."
     ["Substitute character references with glyphs" standoff-xml-toggle-char-ref-glyph-substitute]
     ["--" nil]
     ["Dump to file (SAVE)" standoff-dump-elisp]
+    ["--" nil]
+    ["Manual" standoff-display-manual]
     ))
 
 (defvar standoff-markup-range-local-map
