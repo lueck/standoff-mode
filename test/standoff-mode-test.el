@@ -345,6 +345,91 @@ This list depends on the value of
     (should (= (length (funcall standoff-relations-read-function test-buffer)) 1))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
+(ert-deftest standoff-dump-load-test ()
+  "Test dumping and loading."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(id1)
+	(id2)
+	(id3)
+	(id4)
+	(dump-file (make-temp-file "dump")))
+    (standoff-markup-number-mapping-setup)
+    (standoff-source-checksum)
+    ;; create some markup in the backend
+    (setq id1 (standoff-dummy-create-markup test-buffer 445 483 "example"))
+    (setq id2 (standoff-dummy-create-markup test-buffer 484 537 "example"))
+    (setq id3 (standoff-dummy-create-markup test-buffer 426 444 "marker"))
+    ;; create relation
+    (setq id4 (standoff-dummy-create-relation test-buffer id3 "marks" id1))
+    ;; dump data
+    (standoff-dump-elisp dump-file)
+    ;; should have no values after reset
+    (standoff-dummy--backend-reset)
+    (should-not (standoff-dummy-read-markup test-buffer))
+    ;; load dumped data
+    (standoff-dummy-load-dumped dump-file)
+    ;; should have markup
+    (should (standoff-dummy-read-markup test-buffer))
+    (should
+     (equal
+      (nth standoff-pos-relation-id (car (standoff-dummy-read-markup test-buffer 446 447)))
+      id1))
+    ;; should have relations
+    (should (standoff-dummy-read-relations test-buffer))
+    (should
+     (equal
+      (nth standoff-pos-relation-id (car (standoff-dummy-read-relations test-buffer)))
+      id4))
+    (should
+     (equal
+      (nth standoff-pos-subject (car (standoff-dummy-read-relations test-buffer)))
+      id3))
+    (should
+     (equal
+      (nth standoff-pos-predicate (car (standoff-dummy-read-relations test-buffer)))
+      "marks"))
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
+(ert-deftest standoff-load-first-generation-test ()
+  "Test loading a dumped file from \"first\" generation of the api."
+  (let ((test-buffer (standoff-test-utils-setup-source-buffer))
+	(subj-id)
+	(obj-id)
+	(rel-id)
+	(fname "api-first.dump.el"))
+    (standoff-markup-number-mapping-setup)
+    (standoff-source-checksum)
+    (standoff-dummy--backend-reset)
+    (standoff-dummy-load-dumped fname)
+    ;; should have markup
+    (should (standoff-dummy-read-markup test-buffer))
+    ;; should have relations
+    (should (standoff-dummy-read-relations test-buffer))
+    ;; get markup used object in sole relation
+    (setq obj-id (nth standoff-pos-markup-inst-id (car (standoff-dummy-read-markup test-buffer 446 447))))
+    (setq subj-id (nth standoff-pos-markup-inst-id (car (standoff-dummy-read-markup test-buffer 427 428))))
+    (setq rel-id (nth standoff-pos-relation-id (car (standoff-dummy-read-relations test-buffer))))
+    ;; should relate the same markup elements
+    (should
+     (equal
+      (nth standoff-pos-object (car (standoff-dummy-read-relations test-buffer)))
+      obj-id))
+    (should
+     (equal
+      (nth standoff-pos-subject (car (standoff-dummy-read-relations test-buffer)))
+      subj-id))
+    ;; should have a relation id
+    (should rel-id)
+    ;; rel-id should not = subj-id or = obj-id
+    (should-not (equal rel-id subj-id))
+    (should-not (equal rel-id obj-id))
+    ;; should be a uuid
+    (should
+     (equal (string-match "[[:xdigit:]]\\{8\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{12\\}$" rel-id) 0))
+
+
+    (standoff-test-utils-teardown-source-buffer test-buffer)))
+
 
 ;; run tests and exit
 (when noninteractive

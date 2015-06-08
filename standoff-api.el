@@ -25,11 +25,12 @@
 
 ;;; Code
 
-;;
-;; Structure of lists returned by a backend
-;;
+;;;; Version of this API
 
-;; Structure of markup lists 
+(defconst standoff-api-version "0.4"
+  "The version number of this api for back-ends.")
+
+;;;; Structure of markup lists
 
 (defconst standoff-pos-markup-inst-id 0
   "Position of a markup instance's ID.
@@ -60,22 +61,64 @@ See `standoff-pos-markup-inst-id' for an example.")
   "Position of the string that was annotated.
 See `standoff-pos-markup-inst-id' for an example.")
 
-;; Structure of relation lists
+(defconst standoff-pos-markup-datetime 5
+  "Position of the date and time for a markup element.")
 
-(defconst standoff-pos-subject 0
+(defconst standoff-pos-markup-user 6
+  "Position of the user id for a markup element.")
+
+;;;; Structure of relation lists
+
+(defconst standoff-pos-relation-id 0
+  "The position of a relation's Id.")
+
+(defconst standoff-pos-subject 1
   "The position of a relation's subject.
 I.e. the position in a list representing a relation between
 markup elements.")
 
-(defconst standoff-pos-predicate 1
+(defconst standoff-pos-predicate 2
   "The position of a relation's predicate.")
 
-(defconst standoff-pos-object 2
+(defconst standoff-pos-object 3
   "The position of a relations object.")
 
-;;
-;; Functions to be implemented
-;;
+(defconst standoff-pos-relation-datetime 4
+  "Position of the date and time for a markup element.")
+
+(defconst standoff-pos-relation-user 5
+  "Position of the user id for a markup element.")
+
+;;;; Dumpable Description of this API
+
+(defvar standoff-api-description
+  `((:standoff-api-version ,standoff-api-version)
+    (:markup (:standoff-pos-markup-inst-id :standoff-pos-markup-type :standoff-pos-startchar :standoff-pos-endchar :standoff-pos-markup-string :standoff-pos-markup-datetime :standoff-pos-markup-user))
+    (:standoff-pos-markup-inst-id ,standoff-pos-markup-inst-id)
+    (:standoff-pos-markup-type ,standoff-pos-markup-type)
+    (:standoff-pos-startchar ,standoff-pos-startchar)
+    (:standoff-pos-endchar ,standoff-pos-endchar)
+    (:standoff-pos-markup-string ,standoff-pos-markup-string)
+    (:standoff-pos-markup-datetime ,standoff-pos-markup-datetime)
+    (:standoff-pos-markup-user ,standoff-pos-markup-user)
+    (:relations (:standoff-pos-relation-id :standoff-pos-subject :standoff-pos-predicate :standoff-pos-object :standoff-pos-relation-datetime :standoff-pos-relation-user))
+    (:standoff-pos-relation-id ,standoff-pos-relation-id)
+    (:standoff-pos-subject ,standoff-pos-subject)
+    (:standoff-pos-predicate ,standoff-pos-predicate)
+    (:standoff-pos-object ,standoff-pos-object)
+    (:standoff-pos-relation-datetime ,standoff-pos-relation-datetime)
+    (:standoff-pos-relation-user ,standoff-pos-relation-user))
+  "Description of this api. This variable can be dumped to a file.")
+
+;;;; Pointers to Functions to be Implemented
+
+(defvar standoff-api-evolve-make-value-function 'standoff-dummy-evolve-make-value
+  "The function that evolves a data cell to the current version of the api.
+This variable must be set to the function's symbol (name). The
+function must take the following arguments:
+
+BUFFER DATA-ITEM DATA-SYMBOL CELL-SYMBOL OLD-API
+")
 
 (defvar standoff-markup-create-function 'standoff-dummy-create-markup
   "The function that writes a markup element to some backend.
@@ -218,6 +261,33 @@ BUFFER SUBJECT-ID PREDICATE OBJECT-ID
 
 The relation that is to be deleted is given by the three last
 arguments. All duplicates of the relation should be removed.")
+
+;;;; Generations / Versions of this API
+
+(defconst standoff-api-generations
+  '(("first" . ((:markup (:standoff-pos-markup-inst-id :standoff-pos-markup-type :standoff-pos-startchar :standoff-pos-endchar :standoff-pos-markup-string))
+		(:standoff-pos-markup-inst-id 0)
+		(:standoff-pos-markup-type 1)
+		(:standoff-pos-startchar 2)
+		(:standoff-pos-endchar 3)
+		(:standoff-pos-markup-string 4)
+		(:relations (:standoff-pos-subject :standoff-pos-predicate :standoff-pos-object))
+		(:standoff-pos-subject 0)
+		(:standoff-pos-predicate 1)
+		(:standoff-pos-object 2)))))
+
+(defun standoff-api-evolve (buf data-symbol data old-api)
+  (let ((cells (cadr (assoc data-symbol standoff-api-description))))
+     (if (equal (cadr (assoc data-symbol old-api)) cells)
+	 data			; return data
+       ;; evolve data: for each item in DATA make list of CELLS
+       (mapcar #'(lambda (item)
+		   (mapcar #'(lambda (cell)
+			       (or (and (numberp (cadr (assoc cell old-api)))
+					(nth (cadr (assoc cell old-api)) item))
+				   (funcall standoff-api-evolve-make-value-function buf item data-symbol cell old-api)))
+			   cells))
+	       data))))
 
 (provide 'standoff-api)
 

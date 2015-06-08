@@ -778,10 +778,10 @@ given by the number mapping to its id."
 
 ;;;; Dumping
 
-(defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-source-md5)
+(defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-source-md5 standoff-api-description)
   "A list of variables and function pointers to be dumped to elisp expressions.
-The dumper function `standoff-dump-elisp' will variables and even
-try to call the function given in a function pointer. Such
+The dumper function `standoff-dump-elisp' will dump variables and
+even try to call the function given in a function pointer. Such
 functions should take a buffer as argument and should not require
 further arguments."
   :group 'standoff
@@ -820,11 +820,13 @@ further arguments."
 	(if (symbolp (symbol-value var))
 	    (cond ((functionp (symbol-value var))
 		   (standoff-dump--print-quoted dump-buf dump-var-name (funcall (symbol-value var) source-buf)))
-		  (t (message "Left type %s: %s" var (type-of (symbol-value var)))))
+		  (t (message "Left type %s: symbol %s" var (type-of (symbol-value var)))))
 	  (cond
 	   ((stringp (symbol-value var))
 	    (standoff-dump--print dump-buf dump-var-name (symbol-value var)))
-	   (t (message "Left type %s: %s" var (type-of (symbol-value var))))))))
+	   ((consp (symbol-value var))
+	    (standoff-dump--print-quoted dump-buf dump-var-name (symbol-value var)))
+	   (t (message "Left type %s: variable %s" var (type-of (symbol-value var))))))))
     (with-current-buffer dump-buf
       (save-buffer))
     (kill-buffer dump-buf)))

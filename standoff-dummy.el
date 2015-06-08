@@ -30,9 +30,7 @@
 
 (require 'standoff-api)
 
-;;
-;; IDs
-;;
+;;;; IDs
 
 (defun standoff-dummy-create-intid (data pos)
   "Create and return an integer ID for the next item in dummy backend.
@@ -82,9 +80,7 @@ edited by Xah Lee and other, taken from URL
   :group 'standoff-dummy
   :type 'function)
 
-;;
-;; Markup
-;;
+;;;; Markup
 
 (defvar standoff-dummy-markup '()
   "The markup elements and ranges stored in the backend.
@@ -204,9 +200,7 @@ MARKUP-INST-ID in context of buffer BUF."
 	  (setq used-types (cons typel used-types))))
       used-types)))
 
-;;
-;; Relations
-;;
+;;;; Relations
 
 (defvar standoff-dummy-relations '()
   "The relations stored in the backend.
@@ -247,10 +241,15 @@ object's markup type respectivly."
 The graph represents a relation between two markup elements with
 the markup given by SUBJ-ID as subject, the predicate given by
 PREDICATE and the markup given by OBJ-ID as object. The buffer
-with the markup must be given by BUF."
+with the markup must be given by BUF. Returns the id of of the
+relation created."
   (with-current-buffer buf
-    (setq standoff-dummy-relations
-	  (cons (list subj-id predicate obj-id) standoff-dummy-relations))))
+    (let ((relation-id (funcall standoff-dummy-create-id-function
+				standoff-dummy-relations
+				standoff-pos-relation-id)))
+      (setq standoff-dummy-relations
+	    (cons (list relation-id subj-id predicate obj-id) standoff-dummy-relations))
+      relation-id)))
 
 (defun standoff-dummy-read-relations (buf &optional subj-id predicate obj-id)
   "Returns a list with the relations in buffer BUF.
@@ -291,7 +290,7 @@ removed."
       (setq standoff-dummy-relations new-relations))))
 
 
-;; setup and reset backend
+;;;; setup, reset and load back-end
 
 (defun standoff-dummy-backend-reset ()
   "Reset the dummy backend.
@@ -313,6 +312,7 @@ function."
 
 ;; These variables are set when evaluating the dump file. In order to
 ;; silence the compiler we just define, but do not initialize them.
+(defvar standoff-api-description-dumped)
 (defvar standoff-source-md5-dumped)
 (defvar standoff-markup-read-function-dumped)
 (defvar standoff-relations-read-function-dumped)
@@ -320,23 +320,48 @@ function."
 (declare-function standoff-dump-filename-default "standoff-mode.el" nil)
 (declare-function standoff-highlight-markup-buffer "standoff-mode.el" nil)
 
+(defun standoff-dummy-evolve-make-value (buf item list-symbol cell dumped-api)
+  "Make a value for the CELL in ITEM in the back-end's list LIST-SYMBOL.
+ITEM follows the api generation DUMPED-API. Source document is
+given in buffer BUF.
+
+Right now we only need to make a non-nil value for the relation-id."
+  (cond ((and (equal list-symbol :relations)
+	      (equal cell :standoff-pos-relation-id))
+	 (funcall standoff-dummy-create-id-function
+		  standoff-dummy-relations
+		  standoff-pos-relation-id))
+	(t nil)))
+
 (defun standoff-dummy-load-dumped (fname)
-  "Load markup relations etc. from a dumped file FNAME."
+  "Load markup, relations etc. from a dumped file FNAME."
   (interactive
    (list (read-file-name "File to be loaded: "
 			 nil
 			 nil
 			 'confirm
 			 (file-relative-name (standoff-dump-filename-default)))))
-  (require 'standoff-mode)
-  (load fname)
-  (unless (equal (md5 (current-buffer)) standoff-source-md5-dumped)
-    (error "Did you edit the file? Checksum does not match. Not loading"))
-  (setq standoff-dummy-markup standoff-markup-read-function-dumped
-	standoff-dummy-relations standoff-relations-read-function-dumped)
-  (message "File %s successfully loaded." fname)
-  (when standoff-dummy-highlight-after-load
-    (standoff-highlight-markup-buffer)))
+  (let ((dumped-api))
+    (require 'standoff-mode)
+    ;; initialize dumped vars, because old values may be left over
+    ;; after loading, if dump-file is incomplete
+    ;; TODO: use standoff-dump-vars
+    (setq standoff-api-description-dumped nil
+	  standoff-source-md5-dumped nil
+	  standoff-markup-read-function-dumped nil
+	  standoff-relations-read-function-dumped nil)
+    (load fname)
+    ;; checksum should not differ
+    (unless (equal (md5 (current-buffer)) standoff-source-md5-dumped)
+      (error "Did you edit the file? Checksum does not match. Not loading"))
+    ;; get dumped api
+    (setq dumped-api (or standoff-api-description-dumped
+			 (cdr (assoc "first" standoff-api-generations))))
+    (setq standoff-dummy-markup (standoff-api-evolve (current-buffer) :markup standoff-markup-read-function-dumped dumped-api)
+	  standoff-dummy-relations (standoff-api-evolve (current-buffer) :relations standoff-relations-read-function-dumped dumped-api))
+    (message "File %s successfully loaded." fname)
+    (when standoff-dummy-highlight-after-load
+      (standoff-highlight-markup-buffer))))
 
 (defun standoff-dummy-backend-setup ()
   "Setup the dummy backend. Called by mode hook."
@@ -355,9 +380,8 @@ This may be usefull for development."
   (interactive)
   (message "%s" (list standoff-dummy-markup
 		      standoff-dummy-relations)))
-;;
-;; Registration / Set up
-;;
+
+;;;; Registration / Set up
 
 ;; This actually restores the default values for handler function
 ;; variables defined in `standoff-dummy.el'.
