@@ -88,6 +88,12 @@ This `standoff-pos-markup-inst-id' etc.")
 
 (make-variable-buffer-local 'standoff-dummy-markup)
 
+(defcustom standoff-dummy-user-logging t
+  "Whether or not to log time and user information when creating markup.
+You can turn off big brother by setting this to nil."
+  :group 'standoff-dummy
+  :type 'boolean)
+
 (defun standoff-dummy-create-markup (buf startchar endchar markup-type)
   "Create a markup element and store it in dummy backend.
 The markup element is of type MARKUP-TYPE, ranging from STARTCHAR
@@ -99,7 +105,9 @@ variable `standoff-dummy-create-id-function'."
 				   standoff-dummy-markup
 				   standoff-pos-markup-inst-id)))
       (setq standoff-dummy-markup
-	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring-no-properties startchar endchar))
+	    (cons (list markup-inst-id markup-type startchar endchar (buffer-substring-no-properties startchar endchar)
+			(and standoff-dummy-user-logging (current-time))
+			(and standoff-dummy-user-logging (user-full-name)))
 		  standoff-dummy-markup))
       markup-inst-id)))
 
@@ -248,7 +256,10 @@ relation created."
 				standoff-dummy-relations
 				standoff-pos-relation-id)))
       (setq standoff-dummy-relations
-	    (cons (list relation-id subj-id predicate obj-id) standoff-dummy-relations))
+	    (cons (list relation-id subj-id predicate obj-id
+			(and standoff-dummy-user-logging (current-time))
+			(and standoff-dummy-user-logging (user-full-name)))
+			standoff-dummy-relations))
       relation-id)))
 
 (defun standoff-dummy-read-relations (buf &optional subj-id predicate obj-id)
