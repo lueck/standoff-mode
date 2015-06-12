@@ -24,7 +24,9 @@ Usage:
 
 with xalan on bash:
 
-bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param config-file \"myconfig.el\"]
+bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param config-file \"myconfig.el\"] [-param provide \"true\" ] [-param lang \"nl\"]
+
+This will generate markup types and relation predicates from the ontology.
 
 -->
 
@@ -41,6 +43,10 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
   <xsl:param name="config-file">
     <xsl:text>standoff-config.el</xsl:text>
   </xsl:param>
+
+  <xsl:param name="lang" select="number('0')"/>
+
+  <xsl:param name="provide" select="number('0')"/>
   
   <xsl:template match="text()"/>
   
@@ -51,6 +57,12 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
     &#10;;; This file was generated using owl2config.xsl&#10;
     &#10;;;; Code:&#10;
     </xsl:text>
+
+    <xsl:if test="boolean($provide)">
+      <xsl:text>&#10;(provide '</xsl:text>
+      <xsl:value-of select="substring($config-file, 1, string-length($config-file)-3)"/>
+      <xsl:text>)&#10;&#10;</xsl:text>
+    </xsl:if>
 
     <!-- markup types -->
     <xsl:text>&#10;(setq standoff-markup-types-allowed '(</xsl:text>
@@ -95,11 +107,30 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
     <xsl:text>&#10;  ("</xsl:text>
     <xsl:value-of select="@rdf:about"/>
     <xsl:text>" . "</xsl:text>
-    <xsl:value-of select="rdfs:label"/>
+    <!--xsl:value-of select="rdfs:label"/-->
+    <xsl:apply-templates select="." mode="label"/>
     <xsl:text>")</xsl:text>
   </xsl:template>
   
   <xsl:template match="text()|@*" mode="standoff-markup-labels"/>
+
+
+  <!-- label in language if lang parameter used, otherwise all labels -->
+
+  <xsl:template match="rdfs:label" mode="label">
+    <xsl:choose>
+      <xsl:when test="boolean($lang)">
+	<xsl:if test="@xml:lang = $lang">
+	  <xsl:value-of select="."/>
+	</xsl:if>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:value-of select="."/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="text()|@*" mode="label"/>
 
 
   <!-- templates for standoff-relations-allowed -->
@@ -115,39 +146,8 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
   </xsl:template>
 
   <xsl:template match="text()|@*" mode="standoff-relations-allowed"/>
-
-  <!-- rdfs:domain defines a subject -->
-  <xsl:template match="rdfs:domain" mode="standoff-relations-allowed.subject">
-    <xsl:text>"</xsl:text>
-    <xsl:value-of select="@rdf:resource"/>
-    <xsl:text>" </xsl:text>
-  </xsl:template>
-
-  <!-- when it is a subPropertyOf we need to recurse the super-property -->
-  <xsl:template match="rdfs:subPropertyOf" mode="standoff-relations-allowed.subject">
-    <xsl:variable name="resource" select="@rdf:resource"/>
-    <!--xsl:text>subPropertyOf: </xsl:text><xsl:value-of select="$resource"/-->
-    <xsl:apply-templates
-	select="../../owl:ObjectProperty[@rdf:about=$resource]"
-	mode="standoff-relations-allowed.subject"/>
-  </xsl:template>
   
   <xsl:template match="text()|@*" mode="standoff-relations-allowed.subject"/>
-
-
-  <xsl:template match="rdfs:range" mode="standoff-relations-allowed.object">
-    <xsl:text>"</xsl:text>
-    <xsl:value-of select="@rdf:resource"/>
-    <xsl:text>" </xsl:text>
-  </xsl:template>
-  
-  <xsl:template match="rdfs:subPropertyOf" mode="standoff-relations-allowed.object">
-    <xsl:variable name="resource" select="@rdf:resource"/>
-    <!--xsl:text>subPropertyOf: </xsl:text><xsl:value-of select="$resource"/-->
-    <xsl:apply-templates
-	select="../../owl:ObjectProperty[@rdf:about=$resource]"
-	mode="standoff-relations-allowed.object"/>
-  </xsl:template>
   
   <xsl:template match="text()|@*" mode="standoff-relations-allowed.object"/>
 
@@ -158,7 +158,7 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
     <xsl:text>&#10;  ("</xsl:text>
     <xsl:value-of select="@rdf:about"/>
     <xsl:text>" . "</xsl:text>
-    <xsl:value-of select="rdfs:label"/>
+    <xsl:apply-templates select="." mode="label"/>
     <xsl:text>")</xsl:text>
   </xsl:template>
   
