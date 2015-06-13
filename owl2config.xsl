@@ -28,11 +28,14 @@ bash$ xalan -xsl owl2config.xsl -in path/to/owl-file -out myconfig.el [ -param c
 
 This will generate markup types and relation predicates from the ontology.
 
+It will read owl:AnnotationProperty som:allowedSubject and som:allowedObject
+in order to restrict predicates to a combination of subject and object classes.
+
 -->
 
 <xsl:stylesheet
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:arb="http://beispiel.fernuni-hagen.de/ontologies/beispiel#"
+    xmlns:som="http://github.com/lueck/standoff-mode/owl#"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
@@ -111,7 +114,7 @@ This will generate markup types and relation predicates from the ontology.
     <xsl:apply-templates select="." mode="label"/>
     <xsl:text>")</xsl:text>
   </xsl:template>
-  
+
   <xsl:template match="text()|@*" mode="standoff-markup-labels"/>
 
 
@@ -146,14 +149,45 @@ This will generate markup types and relation predicates from the ontology.
   </xsl:template>
 
   <xsl:template match="text()|@*" mode="standoff-relations-allowed"/>
-  
+
   <xsl:template match="text()|@*" mode="standoff-relations-allowed.subject"/>
-  
+
+  <!-- som:allowedSubject defines a subject -->
+  <xsl:template match="som:allowedSubject" mode="standoff-relations-allowed.subject">
+    <xsl:text>"</xsl:text>
+    <xsl:value-of select="@rdf:resource"/>
+    <xsl:text>" </xsl:text>
+  </xsl:template>
+
+  <!-- when it is a subPropertyOf we need to recurse the super-property -->
+  <xsl:template match="rdfs:subPropertyOf" mode="standoff-relations-allowed.subject">
+    <xsl:variable name="resource" select="@rdf:resource"/>
+    <!--xsl:text>subPropertyOf: </xsl:text><xsl:value-of select="$resource"/-->
+    <xsl:apply-templates
+	select="../../owl:ObjectProperty[@rdf:about=$resource]"
+	mode="standoff-relations-allowed.subject"/>
+  </xsl:template>
+
+
   <xsl:template match="text()|@*" mode="standoff-relations-allowed.object"/>
 
-  
+  <xsl:template match="som:allowedObject" mode="standoff-relations-allowed.object">
+    <xsl:text>"</xsl:text>
+    <xsl:value-of select="@rdf:resource"/>
+    <xsl:text>" </xsl:text>
+  </xsl:template>
+
+  <xsl:template match="rdfs:subPropertyOf" mode="standoff-relations-allowed.object">
+    <xsl:variable name="resource" select="@rdf:resource"/>
+    <!--xsl:text>subPropertyOf: </xsl:text><xsl:value-of select="$resource"/-->
+    <xsl:apply-templates
+	select="../../owl:ObjectProperty[@rdf:about=$resource]"
+	mode="standoff-relations-allowed.object"/>
+  </xsl:template>
+
+
   <!-- templates for standoff-predicate-labels -->
-  
+
   <xsl:template match="owl:ObjectProperty" mode="standoff-predicate-labels">
     <xsl:text>&#10;  ("</xsl:text>
     <xsl:value-of select="@rdf:about"/>
