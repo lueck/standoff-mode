@@ -150,11 +150,27 @@ das erstellte Markup wird extern gespeichert. Man sagt auch, dass es vom
 fraglichen Dokument `distanziert' gespeichert wird, daher der Name
 @emph{stand-off}.
 
-Jede Art solch externen Markups muss auf irgendeine Art und Weise auf
-das verarbeitete Dokument, auch Quell-Dokument genannt,
-@emph{verweisen}. In Stand-Off Mode geschieht dieser Verweis über Namen
-und Prüfsummen des Quell-Dokuments und @emph{character offsets}
-verweisen auf die Position innerhalb des Dokuments.
+Das Markup, das mit Stand-Off Mode erstellt werden kann, besteht aus
+folgenden Bausteinen: a) @emph{Markup-Elemente} (Markup im engeren
+Sinne), das sind Auszeichnungen von Passagen im Text; b)
+@emph{Relationen} solcher Markup-Elemente untereinander; c)
+@emph{Attribute} zu Markup-Elementen; d) @emph{Kommentare} in Form von
+freiem Text. Alles zusammen stellt das Markup im weiteren Sinne dar,
+oder die @emph{Annotationen} zu einem Text.
+@ifset PRAKTIKUM
+Im Praktikum werden die Auszeichnungen von Beispielen,
+Beispiel-Markierungen, Konzepten und Kontexten als Markup-Elemente
+realisiert; Relationen setzen Beispiele, Beispiel-Markierungen
+usw. miteinander in Beziehung und dienen gleichzeitig der Klassifikation
+von Beispielen; die Paraphrasierung eines Konzeptes oder Kontextes ist
+als Attribut realisiert.
+@end ifset
+
+Jede Art externen Markups muss auf irgendeine Art und Weise auf das
+verarbeitete Dokument, auch Quell-Dokument genannt, @emph{verweisen}. In
+Stand-Off Mode geschieht dieser Verweis über Namen und Prüfsummen des
+Quell-Dokuments und @emph{character offsets} verweisen auf die Position
+innerhalb des Dokuments.
 
 @menu
 * Stand-Off Markup::

@@ -67,7 +67,7 @@
 	  normal)))
       "Face used \"konzept\" markup type."
       :group 'standoff-faces)
-    
+
     (defface standoff-arb-marker
       '((((type x))
 	 (:family
@@ -109,7 +109,7 @@
       :group 'standoff-faces)
 
     (setq standoff-markup-overlays
-	'(("beispiel" 
+	'(("beispiel"
 	   ('priority 10)
 	   ('face 'standoff-arb-beispiel);;(:foreground "dark red"))
 	   )
@@ -128,7 +128,7 @@
 	  ))
 
     (setq standoff-markup-overlays-front
-	  '(("beispiel" 
+	  '(("beispiel"
 	     ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
 	    ("marker"
 	     ('face 'standoff-arb-marker));;(:foreground "dark blue")))
@@ -139,7 +139,7 @@
 	    ))
   
     (setq standoff-markup-overlays-after
-	  '(("beispiel" 
+	  '(("beispiel"
 	     ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
 	    ("marker"
 	     ('face 'standoff-arb-marker));;(:foreground "dark blue")))
