@@ -1,0 +1,609 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY arb "http://arb.fernuni-hagen.de/owl/beispiel#" >
+    <!ENTITY dim "http://arb.fernuni-hagen.de/owl/dimension#" >
+    <!ENTITY som "http://github.com/lueck/standoff-mode/owl#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<rdf:RDF xmlns="http://arb.fernuni-hagen.de/owl/beispiel#"
+     xml:base="http://arb.fernuni-hagen.de/owl/beispiel"
+     xmlns:arb="http://arb.fernuni-hagen.de/owl/beispiel#"
+     xmlns:som="http://github.com/lueck/standoff-mode/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:dim="http://arb.fernuni-hagen.de/owl/dimension#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://arb.fernuni-hagen.de/owl/beispiel">
+        <rdfs:label xml:lang="de">Annotationsschema für das Archiv des
+        Beispiels</rdfs:label>
+        <owl:imports rdf:resource="http://github.com/lueck/standoff-mode/owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#dimension -->
+
+    <owl:AnnotationProperty rdf:about="&arb;dimension">
+        <rdfs:comment xml:lang="de">Gibt die Dimension des Beispiel-Prädikats an.</rdfs:comment>
+        <rdfs:range rdf:resource="&rdfs;Literal"/>
+        <rdfs:domain rdf:resource="&owl;ObjectProperty"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#beispielFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;beispielFuer">
+        <rdfs:label xml:lang="de">ist Beispiel für</rdfs:label>
+        <rdfs:comment xml:lang="de">Grundprädikat, mit dem ein
+        Beispiel als Subjekt mit einem Konzept oder Kontext in
+        Verbindung gebracht wird.
+
+	Grundsätzlich sollte man im Sinne der Logik des Textes
+	annotieren, d.h. unter Umständen statt &quot;ist Beispiel für&quot; eher
+	&quot;soll Beispiel sein für&quot; lesen.</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Beispiel"/>
+        <som:allowedObject rdf:resource="&arb;Kontext"/>
+        <som:allowedObject rdf:resource="&arb;Konzept"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#belegt -->
+
+    <owl:ObjectProperty rdf:about="&arb;belegt">
+        <rdfs:label xml:lang="de">belegt</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Belegbeispiel veranschaulicht
+	ein Allgemeines durch Besonderes. Es ist Element einer Menge,
+	deren Regelmäßigkeit oder Kohärenz es darstellt. (Vgl. Ruchatz
+	2008, S. 21)</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#beliebigFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;beliebigFuer">
+        <rdfs:label xml:lang="de">ist beliebiges Beispiel für</rdfs:label>
+        <rdfs:comment xml:lang="de">Anstatt dieses Beispiels könnten
+        beliebig viele andere stehen.
+
+	Das ist in Sinne der Text-Logik zu verstehen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#entwickelt -->
+
+    <owl:ObjectProperty rdf:about="&arb;entwickelt">
+        <rdfs:label xml:lang="de">entwickelt</rdfs:label>
+        <rdfs:comment xml:lang="de">In dem Beispiel wird ein gegebenes
+        Besonderes zu einer abstrakten Regel, zu einem Begriff, einem
+        Modell o.ä., zumindestet zu einem Abstraktem,
+        verallgemeinert. Solchem Beispielgebrauch entspricht ein
+        induktives Vorgehen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <owl:equivalentProperty rdf:resource="&arb;fingiert"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#erlaeutert -->
+
+    <owl:ObjectProperty rdf:about="&arb;erlaeutert">
+        <rdfs:label xml:lang="de">erläutert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel erklärt, was mit
+        einem Begriff o.Ä. gemeint ist.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;konzeptuell"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#evidenziert -->
+
+    <owl:ObjectProperty rdf:about="&arb;evidenziert">
+        <rdfs:label xml:lang="de">evidenziert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel sorgt nicht nur für
+        eine generelle Anschaulichkeit der Sache, sondern sind selbst
+        der Punkt, an dem eine Darstellung oder Argumentation evident
+        werden soll.
+	
+	Jedes Beispiel, das evidenziert, veranschaulicht auch. Evidenz
+	erzeugen ist aber mehr als Veranschaulichung.</rdfs:comment>
+        <owl:equivalentProperty rdf:resource="&arb;schlagendFuer"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;veranschaulicht"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#exemplarischFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;exemplarischFuer">
+        <rdfs:label xml:lang="de">steht exemplarisch für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel steht typisch für
+        etwas und soll modellhaft verstanden werden. Dabei steht ein
+        praktischer, das heißt auf das Handeln bezogener, Aspekt im
+        Vordergrund.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#fingiert -->
+
+    <owl:ObjectProperty rdf:about="&arb;fingiert">
+        <rdfs:label xml:lang="de">fingiert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel richtet etwas ein,
+        als ob es etwas Empirisches wäre.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;entwickelt"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#fordertAufZu -->
+
+    <owl:ObjectProperty rdf:about="&arb;fordertAufZu">
+        <rdfs:label xml:lang="de">fordert auf zu</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel stellt etwas oder
+        jemanden vor und aus, das/der nachgeahmt werden soll, und
+        fordert also zu etwas auf. Es hat einen praktischen, d.h. auf
+        das Handeln bezogenen Aspekt.
+
+	Die mit Nachahmung verbundene Aspekt der Musterhaftigkeit,
+	Vorbildhaftigkeit, Kanonwürdigkeit, o.ä gilt dabei in einem
+	weiten Sinne. Die Prädikate &quot;ist Vorbild bezüglich&quot; und &quot;ist
+	exemplarisch für&quot; sind Ausprägungen dieses weiten
+	Aufforderungs- bzw. Nachahmungscharakters.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;exemplarischFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;mustergueltigFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;vorbildBzgl"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#hatMarker -->
+
+    <owl:ObjectProperty rdf:about="&arb;hatMarker">
+        <rdfs:label xml:lang="de">hat Markierung</rdfs:label>
+        <rdfs:comment xml:lang="de">Dieses Prädikat kommt zur Anwendung, wenn ein Beispiel eine Markierung im Text hat und stellt dann die Verbindung zwischen Beispiel und Markierung her.
+
+Nicht jedes Beispiel hat eine Markierung.</rdfs:comment>
+        <rdfs:domain rdf:resource="&arb;Beispiel"/>
+        <som:allowedSubject rdf:resource="&arb;Beispiel"/>
+        <rdfs:range rdf:resource="&arb;Marker"/>
+        <som:allowedObject rdf:resource="&arb;Marker"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#konkretisiert -->
+
+    <owl:ObjectProperty rdf:about="&arb;konkretisiert">
+        <rdfs:label xml:lang="de">konkretisiert</rdfs:label>
+        <rdfs:comment xml:lang="de">Ein Beispiel konkretisiert ein anderes Beispiel.
+
+Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#kontrastiert -->
+
+    <owl:ObjectProperty rdf:about="&arb;kontrastiert">
+        <rdfs:label xml:lang="de">kontrastiert</rdfs:label>
+        <rdfs:comment xml:lang="de">Ein Beispiel kontrastiert ein anderes Beispiel in einem Argumentationsgang.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#leitetAnZu -->
+
+    <owl:ObjectProperty rdf:about="&arb;leitetAnZu">
+        <rdfs:label xml:lang="de">leitet an zu</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel kann mit Variationen
+        oder Anpassungen für andere Zwecke und in anderen Kontexten
+        übernommen werden kann. Beispiele in Benutzeranleitungen und
+        -handbüchern fallen hierunter.
+
+	Es handelt sich um eine Ausprägung von &quot;ist Muster
+	für&quot;.</rdfs:comment>
+        <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;musterFuer"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#markiert -->
+
+    <owl:ObjectProperty rdf:about="&arb;markiert">
+        <rdfs:label xml:lang="de">markiert</rdfs:label>
+        <rdfs:comment xml:lang="de">Eine Relation mit diesem Prädikat bringt eine Markierung mit einem Beispiel in Verbindung.</rdfs:comment>
+        <rdfs:range rdf:resource="&arb;Beispiel"/>
+        <som:allowedObject rdf:resource="&arb;Beispiel"/>
+        <rdfs:domain rdf:resource="&arb;Marker"/>
+        <som:allowedSubject rdf:resource="&arb;Marker"/>
+        <owl:inverseOf rdf:resource="&arb;hatMarker"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#metonymischFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;metonymischFuer">
+        <rdfs:label xml:lang="de">metonymisch für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel steht in einer
+        metonymischen Beziehung zu etwas, das es als Komplex aufruft,
+        aber ganz verkürzt, unter Umgehung von Komplexität. Es ruft
+        Bekanntes wieder auf, worin seine reproduktive Dimension
+        liegt.
+
+	Das Beispiel ist möglicherweise schon vorher im Text erörtert
+	worden und nun kann mit ihm wie mit einem Stichwort auf
+	Komplexes verwiesen werden. In diesem Fall sollte auch eine
+	Relation mit dem Prädikat &quot;nimmt auf&quot; annotiert werden. Häufig
+	haben Nennungen von Namen oder Werken diesen
+	Aspekt.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;nimmtAuf"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#musterFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;musterFuer">
+        <rdfs:label xml:lang="de">ist Muster für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel ist Muster für etwas
+        im Sinne eines Gebrauchsmusters, etwas wovon eine große
+        Stückzahl produziert werden kann, etwas, das abgekupfert
+        werden kann.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#mustergueltigFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;mustergueltigFuer">
+        <rdfs:label xml:lang="de">ist mustergültig für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel steht typisch für
+        etwas und soll als Muster verstanden und nachgeahmt werden.
+
+	Hier steht die der praktische, d.h. Handlungsaspekt im
+	Vordergrund, während bei &quot;ist Muster für&quot; die Dimension der
+	Reproduktion im Vordergrund steht, die auch ohne praktischem
+	Aspekt z.B. in bloß technischer Hinsicht erfolgen
+	kann.</rdfs:comment>
+        <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#nimmtAuf -->
+
+    <owl:ObjectProperty rdf:about="&arb;nimmtAuf">
+        <rdfs:label xml:lang="de">nimmt wieder auf</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel wird im Text wiederholt angeführt.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#paradigmaFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;paradigmaFuer">
+        <rdfs:label xml:lang="de">ist Paradigma für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Paradigma nimmt eine zentrale
+        Stelle innerhalb eines ganzes Textes ein. Es weist eine Nähe
+        zu den Kategorien des Modells und der Idee auf.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;konzeptuell"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#prueftAb -->
+
+    <owl:ObjectProperty rdf:about="&arb;prueftAb">
+        <rdfs:label xml:lang="de">prüft ab</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel wird in einer Prüfung
+        benutzt, um Erlerntes zu reproduzieren und Wissen
+        sicherzustellen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#pseudobeispielFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;pseudobeispielFuer">
+        <rdfs:label xml:lang="de">ist Pseudo-Beispiel für</rdfs:label>
+        <rdfs:comment xml:lang="de">Dem Beispiel fehlen in Bezug auf
+        Konzept bzw. Kontext die wichtige Eigenschaften eines
+        Beispiels, wie Austauschbarkeit.
+
+	Dies ist weniger mit Blick auf die Textlogik zu annotieren als
+	vielmehr aufgrund eines analytischen Blicks von
+	außen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#schlagendFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;schlagendFuer">
+        <rdfs:label xml:lang="de">ist schlagend für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel ist ein schlagendes
+        Beispiel für etwas, d.h. erreicht seine maximale
+        Wirkung.
+
+	Der Unterschied zum Prädikat &quot;evidenziert&quot; liegt eher in der
+	Beschreibung als in der Sache.
+
+	Jedes schlagende Beispiel veranschaulicht. Schlagende Wirkung
+	zu entfalten ist aber mehr als
+	veranschaulichen.</rdfs:comment>
+        <rdfs:seeAlso rdf:resource="&arb;evidenziert"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;veranschaulicht"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#schluesselFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;schluesselFuer">
+        <rdfs:label xml:lang="de">ist Schlüsselbeispiel für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel fungiert als zenrale
+        Darstellung eines Sachverhalts, Kontextes oder eines anderen
+        Zusammenhangs.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#schrecktAb -->
+
+    <owl:ObjectProperty rdf:about="&arb;schrecktAb">
+        <rdfs:label xml:lang="de">schreckt ab vor</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel stellt etwas oder
+        jemanden in abschreckender Weise vor.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#substituiert -->
+
+    <owl:ObjectProperty rdf:about="&arb;substituiert">
+        <rdfs:label xml:lang="de">substituiert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel ersetzt ein anderes,
+        wobei sich auf der Ebene des Kontextes der Sinn nicht ändern
+        soll, andererseits genau diese Änderung der Fall, auf der
+        Ebene des Beispiels nämlich.
+
+	Solche Substitutionsbeispiele sind sehr verbreitet in der
+	Linguistik und in der Logik.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#topischFuer -->
+
+    <owl:ObjectProperty rdf:about="&arb;topischFuer">
+        <rdfs:label xml:lang="de">ist topisch für</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel ist ein topisches
+        Beispiel für etwas, speist sich also aus anerkanntem und
+        bekanntem Wissen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#veranschaulicht -->
+
+    <owl:ObjectProperty rdf:about="&arb;veranschaulicht">
+        <rdfs:label xml:lang="de">veranschaulicht</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel wird zu didaktischen
+        Zwecken eingesetzt, worin es sich von &quot;erläutert&quot;
+        unterscheidet.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <rdfs:seeAlso rdf:resource="&arb;erlaeutert"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#verweistAuf -->
+
+    <owl:ObjectProperty rdf:about="&arb;verweistAuf">
+        <rdfs:label xml:lang="de">verweist auf</rdfs:label>
+        <rdfs:comment xml:lang="de">Predikat für Relationen von einem Beispiel zum anderen.
+
+Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Beispiel"/>
+        <rdfs:domain rdf:resource="&arb;Beispiel"/>
+        <rdfs:range rdf:resource="&arb;Beispiel"/>
+        <som:allowedObject rdf:resource="&arb;Beispiel"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#vorbildBzgl -->
+
+    <owl:ObjectProperty rdf:about="&arb;vorbildBzgl">
+        <rdfs:label xml:lang="de">ist Vorbild bezüglich</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel stellt ein Vorbild
+        vor und aus bezogen auf etwas. Es hat Nachahmungscharakter und
+        also einen praktischen, d.h. auf das Handeln bezogenen
+        Aspekt.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#widerlegt -->
+
+    <owl:ObjectProperty rdf:about="&arb;widerlegt">
+        <rdfs:label xml:lang="de">widerlegt</rdfs:label>
+        <rdfs:comment xml:lang="de">???</rdfs:comment>
+        <som:allowedObject rdf:resource="&arb;Beispiel"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Beispiel -->
+
+    <owl:Class rdf:about="&arb;Beispiel">
+        <rdfs:label xml:lang="de">Beispiel</rdfs:label>
+        <rdfs:label xml:lang="en">Example</rdfs:label>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-beispiel</som:face>
+        <rdfs:comment xml:lang="de">Ein Beispiel in einem Text.
+
+Personen oder Werke sollen nicht als Beispiel, sondern als &quot;Person&quot; bzw. &quot;Werk&quot; ausgezeichnet werden.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Kontext -->
+
+    <owl:Class rdf:about="&arb;Kontext">
+        <rdfs:label xml:lang="de">Kontext</rdfs:label>
+        <rdfs:label xml:lang="en">Context</rdfs:label>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-kontext</som:face>
+        <rdfs:comment xml:lang="de">Als Kontext soll der
+        intratextuelle Kontext eines Beispiels ausgezeichnet, also der
+        vom Beispiel bearbeitete semantische Komplex, der in der Linie
+        der Argumentation oder Darstellung des Textes (oder einer
+        Digression) wichtig ist. Man kann für Kontext auch &quot;Thema&quot;
+        sagen.
+
+	Anders als beim Konzept müssen beim Kontext meistens Passagen
+	ausgezeichnet werden, die länger sind als ein Wort oder eine
+	Nominalphrase eines Satzes. Bisweilen müssen sogar mehrere
+	Sätze ausgezeichnet werden. Oft erfordert eine qualitativ
+	hochwertige Annotation, Passagen, die weit weg vom Beispiel
+	entfernt sind, als seinen Kontext auszuzeichnen. Oft ist es
+	so, dass mehrere Beispiele in Relation zum selben Kontext
+	stehen.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Konzept -->
+
+    <owl:Class rdf:about="&arb;Konzept">
+        <rdfs:label xml:lang="de">Konzept</rdfs:label>
+        <rdfs:label xml:lang="en">Concept</rdfs:label>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-konzept</som:face>
+        <rdfs:comment xml:lang="de">Das Konzept ist das, wofür das
+        Beispiel angeführt wird. Als Konzept soll das (semantisch)
+        naheliegendste Element des Textes ausgezeichnet werden. Das
+        heißt, es soll eher wenig Text als Konzept ausgezeichnet
+        werden.
+
+	Im Unterschied zum Konzept soll der Kontext als das semantisch
+	weiter vom Beispiel entfernt liegende, aber als auf der
+	Argumentationslinie des Textes liegender durch das Beispiel
+	bearbeiteter semantische Komplex (Thema) ausgezeichnet
+	werden. Das als Konzept Ausgezeichnete hingegen erscheint
+	bisweilen für die Argumentationslinie des Textes kaum
+	entscheidend oder trivial.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Marker -->
+
+    <owl:Class rdf:about="&arb;Marker">
+        <rdfs:label xml:lang="de">Markierung</rdfs:label>
+        <rdfs:label xml:lang="en">Marker</rdfs:label>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-marker</som:face>
+        <rdfs:comment xml:lang="de">Markierung des Beispiels im Text
+        durch &quot;z.B.&quot;, &quot;etwa&quot; oder Ähnliches.
+
+	Nicht jedes Beispiel wird durch eine Markierung explizit als
+	Beispiel angezeigt.
+
+	Rein grammatische Einheiten, die die gleiche Ausdehnung haben
+	wie das Beispiel, wie oft bei Beispielen in Parenthesen,
+	ganzen Nebensätzen, ganzen Sätzen vom ersten Wort bis zum
+	Punkt, oder auch Satzkonstituenten sollen nicht ausgezeichnet
+	werden.</rdfs:comment>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.5.1) http://owlapi.sourceforge.net -->
+
