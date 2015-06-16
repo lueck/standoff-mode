@@ -1,0 +1,6 @@
+standoff-arb-schema.el
+arb-schema.tex
+arb-schema.pdf
+
+*.out
+*.log
