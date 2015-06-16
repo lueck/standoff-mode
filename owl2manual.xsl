@@ -38,7 +38,20 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
   <xsl:param name="firstColWidth" select="'\setlength{6em}'"/>
 
   <xsl:template match="/">
-    <xsl:text>\documentclass[DIV=15]{scrartcl}
+    <xsl:call-template name="preamble"/>
+    <xsl:call-template name="classes"/>
+    <xsl:call-template name="object-properties"/>
+    <xsl:call-template name="closing"/>
+  </xsl:template>
+
+  <xsl:template name="preamble">
+    <xsl:text>\documentclass{scrartcl}
+    \KOMAoption{fontsize}{10pt}
+    \KOMAoption{DIV}{15}
+    \KOMAoption{twoside}{false}
+    \KOMAoption{headings}{small}
+    \KOMAoption{headinclude}{false}
+    \KOMAoption{footinclude}{false}
     \usepackage[T1]{fontenc}
     \usepackage[utf8]{inputenc}
     \usepackage[english,ngerman]{babel}
@@ -55,43 +68,28 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     </xsl:call-template>
     <xsl:text>}
 
+    \newcommand{\ClassesName}{Classes}
+    \newcommand{\ObjectPropertiesName}{Object Properties}
+    \newcommand{\AllowedSubjectsName}{Subject classes}
+    \newcommand{\AllowedObjectsName}{Object classes}
+
     \newcommand{\textLabel}[1]{\texttt{#1}}
     
     \urldef{\urlowlequivalentProperty}
     \url{http://www.w3.org/TR/owl-ref/#equivalentProperty-def}
     
+    </xsl:text>
+    <xsl:apply-templates select="/" mode="preamble-addon"/>
+    <xsl:text>
     \begin{document}
-
     \maketitle
-
-    \section{Classes}
-
-    \begin{tabu} to \linewidth {|l|X|}
     </xsl:text>
-    <xsl:for-each select="/rdf:RDF/owl:Class|/rdf:RDF/rdfs:Class">
-      <xsl:call-template name="class">
-	<xsl:with-param name="class" select="."/>
-      </xsl:call-template>
-    </xsl:for-each>
-    <xsl:text>
-    \end{tabu}
-    
-    \section{Object Properties}
+  </xsl:template>
 
-    \begin{longtabu} to \linewidth {|l|X|}
-    </xsl:text>
-    <xsl:for-each select="/rdf:RDF/owl:ObjectProperty|rdf:RDF/rdfs:ObjectProperty">
-      <xsl:call-template name="object-property">
-	<xsl:with-param name="property" select="."/>
-      </xsl:call-template>
-      <xsl:text>\hline
-      </xsl:text>
-    </xsl:for-each>
+  <xsl:template name="preamble-addon"/>
+
+  <xsl:template name="closing">
     <xsl:text>
-    \end{longtabu}
-      
-    \section{Properties}
-    
     \end{document}
     </xsl:text>
   </xsl:template>
@@ -221,6 +219,23 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
       <xsl:text> \\ </xsl:text>
     </xsl:if>
   </xsl:template>
+
+  <!-- make a table of classes -->
+  <xsl:template name="classes">
+    <xsl:text>
+    \section{\ClassesName}
+    \label{sec:classes}
+    \begin{tabu} to \linewidth {|l|X|}
+    </xsl:text>
+    <xsl:for-each select="/rdf:RDF/owl:Class|/rdf:RDF/rdfs:Class">
+      <xsl:call-template name="class">
+	<xsl:with-param name="class" select="."/>
+      </xsl:call-template>
+    </xsl:for-each>
+    <xsl:text>
+    \end{tabu}
+    </xsl:text>
+  </xsl:template>
   
   <!-- make a table row for a class -->
   <xsl:template name="class">
@@ -231,7 +246,26 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\hline
     </xsl:text>
   </xsl:template>
-  
+
+  <!-- make a table of object properties -->
+  <xsl:template name="object-properties">
+    <xsl:text>
+    \section{\ObjectPropertiesName}
+    \label{sec:object-properties}
+    \begin{longtabu} to \linewidth {|l|X|}
+    </xsl:text>
+    <xsl:for-each select="/rdf:RDF/owl:ObjectProperty|rdf:RDF/rdfs:ObjectProperty">
+      <xsl:call-template name="object-property">
+	<xsl:with-param name="property" select="."/>
+      </xsl:call-template>
+      <xsl:text>\hline
+      </xsl:text>
+    </xsl:for-each>
+    <xsl:text>
+    \end{longtabu}
+    </xsl:text>
+  </xsl:template>
+
   <!-- make a table row for an object property -->
   <xsl:template name="object-property">
     <xsl:param name="property"/>
@@ -256,13 +290,13 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <!-- allowed subjects and objects -->
     <xsl:text>\cline{2-2}
     &amp; \begin{tabu}{X||X}
-    Subjects: </xsl:text>
+    \AllowedSubjectsName{}: </xsl:text>
     <xsl:apply-templates mode="som-allowedSubject"/>
-    <xsl:text> &amp; Objects: </xsl:text>
+    <xsl:text> &amp; \AllowedObjectsName{}: </xsl:text>
     <xsl:apply-templates mode="som-allowedObject"/>
     <xsl:text> \\ \end{tabu} \\ </xsl:text>
-    <xsl:text>\hline
-    </xsl:text>
+    <!--xsl:text>\hline
+    </xsl:text-->
   </xsl:template>
 
 
