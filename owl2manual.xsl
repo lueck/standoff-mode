@@ -248,6 +248,11 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
       <xsl:with-param name="propertyName" select="'rdfs:subPropertyOf'"/>
       <xsl:with-param name="label" select="'rdfs:subPropertyOf'"/>
     </xsl:call-template>
+    <xsl:call-template name="description-linking-resources">
+      <xsl:with-param name="resource" select="$property"/>
+      <xsl:with-param name="propertyName" select="'owl:inverseOf'"/>
+      <xsl:with-param name="label" select="'owl:inverseOf'"/>
+    </xsl:call-template>
     <!-- allowed subjects and objects -->
     <xsl:text>\cline{2-2}
     &amp; \begin{tabu}{X||X}
