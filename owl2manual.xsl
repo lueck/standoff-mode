@@ -64,34 +64,11 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
 
     \maketitle
 
-    \section{Classes}
-
-    \begin{tabu} to \linewidth {|l|X|}
     </xsl:text>
-    <xsl:for-each select="/rdf:RDF/owl:Class|/rdf:RDF/rdfs:Class">
-      <xsl:call-template name="class">
-	<xsl:with-param name="class" select="."/>
-      </xsl:call-template>
-    </xsl:for-each>
+    <xsl:call-template name="classes"/>
+    <xsl:call-template name="object-properties"/>
     <xsl:text>
-    \end{tabu}
-    
-    \section{Object Properties}
 
-    \begin{longtabu} to \linewidth {|l|X|}
-    </xsl:text>
-    <xsl:for-each select="/rdf:RDF/owl:ObjectProperty|rdf:RDF/rdfs:ObjectProperty">
-      <xsl:call-template name="object-property">
-	<xsl:with-param name="property" select="."/>
-      </xsl:call-template>
-      <xsl:text>\hline
-      </xsl:text>
-    </xsl:for-each>
-    <xsl:text>
-    \end{longtabu}
-      
-    \section{Properties}
-    
     \end{document}
     </xsl:text>
   </xsl:template>
@@ -221,6 +198,23 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
       <xsl:text> \\ </xsl:text>
     </xsl:if>
   </xsl:template>
+
+  <!-- make a table of classes -->
+  <xsl:template name="classes">
+    <xsl:text>
+    \section{Classes}
+    \label{sec:classes}
+    \begin{tabu} to \linewidth {|l|X|}
+    </xsl:text>
+    <xsl:for-each select="/rdf:RDF/owl:Class|/rdf:RDF/rdfs:Class">
+      <xsl:call-template name="class">
+	<xsl:with-param name="class" select="."/>
+      </xsl:call-template>
+    </xsl:for-each>
+    <xsl:text>
+    \end{tabu}
+    </xsl:text>
+  </xsl:template>
   
   <!-- make a table row for a class -->
   <xsl:template name="class">
@@ -231,7 +225,26 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\hline
     </xsl:text>
   </xsl:template>
-  
+
+  <!-- make a table of object properties -->
+  <xsl:template name="object-properties">
+    <xsl:text>
+    \section{Object Properties}
+    \label{sec:object-properties}
+    \begin{longtabu} to \linewidth {|l|X|}
+    </xsl:text>
+    <xsl:for-each select="/rdf:RDF/owl:ObjectProperty|rdf:RDF/rdfs:ObjectProperty">
+      <xsl:call-template name="object-property">
+	<xsl:with-param name="property" select="."/>
+      </xsl:call-template>
+      <xsl:text>\hline
+      </xsl:text>
+    </xsl:for-each>
+    <xsl:text>
+    \end{longtabu}
+    </xsl:text>
+  </xsl:template>
+
   <!-- make a table row for an object property -->
   <xsl:template name="object-property">
     <xsl:param name="property"/>
