@@ -108,57 +108,6 @@
       "Face used \"kontext\" markup type."
       :group 'standoff-faces)
 
-    (setq standoff-markup-overlays
-	'(("beispiel"
-	   ('priority 10)
-	   ('face 'standoff-arb-beispiel);;(:foreground "dark red"))
-	   )
-	  ("marker"
-	   ('priority 20)
-	   ('face 'standoff-arb-marker);;(:foreground "dark blue"))
-	   )
-	  ("konzept"
-	   ('priority 5)
-	   ('face 'standoff-arb-konzept);;(:foreground "forest green"))
-	   )
-	  ("kontext"
-	   ('priority 4)
-	   ('face 'standoff-arb-kontext)
-	   )
-	  ))
-
-    (setq standoff-markup-overlays-front
-	  '(("beispiel"
-	     ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
-	    ("marker"
-	     ('face 'standoff-arb-marker));;(:foreground "dark blue")))
-	    ("konzept"
-	     ('face 'standoff-arb-konzept));;(:foreground "forest green")))
-	    ("kontext"
-	     ('face 'standoff-arb-kontext))
-	    ))
-  
-    (setq standoff-markup-overlays-after
-	  '(("beispiel"
-	     ('face 'standoff-arb-beispiel));;(:foreground "dark red")))
-	    ("marker"
-	     ('face 'standoff-arb-marker));;(:foreground "dark blue")))
-	    ("konzept"
-	     ('face 'standoff-arb-konzept));;(:foreground "forest green")))
-	    ("kontext"
-	     ('face 'standoff-arb-kontext))
-	    ))
-
-    ;; (setq standoff-relations-allowed
-    ;; 	'(("marker" "markiert" "beispiel")
-    ;; 	  ;; beispiel ... konzept
-    ;; 	  ("beispiel" "istBeispielFür" "konzept")
-    ;; 	  ("beispiel" "erläutert" "konzept")
-    ;; 	  ;; beispiel ... kontext
-    ;; 	  ("beispiel" "erläutert" "kontext")
-    ;; 	  ("beispiel" "stelltVorAugen" "kontext")
-    ;; 	  ("beispiel" "machtHandgreiflich" "kontext")
-    ;; 	  ))
     ))
 
 ;;; standoff-arb.el ends here.
