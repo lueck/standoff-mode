@@ -214,7 +214,7 @@ in order to restrict predicates to a combination of subject and object classes.
     <xsl:if test="som:face">
       <xsl:text>&#10;  ("</xsl:text>
       <xsl:value-of select="@rdf:about"/>
-      <xsl:text>" . ('face '</xsl:text>
+      <xsl:text>" ('face '</xsl:text>
       <xsl:value-of select="som:face"/>
       <xsl:text>))</xsl:text>
     </xsl:if>
