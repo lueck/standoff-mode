@@ -86,7 +86,16 @@ in order to restrict predicates to a combination of subject and object classes.
     <xsl:text>&#10;(setq standoff-predicate-labels '(</xsl:text>
     <xsl:apply-templates select="*" mode="standoff-predicate-labels"/>
     <xsl:text>&#10;  ))&#10;</xsl:text>
-    
+
+    <!-- faces for types -->
+    <xsl:text>&#10;(setq standoff-markup-overlays '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-markup-overlays"/>
+    <xsl:text>)&#10;      standoff-markup-overlays-front '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-markup-overlays"/>
+    <xsl:text>)&#10;      standoff-markup-overlays-after '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-markup-overlays"/>
+    <xsl:text>&#10;  ))&#10;</xsl:text>
+
     <xsl:text>&#10;;;; </xsl:text>
     <xsl:value-of select="$config-file"/>
     <xsl:text> ends here.&#10;</xsl:text>
@@ -198,5 +207,19 @@ in order to restrict predicates to a combination of subject and object classes.
   
   <xsl:template match="text()|@*" mode="standoff-predicate-labels"/>
 
+
+  <!-- templates for standoff-markup-overlays -->
+
+  <xsl:template match="owl:Class|rdfs:Class" mode="standoff-markup-overlays">
+    <xsl:if test="som:face">
+      <xsl:text>&#10;  ("</xsl:text>
+      <xsl:value-of select="@rdf:about"/>
+      <xsl:text>" . ('face '</xsl:text>
+      <xsl:value-of select="som:face"/>
+      <xsl:text>))</xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="text()|@*" mode="standoff-markup-overlays"/>
   
 </xsl:stylesheet>
