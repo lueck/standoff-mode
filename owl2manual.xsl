@@ -38,7 +38,20 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
   <xsl:param name="firstColWidth" select="'\setlength{6em}'"/>
 
   <xsl:template match="/">
-    <xsl:text>\documentclass[DIV=15]{scrartcl}
+    <xsl:call-template name="preamble"/>
+    <xsl:call-template name="classes"/>
+    <xsl:call-template name="object-properties"/>
+    <xsl:call-template name="closing"/>
+  </xsl:template>
+
+  <xsl:template name="preamble">
+    <xsl:text>\documentclass{scrartcl}
+    \KOMAoption{fontsize}{10pt}
+    \KOMAoption{DIV}{15}
+    \KOMAoption{twoside}{false}
+    \KOMAoption{headings}{small}
+    \KOMAoption{headinclude}{false}
+    \KOMAoption{footinclude}{false}
     \usepackage[T1]{fontenc}
     \usepackage[utf8]{inputenc}
     \usepackage[english,ngerman]{babel}
@@ -55,20 +68,28 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     </xsl:call-template>
     <xsl:text>}
 
+    \newcommand{\ClassesName}{Classes}
+    \newcommand{\ObjectPropertiesName}{Object Properties}
+    \newcommand{\AllowedSubjectsName}{Subject classes}
+    \newcommand{\AllowedObjectsName}{Object classes}
+
     \newcommand{\textLabel}[1]{\texttt{#1}}
     
     \urldef{\urlowlequivalentProperty}
     \url{http://www.w3.org/TR/owl-ref/#equivalentProperty-def}
     
-    \begin{document}
-
-    \maketitle
-
     </xsl:text>
-    <xsl:call-template name="classes"/>
-    <xsl:call-template name="object-properties"/>
+    <xsl:apply-templates select="/" mode="preamble-addon"/>
     <xsl:text>
+    \begin{document}
+    \maketitle
+    </xsl:text>
+  </xsl:template>
 
+  <xsl:template name="preamble-addon"/>
+
+  <xsl:template name="closing">
+    <xsl:text>
     \end{document}
     </xsl:text>
   </xsl:template>
@@ -202,7 +223,7 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
   <!-- make a table of classes -->
   <xsl:template name="classes">
     <xsl:text>
-    \section{Classes}
+    \section{\ClassesName}
     \label{sec:classes}
     \begin{tabu} to \linewidth {|l|X|}
     </xsl:text>
@@ -229,7 +250,7 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
   <!-- make a table of object properties -->
   <xsl:template name="object-properties">
     <xsl:text>
-    \section{Object Properties}
+    \section{\ObjectPropertiesName}
     \label{sec:object-properties}
     \begin{longtabu} to \linewidth {|l|X|}
     </xsl:text>
@@ -269,13 +290,13 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <!-- allowed subjects and objects -->
     <xsl:text>\cline{2-2}
     &amp; \begin{tabu}{X||X}
-    Subjects: </xsl:text>
+    \AllowedSubjectsName{}: </xsl:text>
     <xsl:apply-templates mode="som-allowedSubject"/>
-    <xsl:text> &amp; Objects: </xsl:text>
+    <xsl:text> &amp; \AllowedObjectsName{}: </xsl:text>
     <xsl:apply-templates mode="som-allowedObject"/>
     <xsl:text> \\ \end{tabu} \\ </xsl:text>
-    <xsl:text>\hline
-    </xsl:text>
+    <!--xsl:text>\hline
+    </xsl:text-->
   </xsl:template>
 
 
