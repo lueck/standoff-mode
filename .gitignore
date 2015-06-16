@@ -27,3 +27,5 @@ standoff-praktikum
 *.tp
 *.vr
 
+# Protege ontology catalogs
+catalog-v*.xml
