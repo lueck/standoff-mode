@@ -35,7 +35,12 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
 
   <xsl:param name="lang" select="number('0')"/>
 
+  <!-- set to * for natural width of first column's text -->
   <xsl:param name="firstColWidth" select="'\setlength{6em}'"/>
+
+  <!-- escape " (ascii 34) with that in labels an comments, because
+       ascii 34 is an active character in latex -->
+  <xsl:param name="escape-quotes" select="'¶'"/>
 
   <xsl:template match="/">
     <xsl:call-template name="preamble"/>
@@ -60,6 +65,11 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     \usepackage{longtable}
     \usepackage{tabu}
     \usepackage{multirow}
+    \usepackage{csquotes}
+    \MakeOuterQuote{</xsl:text>
+    <xsl:value-of select="$escape-quotes"/>
+    <xsl:text>}
+
     \author{}
     \date{}
     \title{</xsl:text>
@@ -107,7 +117,8 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <xsl:choose>
       <xsl:when test="boolean($lang)">
 	<xsl:if test="$resource/*[name()=$annotation][@xml:lang = $lang]">
-	  <xsl:value-of select="$resource/*[name()=$annotation][@xml:lang = $lang]"/>
+	  <xsl:variable name="text" select="$resource/*[name()=$annotation][@xml:lang = $lang]"/>
+	  <xsl:value-of select="translate($text, '&#34;', $escape-quotes)"/>
 	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
