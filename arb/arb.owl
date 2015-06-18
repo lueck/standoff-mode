@@ -227,7 +227,7 @@ Nicht jedes Beispiel hat eine Markierung.</rdfs:comment>
         <rdfs:comment xml:lang="de">Ein Beispiel konkretisiert ein anderes Beispiel.
 
 Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
         <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
@@ -238,7 +238,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
     <owl:ObjectProperty rdf:about="&arb;kontrastiert">
         <rdfs:label xml:lang="de">kontrastiert</rdfs:label>
         <rdfs:comment xml:lang="de">Ein Beispiel kontrastiert ein anderes Beispiel in einem Argumentationsgang.</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+        <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
         <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
@@ -285,14 +285,12 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         metonymischen Beziehung zu etwas, das es als Komplex aufruft,
         aber ganz verkürzt, unter Umgehung von Komplexität. Es ruft
         Bekanntes wieder auf, worin seine reproduktive Dimension
-        liegt.
-
-	Das Beispiel ist möglicherweise schon vorher im Text erörtert
-	worden und nun kann mit ihm wie mit einem Stichwort auf
-	Komplexes verwiesen werden. In diesem Fall sollte auch eine
-	Relation mit dem Prädikat &quot;nimmt auf&quot; annotiert werden. Häufig
-	haben Nennungen von Namen oder Werken diesen
-	Aspekt.</rdfs:comment>
+        liegt.  Das Beispiel ist möglicherweise schon vorher im Text
+        erörtert worden und nun kann mit ihm wie mit einem Stichwort
+        auf Komplexes verwiesen werden. In diesem Fall sollte auch
+        eine Relation mit dem Prädikat &quot;nimmt wieder auf&quot;
+        annotiert werden. Häufig haben Nennungen von Namen oder Werken
+        diesen Aspekt.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;nimmtAuf"/>
         <dimension rdf:resource="&dim;Reproduktion"/>
@@ -512,18 +510,77 @@ Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
     <owl:ObjectProperty rdf:about="&arb;widerlegt">
         <rdfs:label xml:lang="de">widerlegt</rdfs:label>
         <rdfs:comment xml:lang="de">???</rdfs:comment>
-        <som:allowedObject rdf:resource="&arb;Beispiel"/>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
 
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#reihtAn -->
+
+    <owl:ObjectProperty rdf:about="&arb;reihtAn">
+        <rdfs:label xml:lang="de">reiht sich an</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
+        anderes Beispiel. Dieses Prädikat kann zur Beschreibung der
+        Relationen zwischen Beispielen in einem Text (unter umständen
+        auch zu Beispielen in einem anderen Text) verwendet
+        werden. Mit ihm lassen sich Reihen mehr oder weniger nah
+        zusammenliegender Beispiele beschreiben.
+
+	Eine Spezifizierung der Art und Weise der Reihung soll mit den
+	abgeleiteten Prädikaten "steigert", "konkretisiert" oder
+	"kontrastiert" erfolgen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#steigert -->
+
+    <owl:ObjectProperty rdf:about="&arb;steigert">
+        <rdfs:label xml:lang="de">steigert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
+        anderes, indem es im Vergleich zum vorherigen eine Steigerung
+        oder Überbietung vorzeigt.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#normiertVorstellungVon -->
+
+    <owl:ObjectProperty rdf:about="&arb;normiertVorstellungVon">
+        <rdfs:label xml:lang="de">normiert die Vorstellung von</rdfs:label>
+        <rdfs:comment xml:lang="de">Dieses Prädikat beschreibt eine
+        normierenden Effekt des Beispiels, der sich nicht so sehr auf
+        die Handlungsebene, sondern auf die Ebene der beim Leser
+        evozierten Vorstellungen bezieht. Meist thematisiert ein Text
+        den Normierungseffekt nicht selbst; es handelt sich vielmehr
+        um eine Kategorie der diskurstheoretischen Beschreibung von
+        Beispieleffekten.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel# -->
+
+    <owl:ObjectProperty rdf:about="&arb;">
+        <rdfs:label xml:lang="de"></rdfs:label>
+        <rdfs:comment xml:lang="de"></rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;"/>
+    </owl:ObjectProperty>
+
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
+    // // Classes //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
