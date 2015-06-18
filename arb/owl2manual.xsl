@@ -64,6 +64,20 @@
       Die epistemologische ist zunächst auf den einzelnen Text und
       dessen Argumentationszusammenhang bezogen.</dim:comment>
     </dim:dimension>
+    <dim:dimension iri="&dim;Reproduktion">
+      <dim:label xml:lang="de">Reproduktionsdimension</dim:label>
+      <dim:comment xml:lang="de">Wie werden mit Beispielen komplexe
+      Zusammenhänge im Sinne der Mnemotechnik wie auch im Sinne der
+      Verteilung und Verbreitung von Wissen und Handeln reproduzierbar
+      gemacht?  Das Beispiel erweist eine Reproduktionsdimension
+      sowohl im Sinne der Mnemotechnik als auch der Verteilung, wenn
+      mit seiner Hilfe Wissen aktualisiert, vervielfältigt und
+      gesichert wird. Sie tritt in einzelnen Texten oder auf der Ebene
+      eines Diskurses auf. So können Beispiele komplexere
+      Zusammenhänge aus dem Wissen eines Adressaten aufrufen oder auch
+      im Sinne der Diskursdeixis an (zuvor) entfaltete Zusammenhänge
+      verweisen.</dim:comment>
+    </dim:dimension>
     <dim:dimension iri="&dim;diskursiv">
       <dim:label xml:lang="de">Diskursive Dimension</dim:label>
       <dim:comment xml:lang="de">Innerhalb der diskursiven Dimension
