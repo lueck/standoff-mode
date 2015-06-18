@@ -71,7 +71,7 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>}
 
     \author{}
-    \date{}
+    %\date{}
     \title{</xsl:text>
     <xsl:call-template name="resource-label">
       <xsl:with-param name="resource" select="/rdf:RDF/owl:Ontology"/>
