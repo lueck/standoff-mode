@@ -35,16 +35,15 @@
     <dim:dimension iri="&dim;rhetorisch">
       <dim:label xml:lang="de">Rhetorische Dimension</dim:label>
       <dim:comment xml:lang="de">Wie, in welcher Weise dienen die
-      Beispiele dazu, dass der Text sein Ziel erreicht (ohne, dass
-      diese Beispiele in epistemologischer und/oder konzeptueller
-      Hinsicht eingesetzt werden)? Die rhetorische Dimension im
-      engeren Sinne tritt in den Vordergrund, wenn Beispiele dazu
-      dienen, dass der Text sein Ziel erreicht, ohne dass sie in
-      epistemologischer und/oder konzeptioneller Hinsicht eingesetzt
-      werden. Der klassische Fall liegt vor, wenn mit Hilfe von
-      Beispielen die Geltung einer Regel unterstellt wird, die aber
-      nicht als der eigentliche Gegenstand des Diskurses expliziert,
-      sondern eher unterstellt oder insinuiert wird.</dim:comment>
+      Beispiele dazu, dass der Text sein Ziel erreicht? Die
+      rhetorische Dimension im engeren Sinne tritt in den Vordergrund,
+      wenn Beispiele dazu dienen, dass der Text sein Ziel erreicht,
+      ohne dass sie in epistemologischer und/oder konzeptioneller
+      Hinsicht eingesetzt werden. Der klassische Fall liegt vor, wenn
+      mit Hilfe von Beispielen die Geltung einer Regel unterstellt
+      wird, die aber nicht als der eigentliche Gegenstand des
+      Diskurses expliziert, sondern eher unterstellt oder insinuiert
+      wird.</dim:comment>
     </dim:dimension>
     <dim:dimension iri="&dim;normativ">
       <dim:label xml:lang="de">Normative Dimension</dim:label>
@@ -61,8 +60,9 @@
       <dim:label xml:lang="de">Epistemologische Dimension</dim:label>
       <dim:comment xml:lang="de">Welche Funktion kommt den Beispielen
       im Gang der Argumentation zu, welchen Erkenntniswert haben sie?
-      Die epistemologische ist zunächst auf den einzelnen Text und
-      dessen Argumentationszusammenhang bezogen.</dim:comment>
+      Die epistemologische Dimension ist zunächst auf den einzelnen
+      Text und dessen Argumentationszusammenhang
+      bezogen.</dim:comment>
     </dim:dimension>
     <dim:dimension iri="&dim;Reproduktion">
       <dim:label xml:lang="de">Reproduktionsdimension</dim:label>

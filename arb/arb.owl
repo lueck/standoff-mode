@@ -101,7 +101,7 @@
         <rdfs:comment xml:lang="de">Anstatt dieses Beispiels könnten
         beliebig viele andere stehen.
 
-	Das ist in Sinne der Text-Logik zu verstehen.</rdfs:comment>
+	Das ist im Sinne der Text-Logik zu verstehen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
@@ -114,7 +114,7 @@
         <rdfs:label xml:lang="de">entwickelt</rdfs:label>
         <rdfs:comment xml:lang="de">In dem Beispiel wird ein gegebenes
         Besonderes zu einer abstrakten Regel, zu einem Begriff, einem
-        Modell o.ä., zumindestet zu einem Abstraktem,
+        Modell o.ä., zumindest zu einem Abstrakten,
         verallgemeinert. Solchem Beispielgebrauch entspricht ein
         induktives Vorgehen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
@@ -141,7 +141,7 @@
     <owl:ObjectProperty rdf:about="&arb;evidenziert">
         <rdfs:label xml:lang="de">evidenziert</rdfs:label>
         <rdfs:comment xml:lang="de">Das Beispiel sorgt nicht nur für
-        eine generelle Anschaulichkeit der Sache, sondern sind selbst
+        eine generelle Anschaulichkeit der Sache, sondern ist selbst
         der Punkt, an dem eine Darstellung oder Argumentation evident
         werden soll.
 	
@@ -160,7 +160,7 @@
         <rdfs:label xml:lang="de">steht exemplarisch für</rdfs:label>
         <rdfs:comment xml:lang="de">Das Beispiel steht typisch für
         etwas und soll modellhaft verstanden werden. Dabei steht ein
-        praktischer, das heißt auf das Handeln bezogener, Aspekt im
+        praktischer, das heißt auf das Handeln bezogener Aspekt im
         Vordergrund.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
         <dimension rdf:resource="&dim;normativ"/>
@@ -190,11 +190,11 @@
         fordert also zu etwas auf. Es hat einen praktischen, d.h. auf
         das Handeln bezogenen Aspekt.
 
-	Die mit Nachahmung verbundene Aspekt der Musterhaftigkeit,
-	Vorbildhaftigkeit, Kanonwürdigkeit, o.ä gilt dabei in einem
-	weiten Sinne. Die Prädikate &quot;ist Vorbild bezüglich&quot; und &quot;ist
-	exemplarisch für&quot; sind Ausprägungen dieses weiten
-	Aufforderungs- bzw. Nachahmungscharakters.</rdfs:comment>
+	Der mit Nachahmung verbundene Aspekt der Musterhaftigkeit,
+	Vorbildhaftigkeit, Kanonwürdigkeit o.ä. gilt dabei in einem weiten Sinne. Die
+        Prädikate &quot;ist Vorbild bezüglich&quot; und &quot;ist
+        exemplarisch für&quot; sind Ausprägungen dieses weiten
+        Aufforderungs- bzw. Nachahmungscharakters.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;exemplarischFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;mustergueltigFuer"/>
@@ -208,9 +208,12 @@
 
     <owl:ObjectProperty rdf:about="&arb;hatMarker">
         <rdfs:label xml:lang="de">hat Markierung</rdfs:label>
-        <rdfs:comment xml:lang="de">Dieses Prädikat kommt zur Anwendung, wenn ein Beispiel eine Markierung im Text hat und stellt dann die Verbindung zwischen Beispiel und Markierung her.
+        <rdfs:comment xml:lang="de">Dieses Prädikat kommt zur
+        Anwendung, wenn ein Beispiel eine Markierung im Text hat; es
+        stellt dann die Verbindung zwischen Beispiel und Markierung
+        her.
 
-Nicht jedes Beispiel hat eine Markierung.</rdfs:comment>
+	Nicht jedes Beispiel hat eine Markierung.</rdfs:comment>
         <rdfs:domain rdf:resource="&arb;Beispiel"/>
         <som:allowedSubject rdf:resource="&arb;Beispiel"/>
         <rdfs:range rdf:resource="&arb;Marker"/>
@@ -319,9 +322,9 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:comment xml:lang="de">Das Beispiel steht typisch für
         etwas und soll als Muster verstanden und nachgeahmt werden.
 
-	Hier steht die der praktische, d.h. Handlungsaspekt im
+	Hier steht der praktische, d.h. Handlungsaspekt im
 	Vordergrund, während bei &quot;ist Muster für&quot; die Dimension der
-	Reproduktion im Vordergrund steht, die auch ohne praktischem
+	Reproduktion im Vordergrund steht, die auch ohne praktischen
 	Aspekt z.B. in bloß technischer Hinsicht erfolgen
 	kann.</rdfs:comment>
         <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
@@ -373,10 +376,10 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
     <owl:ObjectProperty rdf:about="&arb;pseudobeispielFuer">
         <rdfs:label xml:lang="de">ist Pseudo-Beispiel für</rdfs:label>
         <rdfs:comment xml:lang="de">Dem Beispiel fehlen in Bezug auf
-        Konzept bzw. Kontext die wichtige Eigenschaften eines
-        Beispiels, wie Austauschbarkeit.
+        Konzept bzw. Kontext wichtige Eigenschaften eines Beispiels,
+        etwa Austauschbarkeit oder Konkretheit.
 
-	Dies ist weniger mit Blick auf die Textlogik zu annotieren als
+	Dies ist weniger mit Blick auf die Textlogik zu annotieren, als
 	vielmehr aufgrund eines analytischen Blicks von
 	außen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
@@ -437,8 +440,8 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:label xml:lang="de">substituiert</rdfs:label>
         <rdfs:comment xml:lang="de">Das Beispiel ersetzt ein anderes,
         wobei sich auf der Ebene des Kontextes der Sinn nicht ändern
-        soll, andererseits genau diese Änderung der Fall, auf der
-        Ebene des Beispiels nämlich.
+        soll, andererseits ist genau diese Änderung der Fall, nämlich
+        auf der Ebene des Beispiels.
 
 	Solche Substitutionsbeispiele sind sehr verbreitet in der
 	Linguistik und in der Logik.</rdfs:comment>
@@ -479,9 +482,11 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 
     <owl:ObjectProperty rdf:about="&arb;verweistAuf">
         <rdfs:label xml:lang="de">verweist auf</rdfs:label>
-        <rdfs:comment xml:lang="de">Predikat für Relationen von einem Beispiel zum anderen.
+        <rdfs:comment xml:lang="de">Prädikat für Relationen von einem
+        Beispiel zum anderen.
 
-Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
+	Dies ist ein Grund-Prädikat, von dem andere abgeleitet
+	werden.</rdfs:comment>
         <som:allowedSubject rdf:resource="&arb;Beispiel"/>
         <rdfs:domain rdf:resource="&arb;Beispiel"/>
         <rdfs:range rdf:resource="&arb;Beispiel"/>
@@ -495,9 +500,9 @@ Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
 
     <owl:ObjectProperty rdf:about="&arb;vorbildBzgl">
         <rdfs:label xml:lang="de">ist Vorbild bezüglich</rdfs:label>
-        <rdfs:comment xml:lang="de">Das Beispiel stellt ein Vorbild
-        vor und aus bezogen auf etwas. Es hat Nachahmungscharakter und
-        also einen praktischen, d.h. auf das Handeln bezogenen
+        <rdfs:comment xml:lang="de">Das Beispiel stellt bezogen auf
+        etwas ein Vorbild vor bzw. aus. Es hat Nachahmungscharakter
+        und also einen praktischen, d.h. auf das Handeln bezogenen
         Aspekt.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
         <dimension rdf:resource="&dim;normativ"/>
@@ -522,7 +527,7 @@ Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
         <rdfs:label xml:lang="de">reiht sich an</rdfs:label>
         <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
         anderes Beispiel. Dieses Prädikat kann zur Beschreibung der
-        Relationen zwischen Beispielen in einem Text (unter umständen
+        Relationen zwischen Beispielen in einem Text (unter Umständen
         auch zu Beispielen in einem anderen Text) verwendet
         werden. Mit ihm lassen sich Reihen mehr oder weniger nah
         zusammenliegender Beispiele beschreiben.
@@ -553,7 +558,7 @@ Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
 
     <owl:ObjectProperty rdf:about="&arb;normiertVorstellungVon">
         <rdfs:label xml:lang="de">normiert die Vorstellung von</rdfs:label>
-        <rdfs:comment xml:lang="de">Dieses Prädikat beschreibt eine
+        <rdfs:comment xml:lang="de">Dieses Prädikat beschreibt einen
         normierenden Effekt des Beispiels, der sich nicht so sehr auf
         die Handlungsebene, sondern auf die Ebene der beim Leser
         evozierten Vorstellungen bezieht. Meist thematisiert ein Text
@@ -562,17 +567,6 @@ Dies ist das Grund-Prädikat, von dem andere abgeleitet werden.</rdfs:comment>
         Beispieleffekten.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <dimension rdf:resource="&dim;normativ"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://arb.fernuni-hagen.de/owl/beispiel# -->
-
-    <owl:ObjectProperty rdf:about="&arb;">
-        <rdfs:label xml:lang="de"></rdfs:label>
-        <rdfs:comment xml:lang="de"></rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <dimension rdf:resource="&dim;"/>
     </owl:ObjectProperty>
 
     
@@ -620,7 +614,8 @@ Personen oder Werke sollen nicht als Beispiel, sondern als &quot;Person&quot; bz
 	hochwertige Annotation, Passagen, die weit weg vom Beispiel
 	entfernt sind, als seinen Kontext auszuzeichnen. Oft ist es
 	so, dass mehrere Beispiele in Relation zum selben Kontext
-	stehen.</rdfs:comment>
+	stehen. Kontext kann auch eine Kapitelüberschrift
+	sein.</rdfs:comment>
     </owl:Class>
     
 
@@ -638,12 +633,12 @@ Personen oder Werke sollen nicht als Beispiel, sondern als &quot;Person&quot; bz
         werden.
 
 	Im Unterschied zum Konzept soll der Kontext als das semantisch
-	weiter vom Beispiel entfernt liegende, aber als auf der
-	Argumentationslinie des Textes liegender durch das Beispiel
-	bearbeiteter semantische Komplex (Thema) ausgezeichnet
-	werden. Das als Konzept Ausgezeichnete hingegen erscheint
-	bisweilen für die Argumentationslinie des Textes kaum
-	entscheidend oder trivial.</rdfs:comment>
+	weiter vom Beispiel entfernt Liegende, aber als auf der
+	Argumentationslinie des Textes liegender, durch das Beispiel
+	bearbeiteter semantischer Komplex (Thema) ausgezeichnet
+	werden. Das als Konzept Ausgezeichnete hingegen kann unter
+	Umständen für die Argumentationslinie des Textes kaum
+	entscheidend oder trivial sein.</rdfs:comment>
     </owl:Class>
     
 
