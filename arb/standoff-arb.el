@@ -108,6 +108,46 @@
       "Face used \"kontext\" markup type."
       :group 'standoff-faces)
 
+    (defface standoff-arb-person
+      '((((type x))
+	 (:family
+	  "misc-fixed"
+	  :foreground
+	  "magenta"
+	  :weight
+	  normal
+	  :slant
+	  normal))
+	(t
+	 (:foreground
+	  "magenta"
+	  :weight
+	  normal
+	  :slant
+	  normal)))
+      "Face used \"person\" markup type."
+      :group 'standoff-faces)
+
+    (defface standoff-arb-werk
+      '((((type x))
+	 (:family
+	  "misc-fixed"
+	  :foreground
+	  "magenta"
+	  :weight
+	  normal
+	  :slant
+	  normal))
+	(t
+	 (:foreground
+	  "magenta"
+	  :weight
+	  normal
+	  :slant
+	  normal)))
+      "Face used \"unit of work\" markup type."
+      :group 'standoff-faces)
+
     ))
 
 ;;; standoff-arb.el ends here.
