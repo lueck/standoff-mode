@@ -697,8 +697,7 @@ Personen oder Werke sollen nicht als Beispiel, sondern als &quot;Person&quot; bz
 	<rdfs:label xml:lang="de">Person</rdfs:label>
 	<rdfs:label xml:lang="en">Person</rdfs:label>
 	<som:face rdf:datatype="&xsd;string">standoff-arb-person</som:face>
-	<rdfs:comment xml:lang="de">Name einer Person. Siehe auch
-	http://xmlns.com/foaf/spec/#term_Person</rdfs:comment>
+	<rdfs:comment xml:lang="de">Name einer Person.</rdfs:comment>
 	<owl:equivalentClass rdf:resource="&foaf;Person"/>
     </owl:Class>
 
