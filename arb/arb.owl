@@ -2,6 +2,7 @@
 
 
 <!DOCTYPE rdf:RDF [
+    <!ENTITY foaf "http://xmlns.com/foaf/0.1/" >
     <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
@@ -9,7 +10,6 @@
     <!ENTITY dim "http://arb.fernuni-hagen.de/owl/dimension#" >
     <!ENTITY som "http://github.com/lueck/standoff-mode/owl#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY foaf "http://xmlns.com/foaf/0.1/" >
 ]>
 
 
@@ -21,8 +21,8 @@
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:dim="http://arb.fernuni-hagen.de/owl/dimension#"
-     xmlns:foaf="http://xmlns.com/foaf/0.1/"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:foaf="http://xmlns.com/foaf/0.1/">
     <owl:Ontology rdf:about="http://arb.fernuni-hagen.de/owl/beispiel">
         <rdfs:label xml:lang="de">Annotationsschema für das Archiv des
         Beispiels</rdfs:label>
@@ -75,11 +75,11 @@
 	annotieren, d.h. unter Umständen statt &quot;ist Beispiel für&quot; eher
 	&quot;soll Beispiel sein für&quot; lesen.</rdfs:comment>
         <som:allowedSubject rdf:resource="&arb;Beispiel"/>
-        <som:allowedSubject rdf:resource="&arb;Person"/>
-        <som:allowedSubject rdf:resource="&arb;Werk"/>
         <som:allowedObject rdf:resource="&arb;Kontext"/>
         <som:allowedObject rdf:resource="&arb;Konzept"/>
-        <arb:dimension rdf:resource="&dim;Grundpraedikat"/>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+        <som:allowedSubject rdf:resource="&arb;Werk"/>
+        <dimension rdf:resource="&dim;Grundpraedikat"/>
     </owl:ObjectProperty>
     
 
@@ -93,7 +93,7 @@
 	deren Regelmäßigkeit oder Kohärenz es darstellt. (Vgl. Ruchatz
 	2008, S. 21)</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -107,7 +107,7 @@
 
 	Das ist im Sinne der Text-Logik zu verstehen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -123,7 +123,7 @@
         induktives Vorgehen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <owl:equivalentProperty rdf:resource="&arb;fingiert"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -135,7 +135,7 @@
         <rdfs:comment xml:lang="de">Das Beispiel erklärt, was mit
         einem Begriff o.Ä. gemeint ist.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;konzeptuell"/>
+        <dimension rdf:resource="&dim;konzeptuell"/>
     </owl:ObjectProperty>
     
 
@@ -153,7 +153,7 @@
 	erzeugen ist aber mehr als Veranschaulichung.</rdfs:comment>
         <owl:equivalentProperty rdf:resource="&arb;schlagendFuer"/>
         <rdfs:subPropertyOf rdf:resource="&arb;veranschaulicht"/>
-        <arb:dimension rdf:resource="&dim;rhetorisch"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
     </owl:ObjectProperty>
     
 
@@ -167,7 +167,7 @@
         praktischer, das heißt auf das Handeln bezogener Aspekt im
         Vordergrund.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
+        <dimension rdf:resource="&dim;normativ"/>
     </owl:ObjectProperty>
     
 
@@ -180,7 +180,7 @@
         als ob es etwas Empirisches wäre.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;entwickelt"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -203,7 +203,7 @@
         <rdfs:seeAlso rdf:resource="&arb;exemplarischFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;mustergueltigFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;vorbildBzgl"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
+        <dimension rdf:resource="&dim;normativ"/>
     </owl:ObjectProperty>
     
 
@@ -215,10 +215,10 @@
         <rdfs:comment xml:lang="de">Das Beispiel führt etwas (einen
         Begriff, ein Theorem, einen Gedanken o.Ä.) ein. Es handelt
         sich aber nicht notwendig, um ein empirisches Vorgehen wie bei
-        "entwickelt".</rdfs:comment>
+        &quot;entwickelt&quot;.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;entwickelt"/>
-        <arb:dimension rdf:resource="&dim;konzeptuell"/>
+        <dimension rdf:resource="&dim;konzeptuell"/>
     </owl:ObjectProperty>
     
 
@@ -235,11 +235,11 @@
 	Nicht jedes Beispiel hat eine Markierung.</rdfs:comment>
         <rdfs:domain rdf:resource="&arb;Beispiel"/>
         <som:allowedSubject rdf:resource="&arb;Beispiel"/>
-        <som:allowedSubject rdf:resource="&arb;Person"/>
-        <som:allowedSubject rdf:resource="&arb;Werk"/>
         <rdfs:range rdf:resource="&arb;Marker"/>
         <som:allowedObject rdf:resource="&arb;Marker"/>
-	<arb:dimension rdf:resource="&dim;Grundpraedikat"/>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+        <som:allowedSubject rdf:resource="&arb;Werk"/>
+        <dimension rdf:resource="&dim;Grundpraedikat"/>
     </owl:ObjectProperty>
     
 
@@ -252,7 +252,7 @@
 
 Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
-        <arb:dimension rdf:resource="&dim;diskursiv"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
 
@@ -263,7 +263,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:label xml:lang="de">kontrastiert</rdfs:label>
         <rdfs:comment xml:lang="de">Ein Beispiel kontrastiert ein anderes Beispiel in einem Argumentationsgang.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
-        <arb:dimension rdf:resource="&dim;diskursiv"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
 
@@ -281,7 +281,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	für&quot;.</rdfs:comment>
         <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
         <rdfs:subPropertyOf rdf:resource="&arb;musterFuer"/>
-        <arb:dimension rdf:resource="&dim;Reproduktion"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
     </owl:ObjectProperty>
     
 
@@ -293,12 +293,12 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:comment xml:lang="de">Eine Relation mit diesem Prädikat bringt eine Markierung mit einem Beispiel in Verbindung.</rdfs:comment>
         <rdfs:range rdf:resource="&arb;Beispiel"/>
         <som:allowedObject rdf:resource="&arb;Beispiel"/>
-        <som:allowedObject rdf:resource="&arb;Person"/>
-        <som:allowedObject rdf:resource="&arb;Werk"/>
         <rdfs:domain rdf:resource="&arb;Marker"/>
         <som:allowedSubject rdf:resource="&arb;Marker"/>
+        <som:allowedObject rdf:resource="&arb;Person"/>
+        <som:allowedObject rdf:resource="&arb;Werk"/>
         <owl:inverseOf rdf:resource="&arb;hatMarker"/>
-        <arb:dimension rdf:resource="&dim;diskursiv"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
 
@@ -319,7 +319,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         diesen Aspekt.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;nimmtAuf"/>
-        <arb:dimension rdf:resource="&dim;Reproduktion"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
     </owl:ObjectProperty>
     
 
@@ -333,7 +333,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         Stückzahl produziert werden kann, etwas, das abgekupfert
         werden kann.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;Reproduktion"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
     </owl:ObjectProperty>
     
 
@@ -350,9 +350,9 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	Reproduktion im Vordergrund steht, die auch ohne praktischen
 	Aspekt z.B. in bloß technischer Hinsicht erfolgen
 	kann.</rdfs:comment>
-        <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
         <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
+        <rdfs:seeAlso rdf:resource="&arb;musterFuer"/>
+        <dimension rdf:resource="&dim;normativ"/>
     </owl:ObjectProperty>
     
 
@@ -363,7 +363,24 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:label xml:lang="de">nimmt wieder auf</rdfs:label>
         <rdfs:comment xml:lang="de">Das Beispiel wird im Text wiederholt angeführt.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
-	<arb:dimension rdf:resource="&dim;diskursiv"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#normiertVorstellungVon -->
+
+    <owl:ObjectProperty rdf:about="&arb;normiertVorstellungVon">
+        <rdfs:label xml:lang="de">normiert die Vorstellung von</rdfs:label>
+        <rdfs:comment xml:lang="de">Dieses Prädikat beschreibt einen
+        normierenden Effekt des Beispiels, der sich nicht so sehr auf
+        die Handlungsebene, sondern auf die Ebene der beim Leser
+        evozierten Vorstellungen bezieht. Meist thematisiert ein Text
+        den Normierungseffekt nicht selbst; es handelt sich vielmehr
+        um eine Kategorie der diskurstheoretischen Beschreibung von
+        Beispieleffekten.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
+        <dimension rdf:resource="&dim;normativ"/>
     </owl:ObjectProperty>
     
 
@@ -376,7 +393,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         Stelle innerhalb eines ganzes Textes ein. Es weist eine Nähe
         zu den Kategorien des Modells und der Idee auf.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;konzeptuell"/>
+        <dimension rdf:resource="&dim;konzeptuell"/>
     </owl:ObjectProperty>
     
 
@@ -389,7 +406,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         benutzt, um Erlerntes zu reproduzieren und Wissen
         sicherzustellen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;Reproduktion"/>
+        <dimension rdf:resource="&dim;Reproduktion"/>
     </owl:ObjectProperty>
     
 
@@ -406,7 +423,27 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	vielmehr aufgrund eines analytischen Blicks von
 	außen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#reihtAn -->
+
+    <owl:ObjectProperty rdf:about="&arb;reihtAn">
+        <rdfs:label xml:lang="de">reiht sich an</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
+        anderes Beispiel. Dieses Prädikat kann zur Beschreibung der
+        Relationen zwischen Beispielen in einem Text (unter Umständen
+        auch zu Beispielen in einem anderen Text) verwendet
+        werden. Mit ihm lassen sich Reihen mehr oder weniger nah
+        zusammenliegender Beispiele beschreiben.
+
+	Eine Spezifizierung der Art und Weise der Reihung soll mit den
+	abgeleiteten Prädikaten &quot;steigert&quot;, &quot;konkretisiert&quot; oder
+	&quot;kontrastiert&quot; erfolgen.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
 
@@ -427,7 +464,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	veranschaulichen.</rdfs:comment>
         <rdfs:seeAlso rdf:resource="&arb;evidenziert"/>
         <rdfs:subPropertyOf rdf:resource="&arb;veranschaulicht"/>
-        <arb:dimension rdf:resource="&dim;rhetorisch"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
     </owl:ObjectProperty>
     
 
@@ -440,7 +477,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         Darstellung eines Sachverhalts, Kontextes oder eines anderen
         Zusammenhangs.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -452,7 +489,20 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:comment xml:lang="de">Das Beispiel stellt etwas oder
         jemanden in abschreckender Weise vor.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
+        <dimension rdf:resource="&dim;normativ"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#steigert -->
+
+    <owl:ObjectProperty rdf:about="&arb;steigert">
+        <rdfs:label xml:lang="de">steigert</rdfs:label>
+        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
+        anderes, indem es im Vergleich zum vorherigen eine Steigerung
+        oder Überbietung vorzeigt.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
+        <dimension rdf:resource="&dim;diskursiv"/>
     </owl:ObjectProperty>
     
 
@@ -469,7 +519,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	Solche Substitutionsbeispiele sind sehr verbreitet in der
 	Linguistik und in der Logik.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
-	<arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
     
 
@@ -482,7 +532,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         Beispiel für etwas, speist sich also aus anerkanntem und
         bekanntem Wissen.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;rhetorisch"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
     </owl:ObjectProperty>
     
 
@@ -496,7 +546,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         unterscheidet.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <rdfs:seeAlso rdf:resource="&arb;erlaeutert"/>
-        <arb:dimension rdf:resource="&dim;rhetorisch"/>
+        <dimension rdf:resource="&dim;rhetorisch"/>
     </owl:ObjectProperty>
     
 
@@ -511,14 +561,14 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 	Dies ist ein Grund-Prädikat, von dem andere abgeleitet
 	werden.</rdfs:comment>
         <som:allowedSubject rdf:resource="&arb;Beispiel"/>
-        <som:allowedSubject rdf:resource="&arb;Person"/>
-        <som:allowedSubject rdf:resource="&arb;Werk"/>
         <rdfs:domain rdf:resource="&arb;Beispiel"/>
         <rdfs:range rdf:resource="&arb;Beispiel"/>
         <som:allowedObject rdf:resource="&arb;Beispiel"/>
         <som:allowedObject rdf:resource="&arb;Person"/>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
         <som:allowedObject rdf:resource="&arb;Werk"/>
-	<arb:dimension rdf:resource="&dim;Grundpraedikat"/>
+        <som:allowedSubject rdf:resource="&arb;Werk"/>
+        <dimension rdf:resource="&dim;Grundpraedikat"/>
     </owl:ObjectProperty>
     
 
@@ -532,7 +582,7 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         und also einen praktischen, d.h. auf das Handeln bezogenen
         Aspekt.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;fordertAufZu"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
+        <dimension rdf:resource="&dim;normativ"/>
     </owl:ObjectProperty>
     
 
@@ -543,65 +593,40 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
         <rdfs:label xml:lang="de">widerlegt</rdfs:label>
         <rdfs:comment xml:lang="de">???</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;epistemologisch"/>
+        <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://arb.fernuni-hagen.de/owl/beispiel#reihtAn -->
-
-    <owl:ObjectProperty rdf:about="&arb;reihtAn">
-        <rdfs:label xml:lang="de">reiht sich an</rdfs:label>
-        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
-        anderes Beispiel. Dieses Prädikat kann zur Beschreibung der
-        Relationen zwischen Beispielen in einem Text (unter Umständen
-        auch zu Beispielen in einem anderen Text) verwendet
-        werden. Mit ihm lassen sich Reihen mehr oder weniger nah
-        zusammenliegender Beispiele beschreiben.
-
-	Eine Spezifizierung der Art und Weise der Reihung soll mit den
-	abgeleiteten Prädikaten "steigert", "konkretisiert" oder
-	"kontrastiert" erfolgen.</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;verweistAuf"/>
-        <arb:dimension rdf:resource="&dim;diskursiv"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://arb.fernuni-hagen.de/owl/beispiel#steigert -->
-
-    <owl:ObjectProperty rdf:about="&arb;steigert">
-        <rdfs:label xml:lang="de">steigert</rdfs:label>
-        <rdfs:comment xml:lang="de">Das Beispiel reiht sich an ein
-        anderes, indem es im Vergleich zum vorherigen eine Steigerung
-        oder Überbietung vorzeigt.</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;reihtAn"/>
-        <arb:dimension rdf:resource="&dim;diskursiv"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://arb.fernuni-hagen.de/owl/beispiel#normiertVorstellungVon -->
-
-    <owl:ObjectProperty rdf:about="&arb;normiertVorstellungVon">
-        <rdfs:label xml:lang="de">normiert die Vorstellung von</rdfs:label>
-        <rdfs:comment xml:lang="de">Dieses Prädikat beschreibt einen
-        normierenden Effekt des Beispiels, der sich nicht so sehr auf
-        die Handlungsebene, sondern auf die Ebene der beim Leser
-        evozierten Vorstellungen bezieht. Meist thematisiert ein Text
-        den Normierungseffekt nicht selbst; es handelt sich vielmehr
-        um eine Kategorie der diskurstheoretischen Beschreibung von
-        Beispieleffekten.</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
-        <arb:dimension rdf:resource="&dim;normativ"/>
-    </owl:ObjectProperty>
-
     
 
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
-    // // Classes //
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#paraphrase -->
+
+    <owl:DatatypeProperty rdf:about="&arb;paraphrase">
+        <rdfs:label xml:lang="de">Paraphrase</rdfs:label>
+        <rdfs:label xml:lang="en">Paraphrase</rdfs:label>
+        <rdfs:comment xml:lang="de">Umschreibung mit eigenen Worten</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Beispiel"/>
+        <som:allowedSubject rdf:resource="&arb;Kontext"/>
+        <som:allowedSubject rdf:resource="&arb;Konzept"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
@@ -688,29 +713,35 @@ Personen oder Werke sollen nicht als Beispiel, sondern als &quot;Person&quot; bz
 	Punkt, oder auch Satzkonstituenten sollen nicht ausgezeichnet
 	werden.</rdfs:comment>
     </owl:Class>
-
+    
 
 
     <!-- http://arb.fernuni-hagen.de/owl/beispiel#Person -->
 
     <owl:Class rdf:about="&arb;Person">
-	<rdfs:label xml:lang="de">Person</rdfs:label>
-	<rdfs:label xml:lang="en">Person</rdfs:label>
-	<som:face rdf:datatype="&xsd;string">standoff-arb-person</som:face>
-	<rdfs:comment xml:lang="de">Name einer Person.</rdfs:comment>
-	<owl:equivalentClass rdf:resource="&foaf;Person"/>
+        <rdfs:label xml:lang="de">Person</rdfs:label>
+        <rdfs:label xml:lang="en">Person</rdfs:label>
+        <owl:equivalentClass rdf:resource="&foaf;Person"/>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-person</som:face>
+        <rdfs:comment xml:lang="de">Name einer Person.</rdfs:comment>
     </owl:Class>
-
+    
 
 
     <!-- http://arb.fernuni-hagen.de/owl/beispiel#Werk -->
 
     <owl:Class rdf:about="&arb;Werk">
-	<rdfs:label xml:lang="de">Werk</rdfs:label>
-	<rdfs:label xml:lang="en">Unit of Work</rdfs:label>
-	<som:face rdf:datatype="&xsd;string">standoff-arb-werk</som:face>
-	<rdfs:comment xml:lang="de">Titel eines Werkes.</rdfs:comment>
+        <rdfs:label xml:lang="de">Werk</rdfs:label>
+        <rdfs:label xml:lang="en">Unit of Work</rdfs:label>
+        <som:face rdf:datatype="&xsd;string">standoff-arb-werk</som:face>
+        <rdfs:comment xml:lang="de">Titel eines Werkes.</rdfs:comment>
     </owl:Class>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/Person -->
+
+    <owl:Class rdf:about="&foaf;Person"/>
 </rdf:RDF>
 
 
