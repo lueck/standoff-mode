@@ -87,6 +87,16 @@ in order to restrict predicates to a combination of subject and object classes.
     <xsl:apply-templates select="*" mode="standoff-predicate-labels"/>
     <xsl:text>&#10;  ))&#10;</xsl:text>
 
+    <!-- attributes with literal values -->
+    <xsl:text>&#10;(setq standoff-literal-keys-allowed '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-literal-keys-allowed"/>
+    <xsl:text>&#10;  ))&#10;</xsl:text>
+    
+    <!-- labels for keys of attributes with literal value -->
+    <xsl:text>&#10;(setq standoff-literal-key-labels '(</xsl:text>
+    <xsl:apply-templates select="*" mode="standoff-literal-key-labels"/>
+    <xsl:text>&#10;  ))&#10;</xsl:text>
+
     <!-- faces for types -->
     <xsl:text>&#10;(setq standoff-markup-overlays '(</xsl:text>
     <xsl:apply-templates select="*" mode="standoff-markup-overlays"/>
@@ -206,6 +216,48 @@ in order to restrict predicates to a combination of subject and object classes.
   </xsl:template>
   
   <xsl:template match="text()|@*" mode="standoff-predicate-labels"/>
+
+
+  <!-- templates for standoff-literal-keys-allowed -->
+
+  <xsl:template match="owl:DatatypeProperty" mode="standoff-literal-keys-allowed">
+    <xsl:text>&#10;  ((</xsl:text>
+    <xsl:apply-templates mode="standoff-literal-keys-allowed.subject"/>
+    <xsl:text>) "</xsl:text>
+    <xsl:value-of select="@rdf:about"/>
+    <xsl:text>" )</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="text()|@*" mode="standoff-literal-keys-allowed"/>
+
+  <xsl:template match="text()|@*" mode="standoff-literal-keys-allowed.subject"/>
+
+  <!-- som:allowedSubject defines a subject -->
+  <xsl:template match="som:allowedSubject" mode="standoff-literal-keys-allowed.subject">
+    <xsl:text>"</xsl:text>
+    <xsl:value-of select="@rdf:resource"/>
+    <xsl:text>" </xsl:text>
+  </xsl:template>
+
+  <!-- when it is a subPropertyOf we need to recurse the super-property -->
+  <xsl:template match="rdfs:subPropertyOf" mode="standoff-literal-keys-allowed.subject">
+    <xsl:variable name="resource" select="@rdf:resource"/>
+    <xsl:apply-templates
+	select="../../owl:DatatypeProperty[@rdf:about=$resource]"
+	mode="standoff-literal-keys-allowed.subject"/>
+  </xsl:template>
+
+  <!-- templates for standoff-literal-key-labels -->
+
+  <xsl:template match="owl:DatatypeProperty" mode="standoff-literal-key-labels">
+    <xsl:text>&#10;  ("</xsl:text>
+    <xsl:value-of select="@rdf:about"/>
+    <xsl:text>" . "</xsl:text>
+    <xsl:apply-templates select="." mode="label"/>
+    <xsl:text>")</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="text()|@*" mode="standoff-literal-key-labels"/>
 
 
   <!-- templates for standoff-markup-overlays -->
