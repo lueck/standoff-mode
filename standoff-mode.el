@@ -983,6 +983,7 @@ Depending on language and current mode an info page is opened."
     ["Relate markup element at point to some other" standoff-markup-relate]
     ["List relations for markup element" standoff-relations-for-markup]
     ["--" nil]
+    ["Create attribute with literal value" standoff-literal-value-attribute]
     ["Annotate markup element" standoff-annotate-markup-element-at-point]
     ["--" nil]
     ["Highlight markup in buffer" standoff-highlight-markup-buffer]
