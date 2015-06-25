@@ -776,9 +776,103 @@ given by the number mapping to its id."
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
     (error "Creation of relation failed")))
 
+;;;; Literals
+
+(defcustom standoff-literal-key-require-match 'confirm
+  "Defines how restrictive keys for attributes with literal values are handled.
+`t' for no other names than already know names, `confirm' to
+allow other than already known names, but ask for confirmation."
+  :group 'standoff
+  :type 'symbol)
+
+(defcustom standoff-literal-keys-allowed-function 'standoff-literal-keys-allowed-from-elisp
+  "A pointer to the function that returns allowed keys for attributes with literal values.
+The function must take 2 arguments: The buffer of the source
+document and the subject's id. The allowed keys are calculated
+from the type of subject."
+  :group 'standoff
+  :type 'function)
+
+(defcustom standoff-literal-keys-allowed '()
+  "Allowed combinations of markup types and keys for attributes with literal values."
+  :group 'standoff
+  :type 'list)
+
+(defcustom standoff-literal-key-labels '()
+  "Alist of labels for keys in attributes with literal values."
+  :group 'standoff
+  :type 'list)
+
+(defun standoff-literal-keys-allowed-from-elisp (buf subj-id)
+  "Returns keys for attributes with literal values for a the type of markup.
+It filters the list `standoff-literal-keys-allowed' for markup
+type given by SUBJ-ID. The source document must be given in
+buffer BUF."
+  ;; TODO: use pos api for (nth ...)
+  (let ((subj-type (nth standoff-pos-markup-type (car (funcall standoff-markup-read-function buf nil nil nil subj-id))))
+	(keys-defined (or standoff-literal-keys-allowed '()))
+	(key)
+	(allowed '()))
+    ;;(message "Type of sub: %s" subj-type)
+    (while keys-defined
+      (setq key (pop keys-defined))
+      ;; when COND: empty subj list allows any type of subj OR
+      ;; sub-type member of sub list
+      (when (or (null (nth 0 key)) (member subj-type (nth 0 key)))
+	   (setq allowed (cons (nth 1 key) allowed))))
+    allowed))
+
+(defun standoff-literal-key-from-user-input (buf subj-id &optional prompt)
+  "Prompt the user for the key of an attribute with literal value."
+  (let* (;; 1. make completion list
+	 (literal-keys-def (funcall standoff-literal-keys-allowed-function buf subj-id))
+	 (literal-keys-used (if (equal standoff-literal-key-require-match t)
+			      '()
+			    (funcall standoff-literal-keys-used-function buf subj-id)))
+	 ;; add used literal-keys to literal-keys, but without duplicates
+	 (literal-keys (standoff--append-remove-duplicates literal-keys-def literal-keys-used))
+	 ;; depending on custom var and mappability do mapping
+	 (mappable (and standoff-show-labels
+			(standoff-labels-mappable-p literal-keys standoff-literal-key-labels)))
+	 (labels (if mappable
+		     (standoff-labels-for-types literal-keys standoff-literal-key-labels)
+		   literal-keys))
+	 ;; sort and return literal-keys
+	 (sorted-labels (sort labels 'string-lessp))
+	 ;; 2. get user input
+	 (literal-key (completing-read (or prompt "Key: ")
+				     sorted-labels
+				     nil
+				     standoff-literal-key-require-match)))
+    ;; 3. get
+    (if mappable
+	(standoff-type-from-label-or-type literal-key standoff-literal-key-labels)
+      literal-key)))
+
+(defun standoff-literal-value-attribute (markup-inst-id key val &optional typ other-type)
+  "Create an attribute with literal value for a markup element.
+In fact this establishes a rdf-like statement on a subject given
+by MARKUP-INST-ID with an data property given by KEY and a value
+VAL, the literal.  When called interactively, the markup element
+at point serves as subject."
+  (interactive
+   (let* ((markup-ovly (standoff-highlight-markup--select (point)))
+	  (markup-number (string-to-number (standoff--overlay-property-get markup-ovly "number")))
+	  (markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
+	  (key (standoff-literal-key-from-user-input (current-buffer) markup-inst-id))
+	  (val (read-string "Value: ")))
+     (list markup-inst-id key val)))
+  (let ((val-type (or typ (type-of val))))
+    (message "Creating attribute with literal value: %s %s %s %s %s."
+	     markup-inst-id key val val-type other-type)
+    (if (funcall standoff-literal-create-function
+		 (current-buffer) markup-inst-id key val val-type other-type)
+	(run-hook-with-args 'standoff-markup-changed (current-buffer))
+      (error "Creation of attribute with literal value failed"))))
+
 ;;;; Dumping
 
-(defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-source-md5 standoff-api-description)
+(defcustom standoff-dump-vars '(standoff-markup-read-function standoff-relations-read-function standoff-literals-read-function standoff-source-md5 standoff-api-description)
   "A list of variables and function pointers to be dumped to elisp expressions.
 The dumper function `standoff-dump-elisp' will dump variables and
 even try to call the function given in a function pointer. Such
