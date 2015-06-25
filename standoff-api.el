@@ -89,6 +89,32 @@ markup elements.")
 (defconst standoff-pos-relation-user 5
   "Position of the user id for a markup element.")
 
+(defconst standoff-pos-literal-id 0
+  "Position of the literal's id.")
+
+(defconst standoff-pos-literal-subject 1
+  "Position of the literal's subject.")
+
+(defconst standoff-pos-literal-key 2
+  "Position of the literal's key.")
+
+(defconst standoff-pos-literal-value 3
+  "Position of the literal's value.")
+
+(defconst standoff-pos-literal-type 4
+  "Position of the literal's value type.")
+
+(defconst standoff-pos-literal-other-type 5
+  "Position of the literal's value other type description.
+This may be used for external applications, like RDF which is
+using XSD.")
+
+(defconst standoff-pos-literal-datetime 6
+  "Position of the literal's create time.")
+
+(defconst standoff-pos-literal-user 7
+  "Position of the literal's creator.")
+
 ;;;; Dumpable Description of this API
 
 (defvar standoff-api-description
@@ -107,7 +133,16 @@ markup elements.")
     (:standoff-pos-predicate ,standoff-pos-predicate)
     (:standoff-pos-object ,standoff-pos-object)
     (:standoff-pos-relation-datetime ,standoff-pos-relation-datetime)
-    (:standoff-pos-relation-user ,standoff-pos-relation-user))
+    (:standoff-pos-relation-user ,standoff-pos-relation-user)
+    (:literals (:standoff-pos-literal-id :standoff-pos-literal-subject :standoff-pos-literal-key :standoff-pos-literal-value :standoff-pos-literal-type :standoff-pos-literal-other-type :standoff-pos-literal-datetime :standoff-pos-literal-user))
+    (:standoff-pos-literal-id ,standoff-pos-literal-id)
+    (:standoff-pos-literal-subject ,standoff-pos-literal-subject)
+    (:standoff-pos-literal-key ,standoff-pos-literal-key)
+    (:standoff-pos-literal-value ,standoff-pos-literal-value)
+    (:standoff-pos-literal-type ,standoff-pos-literal-type)
+    (:standoff-pos-literal-other-type ,standoff-pos-literal-other-type)
+    (:standoff-pos-literal-datetime ,standoff-pos-literal-datetime)
+    (:standoff-pos-literal-user ,standoff-pos-literal-user))
   "Description of this api. This variable can be dumped to a file.")
 
 ;;;; Pointers to Functions to be Implemented
@@ -261,6 +296,18 @@ BUFFER SUBJECT-ID PREDICATE OBJECT-ID
 
 The relation that is to be deleted is given by the three last
 arguments. All duplicates of the relation should be removed.")
+
+(defvar standoff-literal-keys-used-function 'standoff-dummy-literal-keys-used
+  "")
+
+(defvar standoff-literal-create-function 'standoff-dummy-create-literal
+  "")
+
+(defvar standoff-literals-read-function 'standoff-dummy-read-literals
+  "")
+
+(defvar standoff-literal-delete-function 'standoff-dummy-delete-literal
+  "")
 
 ;;;; Generations / Versions of this API
 

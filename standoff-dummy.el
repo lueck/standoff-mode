@@ -83,8 +83,7 @@ edited by Xah Lee and other, taken from URL
 ;;;; Markup
 
 (defvar standoff-dummy-markup '()
-  "The markup elements and ranges stored in the backend.
-This `standoff-pos-markup-inst-id' etc.")
+  "The markup elements and ranges stored in the backend.")
 
 (make-variable-buffer-local 'standoff-dummy-markup)
 
@@ -300,6 +299,82 @@ removed."
 	  (setq new-relations (cons relation new-relations))))
       (setq standoff-dummy-relations new-relations))))
 
+;;;; Literals
+
+(defvar standoff-dummy-literals '()
+  "Literals stored in the dummy backend.")
+
+(make-variable-buffer-local 'standoff-dummy-literals)
+
+(defun standoff-dummy-create-literal (buf subj-id key val &optional typ other-typ)
+  "Creates a literal and stores it to the dummy backend.
+The subject SUBJ-ID in the source document present in buffer BUF
+is assigned an attribute with a key/value pair given by KEY and
+VAL. An optional type can be given by TYP and OTHER-TYP for
+external applications respectively."
+  (let ((literal-id (funcall standoff-dummy-create-id-function
+			     standoff-dummy-literals
+			     standoff-pos-literal-id)))
+    (with-current-buffer buf
+      (setq standoff-dummy-literals
+	    (cons (list literal-id subj-id key val (or typ 'string) other-typ
+			(and standoff-dummy-user-logging (current-time))
+			(and standoff-dummy-user-logging (user-full-name)))
+		  standoff-dummy-literals)))))
+
+(defun standoff-dummy-read-literals (buf &optional subj-id key val val-re)
+  "Returns the literals for the source document in buffer BUF.
+  A filter is applied for literals matching subject SUBJ-ID, KEY
+  and VAL or/and the regular expression VAL-RE."
+  (with-current-buffer buf
+    (let ((data standoff-dummy-literals)
+	  (matches '())
+	  (literal))
+      (while data
+	(setq literal (pop data))
+	(and (or (not subj-id)
+		 (equal (nth standoff-pos-literal-subject literal) subj-id))
+	     (or (not key)
+		 (equal (nth standoff-pos-literal-key literal) key))
+	     (or (not val)
+		 (equal (nth standoff-pos-literal-value literal) val))
+	     (or (not val-re)
+		 (string-match val-re (nth standoff-pos-literal-value literal)))
+	     (push literal matches)))
+      matches)))
+
+(defun standoff-dummy-delete-literal (buf literal-id)
+  "Delete literal given by LITERAL-ID.
+The source document is given in buffer BUF."
+  (with-current-buffer buf
+    (let ((data standoff-dummy-literals)
+	  (new-data '())
+	  (literal))
+      (while data
+	(setq literal (pop data))
+	(unless (equal (nth standoff-pos-literal-id literal) literal-id)
+	  (push literal new-data)))
+      (setq standoff-dummy-literals new-data))))
+
+(defun standoff-dummy-literal-keys-used (buf &optional subj-id)
+  "Returns a list of literal keys used for subjects similar to the one given by SUBJ-ID."
+  (with-current-buffer buf
+    (let ((subj-type (standoff-dummy-markup-get-type-by-inst-id buf subj-id))
+	  (literals standoff-dummy-literals)
+	  (literal)
+	  (subj)
+	  (key)
+	  (keys '()))
+      (while literals
+	(setq literal (pop literals)
+	      subj (nth standoff-pos-literal-subject literal)
+	      key (nth standoff-pos-literal-key literal))
+	;; when COND
+	(and (equal (standoff-dummy-markup-get-type-by-inst-id buf subj) subj-type)
+	     (not (member key keys))
+	     ;; BODY
+	     (setq keys (cons key keys))))
+      keys)))
 
 ;;;; setup, reset and load back-end
 
@@ -314,7 +389,8 @@ function."
 (defun standoff-dummy--backend-reset ()
   "Reset the dummy backend."
   (setq-local standoff-dummy-markup '())
-  (setq-local standoff-dummy-relations '()))
+  (setq-local standoff-dummy-relations '())
+  (setq-local standoff-dummy-literals '()))
 
 (defcustom standoff-dummy-highlight-after-load t
   "Whether or not to highlight all markup in the buffer after loading from file."
@@ -327,6 +403,7 @@ function."
 (defvar standoff-source-md5-dumped)
 (defvar standoff-markup-read-function-dumped)
 (defvar standoff-relations-read-function-dumped)
+(defvar standoff-literals-read-function-dumped)
 
 (declare-function standoff-dump-filename-default "standoff-mode.el" nil)
 (declare-function standoff-highlight-markup-buffer "standoff-mode.el" nil)
@@ -360,7 +437,8 @@ Right now we only need to make a non-nil value for the relation-id."
     (setq standoff-api-description-dumped nil
 	  standoff-source-md5-dumped nil
 	  standoff-markup-read-function-dumped nil
-	  standoff-relations-read-function-dumped nil)
+	  standoff-relations-read-function-dumped nil
+	  standoff-literals-read-function-dumped nil)
     (load fname)
     ;; checksum should not differ
     (unless (equal (md5 (current-buffer)) standoff-source-md5-dumped)
@@ -369,7 +447,8 @@ Right now we only need to make a non-nil value for the relation-id."
     (setq dumped-api (or standoff-api-description-dumped
 			 (cdr (assoc "first" standoff-api-generations))))
     (setq standoff-dummy-markup (standoff-api-evolve (current-buffer) :markup standoff-markup-read-function-dumped dumped-api)
-	  standoff-dummy-relations (standoff-api-evolve (current-buffer) :relations standoff-relations-read-function-dumped dumped-api))
+	  standoff-dummy-relations (standoff-api-evolve (current-buffer) :relations standoff-relations-read-function-dumped dumped-api)
+	  standoff-dummy-literals (standoff-api-evolve (current-buffer) :literals standoff-literals-read-function-dumped dumped-api))
     (message "File %s successfully loaded." fname)
     (when standoff-dummy-highlight-after-load
       (standoff-highlight-markup-buffer))))
@@ -390,7 +469,8 @@ Right now we only need to make a non-nil value for the relation-id."
 This may be usefull for development."
   (interactive)
   (message "%s" (list standoff-dummy-markup
-		      standoff-dummy-relations)))
+		      standoff-dummy-relations
+		      standoff-dummy-literals)))
 
 ;;;; Registration / Set up
 
@@ -409,6 +489,11 @@ This may be usefull for development."
    standoff-relation-create-function 'standoff-dummy-create-relation
    standoff-relations-read-function 'standoff-dummy-read-relations
    standoff-relations-delete-function 'standoff-dummy-delete-relation
+   ;; literals
+   standoff-literal-keys-used-function 'standoff-dummy-literal-keys-used
+   standoff-literal-create-function 'standoff-dummy-create-literal
+   standoff-literals-read-function 'standoff-dummy-read-literals
+   standoff-literal-delete-function 'standoff-dummy-delete-literal
    ))
 
 (provide 'standoff-dummy)

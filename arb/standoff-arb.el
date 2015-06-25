@@ -20,13 +20,15 @@
     ;; load annotation schema, no error if file not present
     (load "standoff-arb-schema.el" t)
 
-    ;; set how restrictive markup types and predicates are handled
-    ;; depending on presence of annotation schema
+    ;; set how restrictive markup types and predicates and attribute
+    ;; keys are handled depending on presence of annotation schema
     (if (featurep 'standoff-arb-schema)
 	(setq standoff-markup-type-require-match t
-	      standoff-predicate-require-match t)
+	      standoff-predicate-require-match t
+	      standoff-literal-key-require-match t)
       (setq standoff-markup-type-require-match 'confirm
-	    standoff-predicate-require-match 'confirm))
+	    standoff-predicate-require-match 'confirm
+	    standoff-literal-key-require-match 'confirm))
 
     (defface standoff-arb-beispiel
       '((((type x))
