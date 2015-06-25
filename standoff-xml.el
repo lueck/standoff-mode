@@ -35,9 +35,7 @@
 
 ;; TODO: Should we make a minor mode from this?
 
-;;
-;; Show/hide tags
-;;
+;;;; Show/hide tags
 
 (defconst standoff-xml-namespace-re "[_[:alpha:]][-_.[:alnum:]]*")
 (defconst standoff-xml-name-re "[_:[:alpha:]][-_.:[:alnum:]]*")
@@ -140,13 +138,9 @@ Any terminating `>' or `/' is not matched.")
     (run-hooks 'standoff-xml-tags-invisible-hook)
     (message "")))
 
-;;
-;; Show/hide character references
-;;
+;;;; Show/hide character references
 
-(defvar standoff-xml-char-ref-re "&#x\\([[:xdigit:]]\\{2,4\\}\\);")
-
-(setq standoff-xml-char-ref-re "&#x\\([[:xdigit:]]\\{2,4\\}\\);\\|&#\\([[:digit:]]+\\);")
+(defvar standoff-xml-char-ref-re "&#x\\([[:xdigit:]]\\{2,4\\}\\);\\|&#\\([[:digit:]]+\\);")
 
 (defvar standoff-xml-char-ref-glyph-display nil
   "Non-nil means that character references are substituted by glyphs.")

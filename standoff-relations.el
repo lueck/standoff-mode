@@ -29,6 +29,7 @@
 ;;; Code
 
 (require 'standoff-api)
+(require 'standoff-xml)
 
 (defcustom standoff-relations--markup-string-range-delimiter " … "
   "A string that delimits the content of two markup ranges."
@@ -37,19 +38,72 @@
 
 (defcustom standoff-relations-fields
   '((:subj-number . 3)
-    (:subj-string . 20)
+    (:subj-string . 25)
     (:predicate-string . 20)
     (:obj-number . 3)
-    (:obj-string . 20))
+    (:obj-string . 25))
   "A list of fields to be displayed in relation lists."
   :group 'standoff)
+
+(defvar standoff-relations-tags-invisible nil
+  "Whether or not tags are invisible.
+Its value is to be set by the function which initializes the
+buffer where relations are displayed and should be set to the
+same value as `standoff-xml-tags-invisible' in the source buffer.")
+
+(defun standoff-relations-remove-newlines (str)
+  "Replace newlines and carriage returns in STR with space character." 
+  (let ((idx (string-match "\\s-" str)))
+    (if idx
+	(concat (substring str 0 idx)
+		" "
+		(standoff-relations-remove-newlines (substring str (match-end 0))))
+      str)))
+
+(defun standoff-relations-tags-invisible (str)
+  "Make string STR readable by hiding tags and substituting char refs."
+  (let ((tag-start (string-match standoff-xml-tag-name-re str))
+	(tag-end))
+    (if tag-start
+	(progn
+	  (setq tag-end (match-end 0))
+	  (when (string-match ">" str)
+	    (setq tag-end  (match-end 0)))
+	  (concat (substring str 0 tag-start)
+		  (standoff-relations-tags-invisible (substring str tag-end))))
+      str)))
+
+(defvar standoff-relations-glyph-display nil
+  "Whether to display character references or to substitute them with glyphs.")
+
+(defun standoff-relations-glyph-display (str)
+  (let ((idx (string-match standoff-xml-char-ref-re str))
+	(ref))
+    (message "idx: %s str: %s" idx str)
+    (if idx
+	(progn
+	(message "char-ref: %s" (match-string 0 str))
+	(concat (substring str 0 idx)
+		(cond ((match-string 1 str)
+		       (char-to-string (string-to-number (match-string 1 str) 16)))
+		      ((match-string 2 str)
+		       (char-to-string (string-to-number (match-string 2 str))))
+		      (t (match-string 0 str)))
+		(standoff-relations-glyph-display (substring str (match-end 0)))))
+      str)))
 
 (defun standoff-relations--markup-string (ranges)
   "Formats a string from markup given by RANGES."
   (let ((markup-string (nth standoff-pos-markup-string (pop ranges))))
     (while ranges
-      (setq markup-string (concat markup-string standoff-relations--markup-string-range-delimiter (nth standoff-pos-markup-string (pop ranges)))))
-    markup-string))
+      (setq markup-string (concat markup-string
+				  standoff-relations--markup-string-range-delimiter
+				  (nth standoff-pos-markup-string (pop ranges)))))
+    (when standoff-relations-tags-invisible
+      (setq markup-string (standoff-relations-tags-invisible markup-string)))
+    (when standoff-relations-glyph-display
+      (setq markup-string (standoff-relations-glyph-display markup-string)))
+    (standoff-relations-remove-newlines markup-string)))
 
 (defun standoff-relations--markup-type-label (typ)
   "Return the label for the markup type TYP."
@@ -81,7 +135,7 @@
       (let ((field (car f-w))
 	    (width (cdr f-w))
 	    (str))
-	(message "Field: %s, type: %s" field (type-of field))
+	;;(message "Field: %s, type: %s" field (type-of field))
 	(setq str
 	      (cond
 	       ((eq field :subj-number)
@@ -119,9 +173,14 @@
   (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
 	 (relations)
 	 (rel)
+	 (tags-invisible standoff-xml-tags-invisible)
+	 (glyph-display standoff-xml-char-ref-glyph-display)
 	 (source-buffer (current-buffer))
 	 (rel-buffer (set-buffer (get-buffer-create standoff-relations--relations-buffer)))
 	 (buffer-read-only nil))
+    ;; set tags-invisible etc. to the same value like in source buffer 
+    (setq-local standoff-relations-tags-invisible tags-invisible)
+    (setq-local standoff-relations-glyph-display glyph-display)
     (erase-buffer)
     (setq relations (funcall standoff-relations-read-function source-buffer markup-inst-id nil nil))
     (while relations
@@ -145,6 +204,8 @@
        'object))
     (standoff-relations-mode)
     (goto-char (point-min))
+    ;;(when glyph-display (standoff-xml-toggle-char-ref-glyph-substitute 1))
+    ;;(when tags-invisible (standoff-xml-tags-invisible 1))
     (switch-to-buffer rel-buffer)))
 
 (define-derived-mode standoff-relations-mode special-mode "*Relations*"
