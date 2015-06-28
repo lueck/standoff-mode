@@ -93,7 +93,7 @@ Benutzerhandbuch für Stand-Off Mode, version @value{VERSION}.
 * Stand-Off Mode starten und beenden::
 * Markup-Elemente::
 * Relationen::
-* Literale::
+* Attribute::
 * Kommentare::
 * Konfiguration::
 * GNU Free Documentation License::
@@ -130,6 +130,13 @@ Relationen
 * Form::
 * Erfassen: Relationen erfassen.
 * Anzeigen: Relationen anzeigen.
+* Löschen: Relationen löschen.
+
+Attribute
+
+* Literal-Attribut erfassen::
+* Anzeigen: Attribute anzeigen.
+* Löschen: Attribute löschen.
 
 @end detailmenu
 @end menu
@@ -711,7 +718,7 @@ anders benannten Datei gespeichertes Markup zu laden.
 
 Markup-Elemente sind die Grund-Bausteine der Text-Annotation. Mit ihnen
 wird eine Passage eines Textes ausgezeichnet. Alle anderen in den
-folgenden Kapiteln beschriebenen Bausteine -- Relationen, Literale und
+folgenden Kapiteln beschriebenen Bausteine -- Relationen, Attribute und
 Kommentare -- beziehen sich auf Markup-Elemente.
 
 Jedes Markup-Element hat einen Start- und einen End-Punkt im
@@ -891,7 +898,7 @@ häufig nötig.
 @end ifset
 
 
-@node Relationen, Literale, Markup-Elemente, Top
+@node Relationen, Attribute, Markup-Elemente, Top
 @chapter Relationen
 
 Relationen setzen zwei Markup-Elemente miteinander in
@@ -916,6 +923,7 @@ dritte Bestandteil einer Relation, ihr sogenanntes Prädikat.
 * Form::
 * Erfassen: Relationen erfassen.
 * Anzeigen: Relationen anzeigen.
+* Löschen: Relationen löschen.
 @end menu
 
 @node Form, Relationen erfassen, Relationen, Relationen
@@ -978,7 +986,7 @@ Maus-Klick oder durch Tastatureingabe auswählen kann, oder eine bereits
 begonnene Eingabe wird vervollständigt.
 
 
-@node Relationen anzeigen,  , Relationen erfassen, Relationen
+@node Relationen anzeigen,  Relationen löschen, Relationen erfassen, Relationen
 @section Anzeigen
 
 @multitable @columnfractions .08 .40 .50
@@ -1004,22 +1012,109 @@ das Stand-Off-Menü nicht zur Verfügung.
 @c Stattdessen stehen folgende Kommandos zur Verfügung.
 
 
+@node Relationen löschen, , Relationen anzeigen, Relationen
+@section Löschen
 
-@node Literale, Kommentare, Relationen, Top
-@chapter Literale
+Das Löschen von Relationen ist noch nicht implementiert.
 
-Dieses Feature ist noch nicht implementiert.
 
-@node Kommentare, Konfiguration, Literale, Top
+@node Attribute, Kommentare, Relationen, Top
+@chapter Attribute
+
+Attribute ermöglichen, Markup-Elemente mit zusätzlichen Informationen zu
+versehen. Anders als Relationen verbinden Sie nicht (oder zumindest
+ihrer Anlage nach nicht zwingend) zwei Markup-Elemente, sondern beziehen
+sich (meist) auf nur ein einzelnes Markup-Element. Strukturell ähneln
+sie Relationen jedoch, insofern auch sie dreiwertig sind: Sie beziehen
+sich auf ein a) Markup-Element, haben einen b) Namen (Key) und einen c)
+Wert (value). Der Wert kann verschiedener Struktur sein, etwa eine
+Zeichenkette (Literal), eine Ganzzahl (Integer), eine Fließkommazahl
+(Float) usw.
+
+Weil ihr Wert auch ein URI (uniform resource identifier) bzw. IRI
+(internationalized resource identifier) sein kann, können alle
+Relationen als Attribute aufgefasst werden: Das als URI/IRI
+identifizierte Objekt stellt dann den Wert dar, das Prädikat den
+Attribut-Namen. Relationen sind insofern also ein Spezialfall von
+Attributen. Attribute können in Stand-Off Mode verwendet werden, um
+Relationen zwischen Markup-Elementen in verschiedenen Quell-Dokumenten
+zu realisieren.
+
+@ifset PRAKTIKUM
+Das Annotationsschema des Archiv des Beispiels verlangt, für Konzepte
+und Kontexte eine Paraphrase anzugeben. Dies ist als Attribut mit
+literalem Wert und dem Attribute-Namen @code{Paraphrase} realisiert.
+@end ifset
+
+@menu
+* Literal-Attribut erfassen::
+* Attribute anzeigen::
+* Attribute löschen::
+@end menu
+
+
+@node Literal-Attribut erfassen, Attribute anzeigen, , Attribute
+@section Literal-Attribut erfassen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{}
+@tab @emenu{Relate markup element at point to some other}
+@tab @code{standoff-literal-value-attribute}
+@end multitable
+
+Mit diesem Kommando wird eine Attribut mit literalem Wert erfasst, also
+mit einer Zeichenkette als Wert. Vor dem Aufruf ist der @emph{Point}
+über dem hervorgehobenen Markup-Element zu positionieren, dem das
+Attribut zugeordnet sein soll.
+
+Nach Aufruf des Kommmandos ist im Minibuffer der Attribut-Namen (Key)
+anzugeben, wobei bei Drücken der Tabulator-Taste @kbd{@key{TAB}} eine
+Auswahl erlaubter Prädikate angezeigt wird, aus der man entweder durch
+Maus-Klick oder durch Tastatureingabe auswählen kann, oder eine bereits
+begonnene Eingabe wird vervollständigt.
+
+Nach Eingabe bzw. Auswahl des Attribut-Namens ist im Minibuffer der
+Attribut-Wert anzugeben. Die Eingabe wird durch Drücken der Eingabetaste
+@kbd{@key{RET}} beendet. Die Eingabe eines mehrzeiligen Textes ist also
+nicht möglich (sondern Kommentaren vorbehalten).
+
+@ifset PRAKTIKUM
+Im Rahmen des Praktikums beim Archiv des Beispiels sollen Sie alle als
+Konzept ausgezeichneten Textpassagen mit eigenen Worten
+umschreiben. Dazu sollen Sie den hier beschriebenen Befehl und den
+Attribut-Namen @code{Paraphrase} verwenden.
+@end ifset
+
+@node Attribute anzeigen, Attribute löschen, Literal-Attribut erfassen, Attribute
+@section Anzeigen
+
+Die Anzeigen von Attributen erfolgt in derselben Ansicht, in der auch
+Relationen dargestellt werden. Das Markup-Element, zu dem das Attribut
+gehört, steht in der Subjekt-Spalte, der Attribut-Name in der
+Prädikat-Spalte und der Wert in der Objekt-Spalte.
+
+@xref{Relationen anzeigen}.
+
+
+@node Attribute löschen, , Attribute anzeigen, Attribute
+@section Attribute löschen
+
+Das Löschen von Attributen ist noch nicht implementiert.
+
+
+@node Kommentare, Konfiguration, Attribute, Top
 @chapter Kommentare
 
 Dieses Feature ist noch nicht implementiert.
+
 
 @node Konfiguration, GNU Free Documentation License, Kommentare, Top
 @chapter Konfiguration
 
 Über die Konfiguration gibt die englischsprachige Fassung des
 Benutzerhandbuches Auskunft.
+
 
 @node GNU Free Documentation License,  , Konfiguration, Top
 @appendix GNU Free Documentation License
