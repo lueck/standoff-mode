@@ -178,7 +178,7 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
 	 (source-buffer (current-buffer))
 	 (rel-buffer (set-buffer (get-buffer-create standoff-relations--relations-buffer)))
 	 (buffer-read-only nil))
-    ;; set tags-invisible etc. to the same value like in source buffer 
+    ;; set tags-invisible etc. to the same value like in source buffer
     (setq-local standoff-relations-tags-invisible tags-invisible)
     (setq-local standoff-relations-glyph-display glyph-display)
     (erase-buffer)
@@ -207,6 +207,88 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
     ;;(when glyph-display (standoff-xml-toggle-char-ref-glyph-substitute 1))
     ;;(when tags-invisible (standoff-xml-tags-invisible 1))
     (switch-to-buffer rel-buffer)))
+
+;;;; Literals/Attributes
+
+(defun standoff-relations--literal-key-label (key)
+  "Return the label for the attribut's key KEY."
+  ;; silince the compiler with a boundp test
+  (if (and (boundp 'standoff-show-labels) (boundp 'standoff-literal-key-labels))
+      (if standoff-show-labels
+	  (or (cdr (assoc key standoff-literal-key-labels)) key)
+	key)
+    key))
+
+(defun standoff-relations--literal-handler (attr ranges source-buf &optional invariant point)
+  "Create a one line description of an literal resp. attribute.
+The Description is for the relations/attributes list in the
+current buffer."
+  (let* ((line ""))
+    (dolist (f-w standoff-relations-fields)
+      (let ((field (car f-w))
+	    (width (cdr f-w))
+	    (str))
+	;;(message "Field: %s, type: %s" field (type-of field))
+	(setq str
+	      (cond
+	       ((eq field :subj-number)
+		(number-to-string (standoff-markup-get-number source-buf (nth standoff-pos-markup-inst-id (car ranges)))))
+	       ((eq field :obj-number)
+		(cond ((equal (nth standoff-pos-literal-type attr) 'string) "L")
+		      (t "?")))
+	       ((eq field :subj-string)
+		(standoff-relations--markup-string ranges))
+	       ((eq field :obj-string)
+		(nth standoff-pos-literal-value attr))
+	       ((eq field :subj-type)
+		(standoff-relations--markup-type-label (nth standoff-pos-markup-type (car ranges))))
+	       ((eq field :obj-type)
+		"(Attribute)")
+	       ((eq field :predicate-string)
+		(standoff-relations--literal-key-label (nth standoff-pos-literal-key attr)))))
+	(when str
+	  (setq line (concat line
+			     (if (not width)
+				 str
+			       (truncate-string-to-width str width 0 ?\s "…")) " ")))
+	;; propertize it
+	;; TODO: makes sense only if we can mark a relation for e.g. deletion
+	))
+    (when point
+      (goto-char point))
+    (insert (concat line "\n"))
+    ))
+
+(defun standoff-literals-for-markup (markup-number)
+  (interactive "NNumber of markup element: ")
+  (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
+	 (ranges (funcall standoff-markup-read-function (current-buffer) nil nil nil markup-inst-id))
+	 (literals)
+	 (lit)
+	 (tags-invisible standoff-xml-tags-invisible)
+	 (glyph-display standoff-xml-char-ref-glyph-display)
+	 (source-buffer (current-buffer))
+	 (rel-buffer (set-buffer (get-buffer-create standoff-relations--relations-buffer)))
+	 (buffer-read-only nil))
+    ;; set tags-invisible etc. to the same value like in source buffer
+    (setq-local standoff-relations-tags-invisible tags-invisible)
+    (setq-local standoff-relations-glyph-display glyph-display)
+    (erase-buffer)
+    (setq literals (funcall standoff-literals-read-function source-buffer markup-inst-id))
+    (while literals
+      (setq lit (pop literals))
+      (standoff-relations--literal-handler
+       lit
+       ranges
+       source-buffer
+       'subject))
+    (standoff-relations-mode)
+    (goto-char (point-min))
+    ;;(when glyph-display (standoff-xml-toggle-char-ref-glyph-substitute 1))
+    ;;(when tags-invisible (standoff-xml-tags-invisible 1))
+    (switch-to-buffer rel-buffer)))
+
+;;;; Mode for the *Relations* Buffer
 
 (define-derived-mode standoff-relations-mode special-mode "*Relations*"
   "A mode for managing relations of an markup element in a special buffer in `standoff-mode'.
