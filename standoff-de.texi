@@ -1059,7 +1059,7 @@ literalem Wert und dem Attribute-Namen @code{Paraphrase} realisiert.
 @multitable @columnfractions .08 .40 .50
 @headitem Tast. @tab Menü @tab Kommando
 @item @kbd{}
-@tab @emenu{Relate markup element at point to some other}
+@tab @emenu{Create attribute with literal value}
 @tab @code{standoff-literal-value-attribute}
 @end multitable
 
@@ -1088,6 +1088,13 @@ Attribut-Namen @code{Paraphrase} verwenden.
 
 @node Attribute anzeigen, Attribute löschen, Literal-Attribut erfassen, Attribute
 @section Anzeigen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{}
+@tab @emenu{List attributes for markup element}
+@tab @code{standoff-literals-for-markup}
+@end multitable
 
 Die Anzeigen von Attributen erfolgt in derselben Ansicht, in der auch
 Relationen dargestellt werden. Das Markup-Element, zu dem das Attribut
