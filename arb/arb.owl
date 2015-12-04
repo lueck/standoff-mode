@@ -52,6 +52,24 @@
     
 
 
+    <!-- http://github.com/lueck/standoff-mode/owl#allowedObject -->
+
+    <owl:AnnotationProperty rdf:about="&som;allowedObject"/>
+    
+
+
+    <!-- http://github.com/lueck/standoff-mode/owl#allowedSubject -->
+
+    <owl:AnnotationProperty rdf:about="&som;allowedSubject"/>
+    
+
+
+    <!-- http://github.com/lueck/standoff-mode/owl#face -->
+
+    <owl:AnnotationProperty rdf:about="&som;face"/>
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -606,6 +624,54 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Vorname -->
+
+    <owl:DatatypeProperty rdf:about="&arb;Vorname">
+        <rdfs:label xml:lang="de">Vorname</rdfs:label>
+        <rdfs:label xml:lang="en">First Name</rdfs:label>
+        <rdfs:comment xml:lang="de">Vorname der Person</rdfs:comment>
+        <rdfs:comment xml:lang="en">The person&apos;s first name</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Nachname -->
+
+    <owl:DatatypeProperty rdf:about="&arb;Nachname">
+        <rdfs:label xml:lang="de">Nachname</rdfs:label>
+        <rdfs:label xml:lang="en">Last Name</rdfs:label>
+        <rdfs:comment xml:lang="de">Nach- oder Familienname der Person</rdfs:comment>
+        <rdfs:comment xml:lang="en">The person&apos;s last name or family name</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Namenszusatz -->
+
+    <owl:DatatypeProperty rdf:about="&arb;Namenszusatz">
+        <rdfs:label xml:lang="de">Namenszusatz</rdfs:label>
+        <rdfs:label xml:lang="en">Name Affix</rdfs:label>
+        <rdfs:comment xml:lang="de">Adels- oder sonstige Titel etc.</rdfs:comment>
+        <rdfs:comment xml:lang="en">An affix to the name</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#Werktitel -->
+
+    <owl:DatatypeProperty rdf:about="&arb;Werktitel">
+        <rdfs:label xml:lang="de">Werktitel</rdfs:label>
+        <rdfs:label xml:lang="en">Work Title</rdfs:label>
+        <rdfs:comment xml:lang="de">Titel des Werkes, aber nicht vollständige Titelangabe mit Ort, Jahr usw.</rdfs:comment>
+        <rdfs:comment xml:lang="en">The full title of the work, but not year, location, publisher etc.</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Werk"/>
+    </owl:DatatypeProperty>
     
 
 
