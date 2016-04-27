@@ -282,6 +282,20 @@ Es handelt sich um ein Grundprädikat, das auch zur Anwendung kommen soll, wenn 
     
 
 
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#istAutorVon -->
+
+    <owl:ObjectProperty rdf:about="&arb;istAutorVon">
+        <rdfs:label xml:lang="de">ist Autor_In von</rdfs:label>
+        <rdfs:label xml:lang="en">is the/an Author of</rdfs:label>
+        <rdfs:comment xml:lang="de">Die Person ist Autor_In (oder ein_E Autor_In) des als Objekt annotierten Werkes.</rdfs:comment>
+        <rdfs:comment xml:lang="en">The person is the author (or one the authors) of the work.</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+        <som:allowedObject rdf:resource="&arb;Werk"/>
+        <som:allowedSubject rdf:resource="&foaf;Person"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://arb.fernuni-hagen.de/owl/beispiel#konkretisiert -->
 
     <owl:ObjectProperty rdf:about="&arb;konkretisiert">
