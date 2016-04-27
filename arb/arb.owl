@@ -289,7 +289,7 @@ Es handelt sich um ein Grundprädikat, das auch zur Anwendung kommen soll, wenn 
         <rdfs:label xml:lang="en">is the/an Author of</rdfs:label>
         <rdfs:comment xml:lang="de">Die Person ist Autor_In (oder ein_E Autor_In) des als Objekt annotierten Werkes.
 
-Dieses Prädikat setzt als Person annotierte und als Werk annotierte Textpassagen miteinander in Relation.</rdfs:comment>
+Dieses Prädikat stellt keine Beispiel-Relation im engeren Sinne dar, sondern setzt als Person annotierte und als Werk annotierte Textpassagen miteinander in Relation.</rdfs:comment>
         <rdfs:comment xml:lang="en">The person is the author (or one the authors) of the work.</rdfs:comment>
         <som:allowedSubject rdf:resource="&arb;Person"/>
         <som:allowedObject rdf:resource="&arb;Werk"/>
