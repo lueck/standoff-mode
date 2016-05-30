@@ -66,6 +66,7 @@ along with this file. If not, see <http://www.gnu.org/licenses/>.
     \usepackage{tabu}
     \usepackage{multirow}
     \usepackage{csquotes}
+    \usepackage{underscore}%% handles _ as \underscore in text mode
     \MakeOuterQuote{</xsl:text>
     <xsl:value-of select="$escape-quotes"/>
     <xsl:text>}

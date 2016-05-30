@@ -81,6 +81,26 @@
     
 
 
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#behandelt -->
+
+    <owl:ObjectProperty rdf:about="&arb;behandelt">
+        <rdfs:label xml:lang="de">behandelt</rdfs:label>
+        <rdfs:label xml:lang="en">deals with</rdfs:label>
+        <rdfs:comment xml:lang="de">Diese Relation setzt ein Werk oder eine Person (Autor) mit einem Gegenstand in Verbindung. Ein Werk oder eine Person (Autor) behandelt einen Gegenstand.
+
+Es handelt sich um ein Grundprädikat, das auch zur Anwendung kommen soll, wenn man eher &quot;bringt&quot; oder &quot;enthält&quot; sagen wollte, weil als Objekt nicht nur ein Gegenstand, sondern auch die Tatsache seiner Behandlung bzw. Darstellung annotiert ist. So z.B. in &quot;A. von Humboldt&quot; behandelt &quot;die Darstellung eines Schlammvulkans&quot;.</rdfs:comment>
+        <som:allowedObject rdf:resource="&arb;Beispiel"/>
+        <som:allowedObject rdf:resource="&arb;Kontext"/>
+        <som:allowedObject rdf:resource="&arb;Konzept"/>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+        <som:allowedObject rdf:resource="&arb;Person"/>
+        <som:allowedObject rdf:resource="&arb;Werk"/>
+        <som:allowedSubject rdf:resource="&arb;Werk"/>
+        <dimension rdf:resource="&dim;Grundpraedikat"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://arb.fernuni-hagen.de/owl/beispiel#beispielFuer -->
 
     <owl:ObjectProperty rdf:about="&arb;beispielFuer">
@@ -258,6 +278,23 @@
         <som:allowedSubject rdf:resource="&arb;Person"/>
         <som:allowedSubject rdf:resource="&arb;Werk"/>
         <dimension rdf:resource="&dim;Grundpraedikat"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://arb.fernuni-hagen.de/owl/beispiel#istAutorVon -->
+
+    <owl:ObjectProperty rdf:about="&arb;istAutorVon">
+        <rdfs:label xml:lang="de">ist Autor_In von</rdfs:label>
+        <rdfs:label xml:lang="en">is the/an Author of</rdfs:label>
+        <rdfs:comment xml:lang="de">Die Person ist Autor_In (oder ein_E Autor_In) des als Objekt annotierten Werkes.
+
+Dieses Prädikat stellt keine Beispiel-Relation im engeren Sinne dar, sondern setzt als Person annotierte und als Werk annotierte Textpassagen miteinander in Relation.</rdfs:comment>
+        <rdfs:comment xml:lang="en">The person is the author (or one the authors) of the work.</rdfs:comment>
+        <som:allowedSubject rdf:resource="&arb;Person"/>
+        <som:allowedObject rdf:resource="&arb;Werk"/>
+        <dimension rdf:resource="&dim;Grundpraedikat"/>
+        <som:allowedSubject rdf:resource="&foaf;Person"/>
     </owl:ObjectProperty>
     
 
@@ -609,7 +646,9 @@ Mit diesem Prädikat lassen sich Beispiel-Kaskaden beschreiben.</rdfs:comment>
 
     <owl:ObjectProperty rdf:about="&arb;widerlegt">
         <rdfs:label xml:lang="de">widerlegt</rdfs:label>
-        <rdfs:comment xml:lang="de">???</rdfs:comment>
+        <rdfs:comment xml:lang="de">Das Beispiel widerlegt einen
+        Sachverhalt, eine Aussage oder These etc. Es handelt sich also
+        um ein Gegenbeispiel.</rdfs:comment>
         <rdfs:subPropertyOf rdf:resource="&arb;beispielFuer"/>
         <dimension rdf:resource="&dim;epistemologisch"/>
     </owl:ObjectProperty>
