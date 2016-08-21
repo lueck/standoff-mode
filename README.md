@@ -1,30 +1,29 @@
-standoff-mode
-=============
+<p><a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src="https://img.shields.io/badge/license-GPL_3-green.svg" alt="License GPL 3" /></a>
+<a href="https://melpa.org/#/standoff-mode"><img alt="MELPA" src="https://melpa.org/packages/standoff-mode.svg"/></a>
 
-`standoff-mode` is a major mode for
-[GNU Emacs](http://www.gnu.org/software/emacs/) that lets you create
-annotations on texts in a stand-off manner. It is written for use in
-the field of digital humanities and the manual annotation of training
-data for named-entity recognition.
+# standoff-mode #
+
+`standoff-mode` turns [GNU Emacs](http://www.gnu.org/software/emacs/)
+into a tagger and that lets you create (semantic) annotations on texts
+in a stand-off manner. It is written for use in the field of digital
+humanities and the manual annotation of training data for named-entity
+recognition.
 
 There are several tools for creating stand-off markup. Most of them
 need to be deployed on a server in a network environment, which may be
 a barrier. In contrast `standoff-mode` does not need a networking
 environment. It wants to enable one to get hands on annotating texts
-right away.
+right away. It produces a local file with external markup but
+connecting a relational database is on the roadmap of development.
 
-Markup can be stored in several formats with `standoff-mode`:
-including dumped lisp-expressions (implemented), a remote or local
-SQL-Database or as RDF-triples in a SPARQL-endpoint following the
-emerging standard defined in the
-[OpenAnnotation](http://www.openannotation.org/spec/core/) ontology
-(roadmap) or as local files following
-[BRAT](http://brat.nlplab.org/standoff.html)'s plain-text format
-(planned).
+Your annotation data don't get locked in with `standoff-mode`. There
+is a commandline program that internalizes your external markup into
+the source document again:
+[standoff-tools](https://github.com/lueck/standoff-tools).
 
 `standoff-mode` doesn't want to be everything under one hood. It's
-just a tool for the manual annotation of texts. Statistics must be
-done by another tool.
+just a tagger, a tool for the manual annotation of texts. Statistics
+must be done by another tool.
 
 Since it was written for the field of digital humanities, literature
 studies in particular, `standoff-mode` works not only with plain text
@@ -52,7 +51,7 @@ Cf. the
 and the [OpenAnnotation](http://www.openannotation.org/spec/core/)
 ontology.
 
-## Features ##
+## Features of `standoff-mode`##
 
 - allows discontinuous markup
 
@@ -76,7 +75,8 @@ ontology.
 
 - customization of highlighting faces
 
-- everything can be done with the keyboard an key-codes
+- everything can be done with the keyboard an key-codes, no need to
+  use the mouse
 
 - several pluggable back-ends (under development)
 
@@ -88,11 +88,7 @@ ontology.
 
 - text comments
 
-- SPARQL back-end
-
 - SQL back-end
-
-- BRAT-like back-end
 
 ## Requirements ##
 
@@ -103,6 +99,25 @@ with versions 24.3 and 24.5.
 
 If you want to store your markup in SQL-tables or as RDF-triples, a
 RDBMS or a SPARQL-endpoint is required.
+
+## Installation ##
+
+`standoff-mode` is on the Milkypostman's Emacs Lisp Package Archive
+(MELPA), what makes it very easy to install.
+
+If MELPA is not already in your list of package repositories add the
+following line to your init file:
+
+	(add-to-list 'package-archives
+	             '("melpa" . "https://melpa.org/packages/"))
+
+Then call `package-install`:
+
+	M-x package-install RET standoff-mode RET
+
+For configuration und usage see the info files:
+
+	C-h i m stand-off RET
 
 <!--  LocalWords:  SQL RDF SPARQL OpenAnnotation roadmap TEI glyphs
  -->
