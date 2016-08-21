@@ -1,5 +1,6 @@
 <p><a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src="https://img.shields.io/badge/license-GPL_3-green.svg" alt="License GPL 3" /></a>
-<a href="https://melpa.org/#/standoff-mode"><img alt="MELPA" src="https://melpa.org/packages/standoff-mode.svg"/></a>
+
+[![MELPA](https://melpa.org/packages/standoff-mode-badge.svg)](https://melpa.org/#/standoff-mode)
 
 # standoff-mode #
 
