@@ -1,4 +1,4 @@
-<p><a href="http://www.gnu.org/licenses/gpl-3.0.txt"><img src="https://img.shields.io/badge/license-GPL_3-green.svg" alt="License GPL 3" /></a>
+[![License GPLv3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0.txt)
 
 [![MELPA](https://melpa.org/packages/standoff-mode-badge.svg)](https://melpa.org/#/standoff-mode)
 
@@ -119,6 +119,10 @@ Then call `package-install`:
 For configuration und usage see the info files:
 
 	C-h i m stand-off RET
+
+## License ##
+
+GPL 3
 
 <!--  LocalWords:  SQL RDF SPARQL OpenAnnotation roadmap TEI glyphs
  -->
