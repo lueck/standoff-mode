@@ -83,11 +83,11 @@ ontology.
 
 - manual based on GNU Texinfo, English (under development) and German
 
-- makes XML-files readable for humans by optionally hiding XML-Tags
+- makes XML-files readable for humans by optionally hiding XML-tags
   and by substituting character references with glyphs. (Note:
   Switching between hide/show is a computationally expensive task for
   Emacs and may consume a minute of your time if you're working on a
-  file with some hundreds kBytes.)
+  file with some hundred kBytes.)
 
 ## Roadmap ##
 
