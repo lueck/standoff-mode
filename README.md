@@ -22,9 +22,9 @@ is a commandline program that internalizes your external markup into
 the source document again:
 [standoff-tools](https://github.com/lueck/standoff-tools).
 
-`standoff-mode` doesn't want to be everything under one hood. It's
-just a tagger, a tool for the manual annotation of texts. Statistics
-must be done by another tool.
+`standoff-mode` doesn't want to integrate everything under one
+cover. It's just a tagger, a tool for the manual annotation of
+texts. Statistical analysis etc. must be done by another tool.
 
 Since it was written for the field of digital humanities, literature
 studies in particular, `standoff-mode` works not only with plain text
@@ -83,6 +83,12 @@ ontology.
 
 - manual based on GNU Texinfo, English (under development) and German
 
+- makes XML-files readable for humans by optionally hiding XML-tags
+  and by substituting character references with glyphs. (Note:
+  Switching between hide/show is a computationally expensive task for
+  Emacs and may consume a minute of your time if you're working on a
+  file with some hundred kBytes.)
+
 ## Roadmap ##
 
 `standoff-mode` is under active development. Here's the roadmap:
@@ -119,6 +125,28 @@ Then call `package-install`:
 For configuration und usage see the info files:
 
 	C-h i m stand-off RET
+
+## Documentation
+
+There is a manual in german language which is installed with the
+package und can be viewed with Emacs' info-browser. Type
+
+	C-h i m standoff RET
+
+An english manual will follow soon.
+
+The same documentation is available as
+PDF
+[here](http://beispiel.germanistik.rub.de/@@/doc/standoff-de.pdf). There
+is also a
+more
+[verbose version](http://beispiel.germanistik.rub.de/@@/doc/standoff-praktikum.pdf) of
+it, which addresses students of Fern-University of Hagen, Germany. And
+there
+are
+[installation instructions](http://beispiel.germanistik.rub.de/@@/doc/Emacs-Installation.pdf) for
+both, GNU Emacs and standoff-mode.
+
 
 ## License ##
 
