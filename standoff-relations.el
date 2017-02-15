@@ -131,6 +131,7 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
   (let* ((subjs (funcall standoff-markup-read-function source-buf nil nil nil subj-id))
 	 (objs (funcall standoff-markup-read-function source-buf nil nil nil obj-id))
 	 (line ""))
+    (when (and subjs objs) 
     (dolist (f-w standoff-relations-fields)
       (let ((field (car f-w))
 	    (width (cdr f-w))
@@ -159,7 +160,7 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
 			       (truncate-string-to-width str width 0 ?\s "…")) " ")))
 	;; propertize it
 	;; TODO: makes sense only if we can mark a relation for e.g. deletion
-	))
+	)))
     (when point
       (goto-char point))
     (insert (concat line "\n"))
