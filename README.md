@@ -5,7 +5,7 @@
 # standoff-mode #
 
 `standoff-mode` turns [GNU Emacs](http://www.gnu.org/software/emacs/)
-into a tagger and that lets you create (semantic) annotations on texts
+into a tagger and lets you create (semantic) annotations on texts
 in a stand-off manner. It is written for use in the field of digital
 humanities and the manual annotation of training data for named-entity
 recognition.
