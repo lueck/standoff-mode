@@ -26,6 +26,7 @@
     <owl:Ontology rdf:about="http://arb.fernuni-hagen.de/owl/beispiel">
         <rdfs:label xml:lang="de">Annotationsschema für das Archiv des
         Beispiels</rdfs:label>
+	<owl:versionInfo>v.0.0.1</owl:versionInfo>
         <owl:imports rdf:resource="http://github.com/lueck/standoff-mode/owl"/>
     </owl:Ontology>
     
