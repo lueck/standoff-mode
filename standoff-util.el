@@ -35,4 +35,6 @@ edited by Xah Lee and other, taken from URL
                     (substring myStr 17 20)
                     (substring myStr 20 32))))
 
+(provide 'standoff-util)
+
 ;;; standoff-util.el ends here

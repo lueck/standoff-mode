@@ -50,7 +50,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 ſingend zu mahlen.")
     ;; register und reset dummy backend
     (standoff-dummy-register-backend)
-    (setq standoff-dummy-create-id-function 'standoff-dummy-create-uuid)
+    (setq standoff-dummy-create-id-function 'standoff-util/create-uuid)
     (standoff-dummy--backend-reset);; Needed?
     ;; Return test buffer
     test-buffer))

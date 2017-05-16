@@ -71,10 +71,10 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 (ert-deftest standoff-dummy-create-uuid-test ()
   ;; return value should be a string
   (should
-   (equal (type-of (standoff-dummy-create-uuid)) 'string))
+   (equal (type-of (standoff-util/create-uuid)) 'string))
   ;; should match xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx$
   (should
-   (equal (string-match "[[:xdigit:]]\\{8\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{12\\}$" (standoff-dummy-create-uuid)) 0)))
+   (equal (string-match "[[:xdigit:]]\\{8\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{4\\}-[[:xdigit:]]\\{12\\}$" (standoff-util/create-uuid)) 0)))
 
 (ert-deftest standoff-dummy-create-intid-test ()
   (let ((test-buffer (standoff-dummy-test-setup-source-buffer)))
