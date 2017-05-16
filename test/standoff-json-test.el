@@ -1,5 +1,6 @@
 :; exec emacs -Q --script "$0" -- "$@"
 
+;;; Commentary:
 ;; WARNING: Close your production files before running tests! Restart
 ;; Emacs before going from testing to production again, because it is
 ;; not shure, that all configuration is restored correctly. You might
@@ -48,6 +49,16 @@ Tapete, den Bauer innerhalb der Windmuͤhle
   (kill-buffer buf)
   (standoff-test-utils-restore-old-config))
 
+(defun standoff-json-test-positions (buf)
+  (with-current-buffer buf
+    (message "JSON Position:")
+    (message "MD5 sum: %s"
+     	     (standoff-json/file-get-or-parse-position "md5sum-start"))
+    (message "Markup: %s %s"
+	     (standoff-json/file-get-or-parse-position "MarkupRanges-start")
+	     (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+    ))
+
 ;;; Tests
 
 (ert-deftest standoff-json-test-get-json-buffer ()
@@ -62,7 +73,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (should (equal json-buffer (standoff-json/file-get-json-buffer source-buffer)))
     (standoff-json-test-teardown source-buffer)))
 
-(ert-deftest standoff-json-test-create-markup ()
+(ert-deftest standoff-json-test-create-read-markup ()
   (let ((source-buffer (standoff-json-test-setup-source-buffer))
 	(json-buffer nil)
 	(json-buffer-size1 nil)
@@ -70,10 +81,27 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 	(markup-id nil))
     (set-buffer source-buffer)
     (setq json-buffer (standoff-json/file-get-json-buffer source-buffer))
+    (standoff-json-test-positions json-buffer)
     (setq json-buffer-size1 (buffer-size json-buffer))
     (setq markup-id (standoff-json/file-add-markup source-buffer 23 42 "example"))
+    (standoff-json-test-positions json-buffer)
     (should (> (buffer-size json-buffer) json-buffer-size1))
     (setq markup-id (standoff-json/file-add-markup source-buffer 52 64 "marker"))
+    (standoff-json-test-positions json-buffer)
+    ;; Read
+    (setq ranges (standoff-json/file-read-markup source-buffer))
+    (should (= 2 (length ranges)))
+    (setq ranges (standoff-json/file-read-markup source-buffer nil nil "example"))
+    (should (= 1 (length ranges)))
+    (setq ranges (standoff-json/file-read-markup source-buffer nil nil nil markup-id))
+    (should (= 1 (length ranges)))
+    (setq ranges (standoff-json/file-read-markup source-buffer 51 65))
+    (should (= 1 (length ranges)))
+    (setq ranges (standoff-json/file-read-markup source-buffer 1 19 "example"))
+    (should (= 0 (length ranges)))
+    (should-error (standoff-json/file-read-markup source-buffer 1))
+    (should-error (standoff-json/file-read-markup source-buffer nil 2))
+    ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
 

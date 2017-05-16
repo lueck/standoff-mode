@@ -27,32 +27,42 @@ This is maintained for fast insertion.")
 (defun standoff-json/file-add-position (key pos)
   "Add a new position to the list of managed positions.
 The name of the position is given as KEY, the position as POS."
-  (puthash key pos standoff-json/file-positions))
+  (let ((sym (if (symbolp key) key (intern key))))
+    (puthash sym pos standoff-json/file-positions)))
 
 (defun standoff-json/file-adjust-positions (key new-pos)
   "Adjust managed position KEY to NEW-POS."
-  (let
-      ((old-pos (gethash key standoff-json/file-positions))
+  (let*
+      ((sym (if (symbolp key) key (intern key)))
+       (old-pos (gethash sym standoff-json/file-positions))
        (delta 0)
        (new-positions (copy-hash-table standoff-json/file-positions)))
     (when old-pos
       (setq delta (- new-pos old-pos))
       (maphash
        (lambda
-	 (key pos)
-	 (when (>= old-pos pos)
-	   (puthash key (+ pos delta) standoff-json/file-positions)))
+	 (ky pos)
+	 (when (<= old-pos pos)
+	   (puthash ky (+ pos delta) standoff-json/file-positions)))
        standoff-json/file-positions))))
 
 (defun standoff-json/file-get-position (key)
   "Return the managed position for KEY."
   ;; TODO: Handle manual modifications of the buffer.
-  (gethash key standoff-json/file-positions nil))
+  (let ((sym (if (symbolp key) key (intern key))))
+    (gethash sym standoff-json/file-positions nil)))
 
 (defun standoff-json/file-parse-positions ()
   "Parse the managed positions in a json file backend."
   (standoff-json/file-reset-positions)
   (save-excursion
+    ;; parse for md5sum
+    (goto-char (point-min))
+    (when (re-search-forward
+	   "^\"md5sum\":[[:space:]]*\"[[:alnum:]]\\{32\\}\""
+	   nil t)
+      (standoff-json/file-add-position "md5sum-start" (point)))
+    ;; parse for bags
     (goto-char (point-min))
     (while (re-search-forward
 	    "^\"\\(MarkupRanges\\|Relations\\|LiteralAttributes\\)\":[[:space:]]*\\["
@@ -80,6 +90,7 @@ If it is not present in the managed positions, the file is
 parsed."
   (or (standoff-json/file-get-position key)
       (progn
+	;; (message "Parsing positions, because not having key '%s'." key)
 	(standoff-json/file-parse-positions)
 	(standoff-json/file-get-position key))))
 	;; (or (standoff-json/file-get-position key)
@@ -92,9 +103,11 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
     (save-excursion
       (let ((buffer-read-only nil))
 	(erase-buffer)
+	(standoff-json/file-reset-positions)
 	(goto-char (point-min))
-	(insert "{\n\"md5sum\": \"" (md5 source-buffer) "\"\n}\n")
-	(standoff-json/file-reset-positions)))))
+	(insert "{\n")
+	(standoff-json/file-add-position "md5sum-start" (point))
+	(insert "\"md5sum\": \"" (md5 source-buffer) "\"\n}\n")))))
 
 (defun standoff-json/file-new (source-buffer)
   "Create a new json file backend for SOURCE-BUFFER."
@@ -129,12 +142,14 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
 Filter markup between STARTCHAR and ENDCHAR or nil.  Filter for
 MARKUP-TYPE or nil.  Filter for MARKUP-INST-ID or nil.  RANGES
 has to be a list of plists."
+  (unless (or (and startchar endchar) (and (null startchar) (null endchar)))
+    (error "Use both offsets or none"))
   (cl-remove-if-not			; filter
    #'(lambda (r)
-       (let ((start (plist-get 'sourceStart r))
-	     (end (plist-get 'sourceEnd r))
-	     (elem-id (plist-get 'markupElementId r))
-	     (typ (plist-get 'qualifiedName r)))
+       (let ((start (string-to-number (plist-get r :sourceStart)))
+	     (end (string-to-number (plist-get r :sourceEnd)))
+	     (elem-id (plist-get r :markupElementId))
+	     (typ (plist-get r :qualifiedName)))
 	 ;; condition
 	 (and (or (and (not startchar) (not endchar))
 		  (or (and (<= start startchar)
@@ -154,10 +169,10 @@ has to be a list of plists."
 Return a the range as a list like described in api."
   ;; FIXME: add some more? add markupRangeId!!
   (list
-   (plist-get 'qualifiedName range)
-   (plist-get 'sourceStart range)
-   (plist-get 'sourceEnde range)
-   (plist-get 'markupElementId range)))
+   (plist-get range :qualifiedName)
+   (string-to-number (plist-get range :sourceStart))
+   (string-to-number (plist-get range :sourceEnd))
+   (plist-get range :markupElementId)))
 
 (defun standoff-json/range-to-json (elem-id range-id typ start end)
   "Format a markup range to json.
@@ -181,8 +196,8 @@ MARKUP-TYPE."
     (with-current-buffer json-buf
       (save-excursion
 	(let ((insert-pos (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
-	      (elem-id (standoff-dummy-create-uuid))
-	      (range-id (standoff-dummy-create-uuid))
+	      (elem-id (standoff-util/create-uuid))
+	      (range-id (standoff-util/create-uuid))
 	      (buffer-read-only nil))
 	  ;; insert a comma if this is not the first markup element or range.
 	  (if insert-pos
@@ -198,8 +213,8 @@ MARKUP-TYPE."
 	    (search-backward "]")
 	    (standoff-json/file-add-position "MarkupRanges-insert" (point))
 	    (search-backward "[")
-	    (goto-char (+ (point) 1))
-	    (standoff-json/file-add-position "MarkupRanges-start" (point)))
+	    (standoff-json/file-add-position "MarkupRanges-start" (point))
+	    (goto-char (+ (point) 1)))
 	  ;; insert a new line with a MarkupRange
 	  (insert "\n" (standoff-json/range-to-json elem-id range-id markup-type start end))
 	  (standoff-json/file-adjust-positions "MarkupRanges-insert" (point))
@@ -208,8 +223,9 @@ MARKUP-TYPE."
 
 (defun standoff-json/file-read-markup (buffer &optional startchar endchar markup-type markup-inst-id)
   "Read markup form the json file backend of the source BUFFER.
-The optional parameters STARTCHAR ENDCHAR, MARKUP-TYPE
-MARKUP-INST-ID can be used for filtering."
+This returns a list of markup elements.  The optional parameters
+STARTCHAR ENDCHAR, MARKUP-TYPE MARKUP-INST-ID can be used for
+filtering."
   (let
       ((json-buf (standoff-json/file-get-json-buffer buffer))
        (json-array-type 'list)
