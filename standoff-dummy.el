@@ -26,9 +26,10 @@
 ;; This is a reference implementation of the API for back-ends defined
 ;; in standoff-api.el
 
-;;; Code
+;;; Code:
 
 (require 'standoff-api)
+(require 'standoff-util)
 
 ;;;; IDs
 
@@ -37,45 +38,13 @@
 The item's list is given by DATA and should be
 `standoff-dummy-markup', `standoff-dummy-relations' or the like,
 and POS gives the position (column) of the ID in the lists, data
-is composed of. E.g. `standoff-pos-markup-inst-id' is the POS of
+is composed of.  E.g. `standoff-pos-markup-inst-id' is the POS of
 the ids in standoff-dummy-markup."
   (if data
       (+ (apply 'max (mapcar #'(lambda (x) (nth pos x)) data)) 1)
     1))
 
-(defun standoff-dummy-create-uuid (&optional data pos)
-  "Create a UUID, using a simple hashing of variable data.
-Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3dq. The
-parameters DATA and POS are optional, but have no effect. They
-are only there to make this function compatible to funcalls of
-the function symbol stored in
-`standoff-dummy-create-id-function'.
-
-Note: This code uses https://en.wikipedia.org/wiki/Md5 , which is
-not cryptographically safe. Written by Christopher Wellons, 2011,
-edited by Xah Lee and other, taken from URL
-`http://ergoemacs.org/emacs/elisp_generate_uuid.html'.
-"
-  (let ((myStr (md5 (format "%s%s%s%s%s%s%s%s%s%s"
-                            (user-uid)
-                            (emacs-pid)
-                            (system-name)
-                            (user-full-name)
-                            (current-time)
-                            (emacs-uptime)
-                            (garbage-collect)
-                            (buffer-string)
-                            (random)
-                            (recent-keys)))))
-    (format "%s-%s-4%s-%s%s-%s"
-                    (substring myStr 0 8)
-                    (substring myStr 8 12)
-                    (substring myStr 13 16)
-                    (format "%x" (+ 8 (random 4)))
-                    (substring myStr 17 20)
-                    (substring myStr 20 32))))
-
-(defcustom standoff-dummy-create-id-function 'standoff-dummy-create-uuid
+(defcustom standoff-dummy-create-id-function 'standoff-util/create-uuid
   "The function for creating IDs used in the dummy backend."
   :group 'standoff-dummy
   :type 'function)
@@ -498,4 +467,4 @@ This may be usefull for development."
 
 (provide 'standoff-dummy)
 
-;;; standoff-dummy.el ends here.
+;;; standoff-dummy.el ends here
