@@ -118,11 +118,17 @@ following line to your init file:
 	(add-to-list 'package-archives
 	             '("melpa" . "https://melpa.org/packages/"))
 
-Then call `package-install`:
+Then make the packages from elpa available and call `package-install`:
 
+	M-x package-refresh-contents RET
 	M-x package-install RET standoff-mode RET
 
-For configuration und usage see the info files:
+Alternatively you can use the menu for installing packages:
+
+	M-x package-list-packages RET
+
+For configuration und usage see the info files (currently german
+only):
 
 	C-h i m stand-off RET
 
