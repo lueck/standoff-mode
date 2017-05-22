@@ -118,7 +118,7 @@ following line to your init file:
 	(add-to-list 'package-archives
 	             '("melpa" . "https://melpa.org/packages/"))
 
-Then make the packages from elpa available and call `package-install`:
+Then make the packages from melpa available and call `package-install`:
 
 	M-x package-refresh-contents RET
 	M-x package-install RET standoff-mode RET
@@ -126,6 +126,9 @@ Then make the packages from elpa available and call `package-install`:
 Alternatively you can use the menu for installing packages:
 
 	M-x package-list-packages RET
+
+Then search `standoff-mode`, use `i` to mark it for installation and
+`x` to install the marked package(s).
 
 For configuration und usage see the info files (currently german
 only):
