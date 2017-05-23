@@ -118,7 +118,12 @@ following line to your init file:
 	(add-to-list 'package-archives
 	             '("melpa" . "https://melpa.org/packages/"))
 
-Then make the packages from melpa available and call `package-install`:
+On windows you may run into
+[problems using the `https` location](https://melpa.org/#/getting-started). Use
+`http` instead.
+
+Then make the packages from melpa available using
+`package-refresh-contents` and call `package-install`:
 
 	M-x package-refresh-contents RET
 	M-x package-install RET standoff-mode RET
