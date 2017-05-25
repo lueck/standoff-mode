@@ -302,6 +302,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
   (let
       ((json-buf (standoff-json/file-get-json-buffer source-buffer))
        (deleted 0)
+       delta
        new-json-end-pos)
     (with-current-buffer json-buf
       (save-excursion
@@ -342,10 +343,9 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 		;; delete object between object-start and object-end
 		;(message "Deleting: %s" (buffer-substring object-start object-end))
 		(delete-region object-start object-end)
-		(setq deleted (+ deleted (- object-end object-start)))
-		;; parse for end again
-		(standoff-json/file-parse-positions)
-		(setq array-end (search-forward "]" nil t))
+		(setq delta (- object-end object-start)
+		      deleted (+ deleted delta)
+		      array-end (- array-end delta))
 		;; go back to object-start
 		(goto-char object-start))
 	      ;; save current position
