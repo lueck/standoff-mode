@@ -128,14 +128,14 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
   "Return the json buffer for SOURCE-BUFFER."
   (let
       ((json-buf nil)
-       (json-buf-name))
+       (json-buf-name nil))
     (with-current-buffer source-buffer
       (save-excursion
 	(setq json-buf-name standoff-json/json-buffer-name)
 	(unless json-buf-name
 	  (standoff-json/file-new source-buffer)
-	  (setq json-buf-name standoff-json/json-buffer-name))))
-    (set-buffer json-buf-name)))
+	  (setq json-buf-name standoff-json/json-buffer-name))
+	json-buf-name))))
 
 (defun standoff-json/filter-markup (startchar endchar markup-type markup-inst-id ranges)
   "Filter markup given as list of plists.
@@ -169,10 +169,12 @@ has to be a list of plists."
 Return a the range as a list like described in api."
   ;; FIXME: add some more? add markupRangeId!!
   (list
+   ;; see api for order
+   (plist-get range :markupElementId)
    (plist-get range :qualifiedName)
    (string-to-number (plist-get range :sourceStart))
    (string-to-number (plist-get range :sourceEnd))
-   (plist-get range :markupElementId)))
+   ))
 
 (defun standoff-json/range-to-json (elem-id range-id typ start end)
   "Format a markup range to json.
@@ -187,8 +189,8 @@ offset."
    ", \"sourceEnd\": \"" (number-to-string end) "\""
    "}"))
 
-(defun standoff-json/file-add-markup (source-buffer start end markup-type)
-  "Add a markup range to the external markup of SOURCE-BUFFER.
+(defun standoff-json/file-create-markup (source-buffer start end markup-type)
+  "Create an external markup element referring SOURCE-BUFFER.
 The range is defined by the character offsets START and END and the
 MARKUP-TYPE."
   (let
@@ -232,13 +234,48 @@ filtering."
        (json-object-type 'plist))
     (with-current-buffer json-buf
       (save-excursion
-	;; set point to beginning of MarkupRanges
-	(goto-char (standoff-json/file-get-or-parse-position "MarkupRanges-start"))
-	(mapcar
-	 #'standoff-json/plist-to-list	; make lists form plists
-	 (standoff-json/filter-markup	; filter plists
-	  startchar endchar markup-type markup-inst-id
-	  (json-read-array))))))) ; parse json array at point into plist
+	(let
+	    ((json-start (standoff-json/file-get-or-parse-position "MarkupRanges-start")))
+	  (if (null json-start)
+	      ;; return empty list if there are no markup ranges yet
+	      '()
+	    ;; else
+	    ;; set point to beginning of MarkupRanges
+	    (goto-char json-start)
+	    (mapcar
+	     #'standoff-json/plist-to-list	; make lists form plists
+	     (standoff-json/filter-markup	; filter plists
+	      startchar endchar markup-type markup-inst-id
+	      (json-read-array))))))))) ; parse json array at point into plist
+
+(defun standoff-json/file-add-range (source-buffer start end elem-id)
+  "Add a markup range to external markup of SOURCE-BUFFER.
+The markup range is given by START and END character offset and
+the ELEM-ID of the markup element, that is to be continued."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+    (with-current-buffer json-buf
+      (save-excursion
+	(let
+	    ((insert-pos (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+	     (range-id (standoff-util/create-uuid))
+	     ;; get the element id by reading and filtering all ranges
+	     (markup-type (nth standoff-pos-markup-inst-id
+			       (car (standoff-json/file-read-markup
+				     source-buffer nil nil nil elem-id))))
+	     ;; make json buffer writeable
+	     (buffer-read-only nil))
+	  (if (null insert-pos)
+	      (error "Adding markup range failed: No markup elements yet")
+	    (if (null markup-type)
+		(error "Adding markup range failed: No markup ranges with element id=%s" elem-id)
+	      (goto-char insert-pos)
+	      ;; insert the new range
+	      (insert ",\n"
+		      (standoff-json/range-to-json elem-id range-id markup-type start end))
+	      ;; adjust positions
+	      (standoff-json/file-adjust-positions "MarkupRanges-insert" (point))
+	      elem-id)))))))
 
 (defun standoff-json/file-load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."

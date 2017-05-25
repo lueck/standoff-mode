@@ -19,6 +19,13 @@
 
 (require 'ert)
 (require 'standoff-test-utils)
+(require 'standoff-json)
+
+(defconst standoff-json-test-debug nil
+  "Set this to non-nil, if you would like to get various messages.")
+
+(defconst standoff-json-test-kill-buffers t
+  "Kill buffers on tear down.")
 
 ;;; Functions for set up and tear down
 
@@ -46,18 +53,21 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 
 (defun standoff-json-test-teardown (buf)
   "Tear down the test setup for dummy testing."
-  (kill-buffer buf)
-  (standoff-test-utils-restore-old-config))
+  (let ((json-buf (standoff-json/file-get-json-buffer buf)))
+    (when standoff-json-test-kill-buffers (kill-buffer json-buf))
+    (kill-buffer buf)
+    (standoff-test-utils-restore-old-config)))
 
 (defun standoff-json-test-positions (buf)
-  (with-current-buffer buf
-    (message "JSON Position:")
-    (message "MD5 sum: %s"
-     	     (standoff-json/file-get-or-parse-position "md5sum-start"))
-    (message "Markup: %s %s"
-	     (standoff-json/file-get-or-parse-position "MarkupRanges-start")
-	     (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
-    ))
+  (when (not (null standoff-json-test-debug))
+    (with-current-buffer buf
+      (message "JSON Position:")
+      (message "MD5 sum: %s"
+	       (standoff-json/file-get-or-parse-position "md5sum-start"))
+      (message "Markup: %s %s"
+	       (standoff-json/file-get-or-parse-position "MarkupRanges-start")
+	       (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+      )))
 
 ;;; Tests
 
@@ -78,15 +88,19 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 	(json-buffer nil)
 	(json-buffer-size1 nil)
 	(json-buffer-size2 nil)
-	(markup-id nil))
+	(markup-id nil)
+	(makrup-id2 nil))
     (set-buffer source-buffer)
     (setq json-buffer (standoff-json/file-get-json-buffer source-buffer))
     (standoff-json-test-positions json-buffer)
     (setq json-buffer-size1 (buffer-size json-buffer))
-    (setq markup-id (standoff-json/file-add-markup source-buffer 23 42 "example"))
+    ;; reading markup before any was created
+    (should (equal '() (standoff-json/file-read-markup source-buffer)))
+    ;; create markup elements
+    (setq markup-id (standoff-json/file-create-markup source-buffer 23 42 "example"))
     (standoff-json-test-positions json-buffer)
     (should (> (buffer-size json-buffer) json-buffer-size1))
-    (setq markup-id (standoff-json/file-add-markup source-buffer 52 64 "marker"))
+    (setq markup-id (standoff-json/file-create-markup source-buffer 52 64 "marker"))
     (standoff-json-test-positions json-buffer)
     ;; Read
     (setq ranges (standoff-json/file-read-markup source-buffer))
@@ -101,6 +115,15 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (should (= 0 (length ranges)))
     (should-error (standoff-json/file-read-markup source-buffer 1))
     (should-error (standoff-json/file-read-markup source-buffer nil 2))
+    ;; Add range (discontinous markup)
+    (setq markup-id2 (standoff-json/file-add-range source-buffer 67 68 markup-id))
+    ;; Read again
+    (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
+    (should (= 2 (length (standoff-json/file-read-markup source-buffer nil nil nil markup-id))))
+    ;; Try adding range with unknow element id
+    (setq markup-id2 (standoff-util/create-uuid))
+    (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id2))
+    
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
