@@ -324,22 +324,24 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (while (search-forward "}" array-end t)
 	      ;; search-forward moved the point, go back to saved position
 	      (goto-char object-start)
-	      (goto-char (- (search-forward "{" array-end t) 1))
+	      ;; move behind comma
+	      (json-skip-whitespace)
+	      (when (char-equal (json-peek) ?,)
+		(json-advance))
 	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
 	      ;; parse json object
 	      (setq range (standoff-json/plist-to-list (json-read)))
-	      ;(message "Parsed range: %s" range)
-	      ;; when we examine the first, we need to move behind the comma
-	      (when (= object-start first-object-start)
-		(when (char-equal (json-peek) ?,)
-		  (json-advance)
-		  (json-skip-whitespace)))
-	      (setq object-end (point))
 	      (when (and		; deletion condition
 		     (equal (nth standoff-pos-markup-inst-id range) elem-id)
 		     (equal (nth standoff-pos-markup-type range) markup-type)
 		     (equal (nth standoff-pos-startchar range) start)
 		     (equal (nth standoff-pos-endchar range) end))
+		;; when deleting the first range, the comma behind has to be deleted
+		(when (= object-start first-object-start)
+		  (json-skip-whitespace)
+		  (when (char-equal (json-peek) ?,)
+		    (json-advance)))
+		(setq object-end (point))
 		;; delete object between object-start and object-end
 		;(message "Deleting: %s" (buffer-substring object-start object-end))
 		(delete-region object-start object-end)
@@ -348,6 +350,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 		      array-end (- array-end delta))
 		;; go back to object-start
 		(goto-char object-start))
+	      ;(message "Parsed range: %s" range)
 	      ;; save current position
 	      (setq object-start (point)))
 	    (setq new-json-end-pos (- json-end deleted))))
