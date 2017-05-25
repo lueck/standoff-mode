@@ -131,7 +131,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; Try adding range with unknow element id
     (setq markup-id4 (standoff-util/create-uuid))
     (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id4))
-    ;; delete
+    ;; delete last one
     (should (equal t (standoff-json/file-delete-range source-buffer 67 68 "marker" markup-id2)))
     ;; Read again
     (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
@@ -141,6 +141,11 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; read again
     (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
     (standoff-json-test-json-buffer-print json-buffer)
+    ;; delete the first one
+    (should (equal t (standoff-json/file-delete-range source-buffer 23 42 "example" markup-id1)))
+    (standoff-json-test-json-buffer-print json-buffer)
+    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
+    ;; read again
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 

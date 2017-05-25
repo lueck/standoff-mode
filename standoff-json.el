@@ -301,52 +301,60 @@ The range refers SOURCE-BUFFER and is identified by START and END
 character offsets, by its MARKUP-TYPE and by the ELEM-ID."
   (let
       ((json-buf (standoff-json/file-get-json-buffer source-buffer))
-       (deleted 0))
+       (deleted 0)
+       new-json-end-pos)
     (with-current-buffer json-buf
       (save-excursion
 	(let*
 	    ((json-start (standoff-json/file-get-or-parse-position "MarkupRanges-start"))
 	     (json-end (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
 	     (array-end json-end)
-	     here
-	     there
+	     object-start
+	     first-object-start
+	     object-end
 	     (json-object-type 'plist)
 	     (buffer-read-only nil))
 	  (if (null json-start)
 	      (error "No markup in json file backend")
-	    (goto-char (+ 1 json-start)) ; after [
-	    ;(message "Here: %s" json-start)
-	    ;; save current pos
-	    (setq here (point))
+	    (goto-char json-start)
+	    ;; move point behind [ and save it to object-start
+	    (setq first-object-start (search-forward "[" nil t)
+		  object-start first-object-start)
 	    (while (search-forward "}" array-end t)
 	      ;; search-forward moved the point, go back to saved position
-	      (goto-char here)
+	      (goto-char object-start)
 	      (goto-char (- (search-forward "{" array-end t) 1))
 	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
 	      ;; parse json object
 	      (setq range (standoff-json/plist-to-list (json-read)))
 	      ;(message "Parsed range: %s" range)
-	      (setq there (point))	; there: position after json object
+	      ;; when we examine the first, we need to move behind the comma
+	      (when (= object-start first-object-start)
+		(when (char-equal (json-peek) ?,)
+		  (json-advance)
+		  (json-skip-whitespace)))
+	      (setq object-end (point))
 	      (when (and		; deletion condition
 		     (equal (nth standoff-pos-markup-inst-id range) elem-id)
 		     (equal (nth standoff-pos-markup-type range) markup-type)
 		     (equal (nth standoff-pos-startchar range) start)
 		     (equal (nth standoff-pos-endchar range) end))
-		;; delete object between here and there, here was before comma
-		;(message "Deleting: %s" (buffer-substring here there))
-		(delete-region here there)
-		(setq deleted (+ deleted (- there here)))
+		;; delete object between object-start and object-end
+		;(message "Deleting: %s" (buffer-substring object-start object-end))
+		(delete-region object-start object-end)
+		(setq deleted (+ deleted (- object-end object-start)))
 		;; parse for end again
 		(standoff-json/file-parse-positions)
 		(setq array-end (search-forward "]" nil t))
-		;; go back to here
-		(goto-char here))
+		;; go back to object-start
+		(goto-char object-start))
 	      ;; save current position
-	      (setq here (point))))
-	  (when (not (= 0 deleted))
-	    ;; parse positions after deletion
-	    (standoff-json/file-adjust-positions "MarkupRanges-insert" (- json-end deleted)))
-	  (not (= 0 deleted)))))))
+	      (setq object-start (point)))
+	    (setq new-json-end-pos (- json-end deleted))))
+	(when (not (= 0 deleted))
+	  ;; parse positions after deletion
+	  (standoff-json/file-adjust-positions "MarkupRanges-insert" new-json-end-pos))
+	(not (= 0 deleted))))))
 
 (defun standoff-json/file-load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."
