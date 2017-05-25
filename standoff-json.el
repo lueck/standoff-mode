@@ -47,35 +47,48 @@ The name of the position is given as KEY, the position as POS."
        standoff-json/file-positions))))
 
 (defun standoff-json/file-get-position (key)
-  "Return the managed position for KEY."
-  ;; TODO: Handle manual modifications of the buffer.
+  "Return the managed position for KEY.
+Do not use this directly.  Use
+`standoff-json/file-get-or-parse-position' instead which parses
+the json file when it is not read only."
   (let ((sym (if (symbolp key) key (intern key))))
     (gethash sym standoff-json/file-positions nil)))
 
 (defun standoff-json/file-parse-positions ()
   "Parse the managed positions in a json file backend."
-  (standoff-json/file-reset-positions)
-  (save-excursion
-    ;; parse for md5sum
-    (goto-char (point-min))
-    (when (re-search-forward
-	   "^\"md5sum\":[[:space:]]*\"[[:alnum:]]\\{32\\}\""
-	   nil t)
-      (standoff-json/file-add-position "md5sum-start" (point)))
-    ;; parse for bags
-    (goto-char (point-min))
-    (while (re-search-forward
-	    "^\"\\(MarkupRanges\\|Relations\\|LiteralAttributes\\)\":[[:space:]]*\\["
-	    nil t)
-      (standoff-json/file-add-position
-       (concat (match-string 1) "-start")
-       (point))
-      (unless (search-forward "]" nil t)
-	(error "Error parsing json file: no sequence closing \"]\" found for %s"
-	       (match-string 1)))
-      (standoff-json/file-add-position
-       (concat (match-string 1) "-insert")
-       (- (point) 1)))))
+  ;; FIXME: Make more use of json parsing functions
+  (let
+      (matched
+       array-start-pos)
+    (standoff-json/file-reset-positions)
+    (save-excursion
+      ;; parse for md5sum
+      (goto-char (point-min))
+      (when (re-search-forward
+	     "^\"md5sum\":[[:space:]]*\"[[:alnum:]]\\{32\\}\""
+	     nil t)
+	(standoff-json/file-add-position "md5sum-start" (point)))
+      ;; parse for bags
+      (goto-char (point-min))
+      (while (re-search-forward
+	      "^\"\\(MarkupRanges\\|Relations\\|LiteralAttributes\\)\":[[:space:]]*\\["
+	      nil t)
+	(setq matched (match-string 1))
+	;; move point before opening [
+	(goto-char (- (point) 1))
+	(standoff-json/file-add-position
+	 (concat matched "-start")
+	 (point))
+	(setq array-start-pos (point))
+	;; parse the json array. We don't need the result, but the
+	;; point is moved.
+	(json-read-array)
+	;; move point before closing ]
+	(unless (< array-start-pos (search-backward "]" nil t))
+	  (error "Error parsing json file: no sequence closing \"]\" found for %s" matched))
+	(standoff-json/file-add-position
+	 (concat matched "-insert")
+	 (point))))))
 
 (defun standoff-json/file-get-position-outer-closing ()
   "Get the position of the last closing curly brace."
@@ -87,14 +100,18 @@ The name of the position is given as KEY, the position as POS."
 (defun standoff-json/file-get-or-parse-position (key)
   "Return the managed position of KEY.
 If it is not present in the managed positions, the file is
-parsed."
-  (or (standoff-json/file-get-position key)
-      (progn
-	;; (message "Parsing positions, because not having key '%s'." key)
-	(standoff-json/file-parse-positions)
-	(standoff-json/file-get-position key))))
-	;; (or (standoff-json/file-get-position key)
-	;;     (standoff-json/file-get-position-outer-closing)))))
+parsed.  If the buffer is not read-only, then the buffer is
+parsed first."
+  (if buffer-read-only
+      (or (standoff-json/file-get-position key)
+	  (progn
+	    (message "Parsing positions, because not having key '%s'." key)
+	    (standoff-json/file-parse-positions)
+	    (standoff-json/file-get-position key)))
+    ;; if not read only: parse the buffer
+    (message "Parsing positions, because json buffer is not read only.")
+    (standoff-json/file-parse-positions)
+    (standoff-json/file-get-position key)))
 
 (defun standoff-json/file-empty (source-buffer json-buffer)
   "Create an empty json file for storing annotations.
@@ -119,6 +136,7 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
       ;; Create a new json file.
       (with-current-buffer (find-file default-name)
 	(setq json-buf-name (current-buffer))
+	(read-only-mode 1)
 	(standoff-json/file-empty source-buffer (current-buffer)))
       ;; set json buffer name in source file.
       (with-current-buffer source-buffer
@@ -260,7 +278,7 @@ the ELEM-ID of the markup element, that is to be continued."
 	    ((insert-pos (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
 	     (range-id (standoff-util/create-uuid))
 	     ;; get the element id by reading and filtering all ranges
-	     (markup-type (nth standoff-pos-markup-inst-id
+	     (markup-type (nth standoff-pos-markup-type
 			       (car (standoff-json/file-read-markup
 				     source-buffer nil nil nil elem-id))))
 	     ;; make json buffer writeable
@@ -276,6 +294,59 @@ the ELEM-ID of the markup element, that is to be continued."
 	      ;; adjust positions
 	      (standoff-json/file-adjust-positions "MarkupRanges-insert" (point))
 	      elem-id)))))))
+
+(defun standoff-json/file-delete-range (source-buffer start end markup-type elem-id)
+  "Delete a markup range or element from the json file backend.
+The range refers SOURCE-BUFFER and is identified by START and END
+character offsets, by its MARKUP-TYPE and by the ELEM-ID."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+       (deleted 0))
+    (with-current-buffer json-buf
+      (save-excursion
+	(let*
+	    ((json-start (standoff-json/file-get-or-parse-position "MarkupRanges-start"))
+	     (json-end (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+	     (array-end json-end)
+	     here
+	     there
+	     (json-object-type 'plist)
+	     (buffer-read-only nil))
+	  (if (null json-start)
+	      (error "No markup in json file backend")
+	    (goto-char (+ 1 json-start)) ; after [
+	    ;(message "Here: %s" json-start)
+	    ;; save current pos
+	    (setq here (point))
+	    (while (search-forward "}" array-end t)
+	      ;; search-forward moved the point, go back to saved position
+	      (goto-char here)
+	      (goto-char (- (search-forward "{" array-end t) 1))
+	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
+	      ;; parse json object
+	      (setq range (standoff-json/plist-to-list (json-read)))
+	      ;(message "Parsed range: %s" range)
+	      (setq there (point))	; there: position after json object
+	      (when (and		; deletion condition
+		     (equal (nth standoff-pos-markup-inst-id range) elem-id)
+		     (equal (nth standoff-pos-markup-type range) markup-type)
+		     (equal (nth standoff-pos-startchar range) start)
+		     (equal (nth standoff-pos-endchar range) end))
+		;; delete object between here and there, here was before comma
+		;(message "Deleting: %s" (buffer-substring here there))
+		(delete-region here there)
+		(setq deleted (+ deleted (- there here)))
+		;; parse for end again
+		(standoff-json/file-parse-positions)
+		(setq array-end (search-forward "]" nil t))
+		;; go back to here
+		(goto-char here))
+	      ;; save current position
+	      (setq here (point))))
+	  (when (not (= 0 deleted))
+	    ;; parse positions after deletion
+	    (standoff-json/file-adjust-positions "MarkupRanges-insert" (- json-end deleted)))
+	  (not (= 0 deleted)))))))
 
 (defun standoff-json/file-load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."

@@ -59,7 +59,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (standoff-test-utils-restore-old-config)))
 
 (defun standoff-json-test-positions (buf)
-  (when (not (null standoff-json-test-debug))
+  (when standoff-json-test-debug
     (with-current-buffer buf
       (message "JSON Position:")
       (message "MD5 sum: %s"
@@ -68,6 +68,11 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 	       (standoff-json/file-get-or-parse-position "MarkupRanges-start")
 	       (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
       )))
+
+(defun standoff-json-test-json-buffer-print (buf)
+  (when standoff-json-test-debug
+    (with-current-buffer buf
+      (message "JSON buffer:\n%s" (buffer-substring (point-min) (point-max))))))
 
 ;;; Tests
 
@@ -85,11 +90,13 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 
 (ert-deftest standoff-json-test-create-read-markup ()
   (let ((source-buffer (standoff-json-test-setup-source-buffer))
-	(json-buffer nil)
-	(json-buffer-size1 nil)
-	(json-buffer-size2 nil)
-	(markup-id nil)
-	(makrup-id2 nil))
+	json-buffer
+	json-buffer-size1
+	json-buffer-size2
+	markup-id1
+	markup-id2
+	markup-id3
+	markup-id4)
     (set-buffer source-buffer)
     (setq json-buffer (standoff-json/file-get-json-buffer source-buffer))
     (standoff-json-test-positions json-buffer)
@@ -97,17 +104,17 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; reading markup before any was created
     (should (equal '() (standoff-json/file-read-markup source-buffer)))
     ;; create markup elements
-    (setq markup-id (standoff-json/file-create-markup source-buffer 23 42 "example"))
+    (setq markup-id1 (standoff-json/file-create-markup source-buffer 23 42 "example"))
     (standoff-json-test-positions json-buffer)
     (should (> (buffer-size json-buffer) json-buffer-size1))
-    (setq markup-id (standoff-json/file-create-markup source-buffer 52 64 "marker"))
+    (setq markup-id2 (standoff-json/file-create-markup source-buffer 52 64 "marker"))
     (standoff-json-test-positions json-buffer)
     ;; Read
     (setq ranges (standoff-json/file-read-markup source-buffer))
     (should (= 2 (length ranges)))
     (setq ranges (standoff-json/file-read-markup source-buffer nil nil "example"))
     (should (= 1 (length ranges)))
-    (setq ranges (standoff-json/file-read-markup source-buffer nil nil nil markup-id))
+    (setq ranges (standoff-json/file-read-markup source-buffer nil nil nil markup-id2))
     (should (= 1 (length ranges)))
     (setq ranges (standoff-json/file-read-markup source-buffer 51 65))
     (should (= 1 (length ranges)))
@@ -116,14 +123,24 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (should-error (standoff-json/file-read-markup source-buffer 1))
     (should-error (standoff-json/file-read-markup source-buffer nil 2))
     ;; Add range (discontinous markup)
-    (setq markup-id2 (standoff-json/file-add-range source-buffer 67 68 markup-id))
+    (setq markup-id3 (standoff-json/file-add-range source-buffer 67 68 markup-id2))
+    (should (equal markup-id2 markup-id3))
     ;; Read again
     (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
-    (should (= 2 (length (standoff-json/file-read-markup source-buffer nil nil nil markup-id))))
+    (should (= 2 (length (standoff-json/file-read-markup source-buffer nil nil nil markup-id2))))
     ;; Try adding range with unknow element id
-    (setq markup-id2 (standoff-util/create-uuid))
-    (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id2))
-    
+    (setq markup-id4 (standoff-util/create-uuid))
+    (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id4))
+    ;; delete
+    (should (equal t (standoff-json/file-delete-range source-buffer 67 68 "marker" markup-id2)))
+    ;; Read again
+    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
+    (standoff-json-test-positions json-buffer)
+    ;; add range again
+    (setq markup-id3 (standoff-json/file-add-range source-buffer 107 109 markup-id1))
+    ;; read again
+    (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
+    (standoff-json-test-json-buffer-print json-buffer)
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
