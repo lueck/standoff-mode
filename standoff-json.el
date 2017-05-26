@@ -15,6 +15,8 @@
   "The name of the buffer with the external markup.
 This is stored in a file local variable of the source buffer.")
 
+;;;; Managing positions in the json file
+
 (defvar standoff-json/file-positions nil
   "The position for inserting markup.
 This is maintained for fast insertion.")
@@ -113,6 +115,8 @@ parsed first."
     (standoff-json/file-parse-positions)
     (standoff-json/file-get-position key)))
 
+;;;; Getting the json file or buffer
+
 (defun standoff-json/file-empty (source-buffer json-buffer)
   "Create an empty json file for storing annotations.
 The SOURCE-BUFFER and JSON-BUFFER must be given."
@@ -157,6 +161,40 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
 
 ;;;; General functions for accessing the json file.
 
+(defun standoff-json/file-create-object (source-buffer object-type serialized)
+  "Write a new object to json file backend.
+The source must be given in SOURCE-BUFFER.  The object, the type
+of which must be given in OBJECT-TYPE, must be given as a
+SERIALIZED json string."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+    (with-current-buffer json-buf
+      (save-excursion
+	(let*
+	    ((pos-start-key (concat object-type "-start"))
+	     (pos-insert-key (concat object-type "-insert"))
+	     (insert-pos (standoff-json/file-get-or-parse-position pos-insert-key))
+	     (buffer-read-only nil))
+	  ;; insert a comma if this is not the first object of this type.
+	  (if insert-pos
+	      ;; There are objects of this type already present.
+	      (progn
+		(goto-char insert-pos)
+		(insert ","))
+	    ;; No objects of this type present yet.
+	    (goto-char (point-max))
+	    (search-backward "}")
+	    ;; FIXME: get back to non-whitespace
+	    (insert ";\n\n\"" object-type "\": []\n")
+	    (search-backward "]")
+	    (standoff-json/file-add-position pos-insert-key (point))
+	    (search-backward "[")
+	    (standoff-json/file-add-position pos-start-key (point))
+	    (goto-char (+ (point) 1)))
+	  ;; insert a new line with the serialized object
+	  (insert "\n" serialized)
+	  (standoff-json/file-adjust-positions pos-insert-key (point)))))))
+
 (defun standoff-json/file-read-objects (source-buffer object-type filter-fun from-plist-fun)
   "Read and filter annotations from json file backend.
 The source must be given in SOURCE-BUFFER, the type of
@@ -184,7 +222,6 @@ data from json.  Returns a list of objects that passed the filters."
 	     (funcall
 	      filter-fun		; pass parsed to filter
 	      (json-read-array)))))))))	; parse json array at point
-
 
 (defun standoff-json/file-delete-json-object (source-buffer object-type deletion-predicate)
   "Delete a json object from an array of these objects.
@@ -294,7 +331,7 @@ Return a the range as a list like described in api."
    ))
 
 (defun standoff-json/range-to-json (elem-id range-id typ start end)
-  "Format a markup range to json.
+  "Serialize a markup range to json.
 The range is given by ELEM-ID, RANGE-ID, TYP, START and END
 offset."
   (concat
@@ -310,35 +347,13 @@ offset."
   "Create an external markup element referring SOURCE-BUFFER.
 The range is defined by the character offsets START and END and the
 MARKUP-TYPE."
-  (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
-    (with-current-buffer json-buf
-      (save-excursion
-	(let ((insert-pos (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
-	      (elem-id (standoff-util/create-uuid))
-	      (range-id (standoff-util/create-uuid))
-	      (buffer-read-only nil))
-	  ;; insert a comma if this is not the first markup element or range.
-	  (if insert-pos
-	      ;; There are markup ranges already present.
-	      (progn
-		(goto-char insert-pos)
-		(insert ","))
-	    ;; No markup ranges present yet.
-	    (goto-char (point-max))
-	    (search-backward "}")
-	    ;; FIXME: get back to non-whitespace
-	    (insert ";\n\n\"MarkupRanges\": []\n")
-	    (search-backward "]")
-	    (standoff-json/file-add-position "MarkupRanges-insert" (point))
-	    (search-backward "[")
-	    (standoff-json/file-add-position "MarkupRanges-start" (point))
-	    (goto-char (+ (point) 1)))
-	  ;; insert a new line with a MarkupRange
-	  (insert "\n" (standoff-json/range-to-json elem-id range-id markup-type start end))
-	  (standoff-json/file-adjust-positions "MarkupRanges-insert" (point))
-	  ;; return element id
-	  elem-id)))))
+  (let*
+      ((elem-id (standoff-util/create-uuid))
+       (range-id (standoff-util/create-uuid))
+       (json (standoff-json/range-to-json elem-id range-id markup-type start end)))
+    (standoff-json/file-create-object source-buffer "MarkupRanges" json)
+    ;; return element id
+    elem-id))
 
 (defun standoff-json/file-read-markup (buffer &optional startchar endchar markup-type markup-inst-id)
   "Read markup form the json file backend of the source BUFFER.
@@ -401,6 +416,8 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (equal (nth standoff-pos-markup-type range) markup-type)
 	    (equal (nth standoff-pos-startchar range) start)
 	    (equal (nth standoff-pos-endchar range) end)))))))
+
+;;;; Loading
 
 (defun standoff-json/file-load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."
