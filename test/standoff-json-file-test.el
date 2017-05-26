@@ -153,6 +153,65 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
+(ert-deftest standoff-json-test-create-read-relation ()
+  (let ((source-buffer (standoff-json-test-setup-source-buffer))
+	json-buffer
+	json-buffer-size1
+	json-buffer-size2
+	markup-id1
+	markup-id2
+	markup-id3
+	markup-id4
+	relation-id1
+	relation-id2)
+    (set-buffer source-buffer)
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
+    ;; read relation before there are any
+    (should (= 0 (length (standoff-json-file/read-relations source-buffer))))
+    ;; create markup elements
+    (setq markup-id1 (standoff-json-file/create-markup source-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-json-file/create-markup source-buffer 52 64 "marker"))
+    (setq markup-id3 (standoff-json-file/create-markup source-buffer 45 50 "example"))
+    ;; create relations
+    (setq relation-id1 (standoff-json-file/create-relation source-buffer markup-id1 "hatMarker" markup-id2))
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer))))
+    (setq relation-id2 (standoff-json-file/create-relation source-buffer markup-id2 "markiert" markup-id1))
+    (should (= 2 (length (standoff-json-file/read-relations source-buffer))))
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer markup-id1))))
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer markup-id2))))
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer nil nil markup-id2))))
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer nil "markiert"))))
+    ;; As long as used-predicates fails, it is manteled in its own test
+    ;; (should (= 1 (length (standoff-json-file/used-predicates source-buffer markup-id1 markup-id2))))
+    
+    ;; tear down
+    (standoff-json-test-teardown source-buffer)))
+
+(ert-deftest standoff-json-test-used-predicates ()
+  :expected-result :failed
+  (let ((source-buffer (standoff-json-test-setup-source-buffer))
+	json-buffer
+	json-buffer-size1
+	json-buffer-size2
+	markup-id1
+	markup-id2
+	markup-id3
+	markup-id4
+	relation-id1
+	relation-id2)
+    (set-buffer source-buffer)
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
+    (setq markup-id1 (standoff-json-file/create-markup source-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-json-file/create-markup source-buffer 52 64 "marker"))
+    (setq markup-id3 (standoff-json-file/create-markup source-buffer 45 50 "example"))
+    (setq relation-id1 (standoff-json-file/create-relation source-buffer markup-id1 "hatMarker" markup-id2))
+    (setq relation-id2 (standoff-json-file/create-relation source-buffer markup-id2 "markiert" markup-id1))
+    ;; FIXME!
+    (should (= 1 (length (standoff-json-file/used-predicates source-buffer markup-id1 markup-id2))))
+    ;;(message "%s" (standoff-json-file/used-predicates source-buffer markup-id2 markup-id1))
+    ;; tear down
+    (standoff-json-test-teardown source-buffer)))
+    
 
 
 ;; run tests and exit

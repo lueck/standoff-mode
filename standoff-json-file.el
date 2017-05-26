@@ -1,7 +1,7 @@
 ;;; standoff-json-file.el --- JSON file backend for standoff-mode.
 
 ;;; Commentary:
-;; Functions for storing and loading annotations in JSON.
+;; Functions for storing to and loading annotations from a JSON file.
 
 ;;; Code:
 
@@ -9,7 +9,9 @@
 
 (require 'cl-lib)
 (require 'json)
+(require 'standoff-api)
 (require 'standoff-util)
+(require 'standoff-json)
 
 (defvar standoff-json-file/json-buffer-name nil
   "The name of the buffer with the external markup.
@@ -291,58 +293,6 @@ is to be deleted."
 
 ;;;; Markup
 
-(defun standoff-json/filter-markup (startchar endchar markup-type markup-inst-id ranges)
-  "Filter markup given as list of plists.
-Filter markup between STARTCHAR and ENDCHAR or nil.  Filter for
-MARKUP-TYPE or nil.  Filter for MARKUP-INST-ID or nil.  RANGES
-has to be a list of plists."
-  (unless (or (and startchar endchar) (and (null startchar) (null endchar)))
-    (error "Use both offsets or none"))
-  (cl-remove-if-not			; filter
-   #'(lambda (r)
-       (let ((start (string-to-number (plist-get r :sourceStart)))
-	     (end (string-to-number (plist-get r :sourceEnd)))
-	     (elem-id (plist-get r :markupElementId))
-	     (typ (plist-get r :qualifiedName)))
-	 ;; condition
-	 (and (or (and (not startchar) (not endchar))
-		  (or (and (<= start startchar)
-			   (>= end startchar))
-		      (and (>= start startchar)
-			   (<= end endchar))
-		      (and (<= start endchar)
-			   (>= end endchar))))
-	      (or (not markup-type)
-		  (equal typ markup-type))
-	      (or (not markup-inst-id)
-		  (equal elem-id markup-inst-id)))))
-   ranges))
-
-(defun standoff-json/plist-to-list (range)
-  "Convert a plist RANGE to a list representing a markup range.
-Return a the range as a list like described in api."
-  ;; FIXME: add some more? add markupRangeId!!
-  (list
-   ;; see api for order
-   (plist-get range :markupElementId)
-   (plist-get range :qualifiedName)
-   (string-to-number (plist-get range :sourceStart))
-   (string-to-number (plist-get range :sourceEnd))
-   ))
-
-(defun standoff-json/range-to-json (elem-id range-id typ start end)
-  "Serialize a markup range to json.
-The range is given by ELEM-ID, RANGE-ID, TYP, START and END
-offset."
-  (concat
-   "{\"tag\": \"MarkupRange\""
-   ", \"markupElementId\": \"" elem-id "\""
-   ", \"markupRangeId\": \"" range-id "\""
-   ", \"qualifiedName\": \"" typ "\""
-   ", \"sourceStart\": \"" (number-to-string start) "\""
-   ", \"sourceEnd\": \"" (number-to-string end) "\""
-   "}"))
-
 (defun standoff-json-file/create-markup (source-buffer start end markup-type)
   "Create an external markup element referring SOURCE-BUFFER.
 The range is defined by the character offsets START and END and the
@@ -366,8 +316,8 @@ filtering."
    #'(lambda
        (ranges)
        (standoff-json/filter-markup
-	startchar endchar markup-type markup-inst-id ranges))
-   #'standoff-json/plist-to-list))
+	ranges startchar endchar markup-type markup-inst-id))
+   #'standoff-json/range-plist-to-internal))
 
 (defun standoff-json-file/add-range (source-buffer start end elem-id)
   "Add a markup range to external markup of SOURCE-BUFFER.
@@ -410,7 +360,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
      #'(lambda
 	 (json-plist)
 	 (progn
-	   (setq range (standoff-json/plist-to-list json-plist))
+	   (setq range (standoff-json/range-plist-to-internal json-plist))
 	   (and		; deletion condition
 	    (equal (nth standoff-pos-markup-inst-id range) elem-id)
 	    (equal (nth standoff-pos-markup-type range) markup-type)
@@ -433,6 +383,89 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	  (maphash #'(lambda (k v) (setq types (cons k types))) typeshash)
 	  ;; return types
 	  types)))))
+
+;;;; Relations
+
+(defun standoff-json-file/create-relation (source-buffer subj pred obj)
+  "Create a relation of type PRED between SUBJ and OBJ.
+Must be given as first argument.  The id of the new relation is returned."
+  (let*
+      ((rel-id (standoff-util/create-uuid))
+       (json (standoff-json/relation-to-json rel-id subj pred obj)))
+    (standoff-json-file/create-object source-buffer "Relations" json)
+    ;; return relation id
+    rel-id))
+
+(defun standoff-json-file/read-relations (source-buffer &optional sub pred obj rel-id)
+  "Read relations in SOURCE-BUFFER from json file backend.
+The relations may be filtered by SUB, PRED, OBJ and REL-ID."
+  (standoff-json-file/read-objects
+   source-buffer
+   "Relations"
+   #'(lambda
+       (rels)
+       (standoff-json/filter-relations
+	rels sub pred obj rel-id))
+   #'standoff-json/relation-plist-to-internal))
+
+(defun standoff-json-file/delete-relation (source-buffer subj pred obj)
+  "Delete all relations in SOURCE-BUFFER matching SUBJ, PRED, OBJ."
+  (let
+      (rel)
+    (standoff-json-file/delete-json-object
+     source-buffer
+     "Relations"
+     #'(lambda
+	 (json-plist)
+	 (progn
+	   (setq rel (standoff-json/relation-plist-to-internal json-plist))
+	   (and		; deletion condition
+	    (equal (nth standoff-pos-subject rel) subj)
+	    (equal (nth standoff-pos-predicate rel) pred)
+	    (equal (nth standoff-pos-object rel) obj)))))))
+
+(defun standoff-json-file/used-predicates (source-buffer subject-id object-id)
+  "Return the predicates used for the combination of subject and object types.
+The existing relations in SOURCE-BUFFER are examined for similar
+combinations of markup types.  The markup types are determined
+using SUBJECT-ID and OBJECT-ID."
+  ;; FIXME: do not hardcode json properties
+  (let*
+      ((subject-type (nth
+		      standoff-pos-markup-type
+		      (car (standoff-json-file/read-markup source-buffer nil nil nil subject-id))))
+       (object-type (nth
+		     standoff-pos-markup-type
+		     (car (standoff-json-file/read-markup source-buffer nil nil nil object-id))))
+       subj-type
+       obj-type)
+    ;;(message "Subject type: '%s' Object type: '%s'" subject-type object-type)
+    (standoff-json-file/read-objects
+     source-buffer
+     "Relations"
+     #'(lambda
+	 (rels)
+	 (cl-remove-if-not
+	  #'(lambda
+	      (rel)
+	      (progn
+		;;(message "Examining: %s" rel)
+		(setq subj-type (nth standoff-pos-markup-type (car (standoff-json-file/read-markup source-buffer nil nil nil (plist-get rel :subjectId)))))
+		(setq obj-type (nth standoff-pos-markup-type (car (standoff-json-file/read-markup source-buffer nil nil nil (plist-get rel :objectId)))))
+		;; FIXME: Bug: the equality test for the object type does not work
+		;;(message "types are: '%s' '%s'" subj-type obj-type)
+		;;(message "equal sub: %s equal obj: %s" (equal subj-type subject-type) (equal obj-type object-type))
+		;;(message "type-of: %s %s" (type-of obj-type) (type-of obj-type))
+		(and ;(or (null subject-id)
+			 (equal subj-type subject-type);)
+		     ;(or (null object-id)
+			 (equal obj-type object-type);)
+		     t)
+		))
+	  rels))
+     #'(lambda
+	 (rel)
+	 (plist-get rel :predicate)))))
 
 ;;;; Loading
 
