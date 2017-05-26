@@ -300,15 +300,40 @@ the ELEM-ID of the markup element, that is to be continued."
 The range refers SOURCE-BUFFER and is identified by START and END
 character offsets, by its MARKUP-TYPE and by the ELEM-ID."
   (let
+      (range)
+    (standoff-json/file-delete-json-object
+     source-buffer
+     "MarkupRanges"
+     #'(lambda
+	 (json-plist)
+	 (progn
+	   (setq range (standoff-json/plist-to-list json-plist))
+	   (and		; deletion condition
+	    (equal (nth standoff-pos-markup-inst-id range) elem-id)
+	    (equal (nth standoff-pos-markup-type range) markup-type)
+	    (equal (nth standoff-pos-startchar range) start)
+	    (equal (nth standoff-pos-endchar range) end)))))))
+
+(defun standoff-json/file-delete-json-object (source-buffer position-key deletion-predicate)
+  "Delete a json object from an array of these objects.
+This it takes a SOURCE-BUFFER.  The class of the object to be
+deleted is identified is given by POSITION-KEY as string, i.e.
+\"MarkupRanges\".  The third parameter DELETION-PREDICATE must be
+a function taking a plist parsed from json as single argument and
+is expected to return t, if the object represented by the plist
+is to be deleted."
+  (let
       ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+       (pos-key-start (concat position-key "-start"))
+       (pos-key-insert (concat position-key "-insert"))
        (deleted 0)
        delta
        new-json-end-pos)
     (with-current-buffer json-buf
       (save-excursion
 	(let*
-	    ((json-start (standoff-json/file-get-or-parse-position "MarkupRanges-start"))
-	     (json-end (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+	    ((json-start (standoff-json/file-get-or-parse-position pos-key-start))
+	     (json-end (standoff-json/file-get-or-parse-position pos-key-insert))
 	     (array-end json-end)
 	     object-start
 	     first-object-start
@@ -316,7 +341,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	     (json-object-type 'plist)
 	     (buffer-read-only nil))
 	  (if (null json-start)
-	      (error "No markup in json file backend")
+	      (error "No %s in json file backend" position-key)
 	    (goto-char json-start)
 	    ;; move point behind [ and save it to object-start
 	    (setq first-object-start (search-forward "[" nil t)
@@ -329,13 +354,9 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	      (when (char-equal (json-peek) ?,)
 		(json-advance))
 	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
-	      ;; parse json object
-	      (setq range (standoff-json/plist-to-list (json-read)))
-	      (when (and		; deletion condition
-		     (equal (nth standoff-pos-markup-inst-id range) elem-id)
-		     (equal (nth standoff-pos-markup-type range) markup-type)
-		     (equal (nth standoff-pos-startchar range) start)
-		     (equal (nth standoff-pos-endchar range) end))
+	      ;; parse json object and pass it to predicate function
+	      (setq range (json-read))
+	      (when (funcall deletion-predicate range)
 		;; when deleting the first range, the comma behind has to be deleted
 		(when (= object-start first-object-start)
 		  (json-skip-whitespace)
@@ -356,7 +377,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (setq new-json-end-pos (- json-end deleted))))
 	(when (not (= 0 deleted))
 	  ;; parse positions after deletion
-	  (standoff-json/file-adjust-positions "MarkupRanges-insert" new-json-end-pos))
+	  (standoff-json/file-adjust-positions pos-key-insert new-json-end-pos))
 	(not (= 0 deleted))))))
 
 (defun standoff-json/file-load-file (file-name)
