@@ -155,6 +155,105 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
 	  (setq json-buf-name standoff-json/json-buffer-name))
 	json-buf-name))))
 
+;;;; General functions for accessing the json file.
+
+(defun standoff-json/file-read-objects (source-buffer object-type filter-fun from-plist-fun)
+  "Read and filter annotations from json file backend.
+The source must be given in SOURCE-BUFFER, the type of
+annotations in OBJECT-TYPE, e.g. \"MarkupRanges\".  FILTER-FUN
+must be a function for filtering the objects in the json array,
+it must take a single argument, a json plist
+object. FROM-PLIST-FUN must be a factory, that produces internal
+data from json.  Returns a list of objects that passed the filters."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+       (json-array-type 'list)
+       (json-object-type 'plist))
+    (with-current-buffer json-buf
+      (save-excursion
+	(let*
+	    ((pos-start-key (concat object-type "-start"))
+	     (json-start (standoff-json/file-get-or-parse-position pos-start-key)))
+	  (if (null json-start)
+	      ;; return empty list if there are no markup ranges yet
+	      '()
+	    ;; set point to beginning of MarkupRanges
+	    (goto-char json-start)
+	    (mapcar
+	     from-plist-fun		; plist to internal objects
+	     (funcall
+	      filter-fun		; pass parsed to filter
+	      (json-read-array)))))))))	; parse json array at point
+
+
+(defun standoff-json/file-delete-json-object (source-buffer object-type deletion-predicate)
+  "Delete a json object from an array of these objects.
+This it takes a SOURCE-BUFFER.  The class of the object to be
+deleted is identified is given by OBJECT-TYPE as string, i.e.
+\"MarkupRanges\".  The third parameter DELETION-PREDICATE must be
+a function taking a plist parsed from json as single argument and
+is expected to return t, if the object represented by the plist
+is to be deleted."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+       (pos-key-start (concat object-type "-start"))
+       (pos-key-insert (concat object-type "-insert"))
+       (deleted 0)
+       delta
+       new-json-end-pos)
+    (with-current-buffer json-buf
+      (save-excursion
+	(let*
+	    ((json-start (standoff-json/file-get-or-parse-position pos-key-start))
+	     (json-end (standoff-json/file-get-or-parse-position pos-key-insert))
+	     (array-end json-end)
+	     object-start
+	     first-object-start
+	     object-end
+	     (json-object-type 'plist)
+	     (buffer-read-only nil))
+	  (if (null json-start)
+	      (error "No %s in json file backend" object-type)
+	    (goto-char json-start)
+	    ;; move point behind [ and save it to object-start
+	    (setq first-object-start (search-forward "[" nil t)
+		  object-start first-object-start)
+	    (while (search-forward "}" array-end t)
+	      ;; search-forward moved the point, go back to saved position
+	      (goto-char object-start)
+	      ;; move behind comma
+	      (json-skip-whitespace)
+	      (when (char-equal (json-peek) ?,)
+		(json-advance))
+	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
+	      ;; parse json object and pass it to predicate function
+	      (setq range (json-read))
+	      (when (funcall deletion-predicate range)
+		;; when deleting the first range, the comma behind has to be deleted
+		(when (= object-start first-object-start)
+		  (json-skip-whitespace)
+		  (when (char-equal (json-peek) ?,)
+		    (json-advance)))
+		(setq object-end (point))
+		;; delete object between object-start and object-end
+		;(message "Deleting: %s" (buffer-substring object-start object-end))
+		(delete-region object-start object-end)
+		(setq delta (- object-end object-start)
+		      deleted (+ deleted delta)
+		      array-end (- array-end delta))
+		;; go back to object-start
+		(goto-char object-start))
+	      ;(message "Parsed range: %s" range)
+	      ;; save current position
+	      (setq object-start (point)))
+	    (setq new-json-end-pos (- json-end deleted))))
+	(when (not (= 0 deleted))
+	  ;; parse positions after deletion
+	  (standoff-json/file-adjust-positions pos-key-insert new-json-end-pos))
+	(not (= 0 deleted))))))
+
+;;;; Markup
+
 (defun standoff-json/filter-markup (startchar endchar markup-type markup-inst-id ranges)
   "Filter markup given as list of plists.
 Filter markup between STARTCHAR and ENDCHAR or nil.  Filter for
@@ -246,25 +345,14 @@ MARKUP-TYPE."
 This returns a list of markup elements.  The optional parameters
 STARTCHAR ENDCHAR, MARKUP-TYPE MARKUP-INST-ID can be used for
 filtering."
-  (let
-      ((json-buf (standoff-json/file-get-json-buffer buffer))
-       (json-array-type 'list)
-       (json-object-type 'plist))
-    (with-current-buffer json-buf
-      (save-excursion
-	(let
-	    ((json-start (standoff-json/file-get-or-parse-position "MarkupRanges-start")))
-	  (if (null json-start)
-	      ;; return empty list if there are no markup ranges yet
-	      '()
-	    ;; else
-	    ;; set point to beginning of MarkupRanges
-	    (goto-char json-start)
-	    (mapcar
-	     #'standoff-json/plist-to-list	; make lists form plists
-	     (standoff-json/filter-markup	; filter plists
-	      startchar endchar markup-type markup-inst-id
-	      (json-read-array))))))))) ; parse json array at point into plist
+  (standoff-json/file-read-objects
+   source-buffer
+   "MarkupRanges"
+   #'(lambda
+       (ranges)
+       (standoff-json/filter-markup
+	startchar endchar markup-type markup-inst-id ranges))
+   #'standoff-json/plist-to-list))
 
 (defun standoff-json/file-add-range (source-buffer start end elem-id)
   "Add a markup range to external markup of SOURCE-BUFFER.
@@ -313,72 +401,6 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (equal (nth standoff-pos-markup-type range) markup-type)
 	    (equal (nth standoff-pos-startchar range) start)
 	    (equal (nth standoff-pos-endchar range) end)))))))
-
-(defun standoff-json/file-delete-json-object (source-buffer position-key deletion-predicate)
-  "Delete a json object from an array of these objects.
-This it takes a SOURCE-BUFFER.  The class of the object to be
-deleted is identified is given by POSITION-KEY as string, i.e.
-\"MarkupRanges\".  The third parameter DELETION-PREDICATE must be
-a function taking a plist parsed from json as single argument and
-is expected to return t, if the object represented by the plist
-is to be deleted."
-  (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
-       (pos-key-start (concat position-key "-start"))
-       (pos-key-insert (concat position-key "-insert"))
-       (deleted 0)
-       delta
-       new-json-end-pos)
-    (with-current-buffer json-buf
-      (save-excursion
-	(let*
-	    ((json-start (standoff-json/file-get-or-parse-position pos-key-start))
-	     (json-end (standoff-json/file-get-or-parse-position pos-key-insert))
-	     (array-end json-end)
-	     object-start
-	     first-object-start
-	     object-end
-	     (json-object-type 'plist)
-	     (buffer-read-only nil))
-	  (if (null json-start)
-	      (error "No %s in json file backend" position-key)
-	    (goto-char json-start)
-	    ;; move point behind [ and save it to object-start
-	    (setq first-object-start (search-forward "[" nil t)
-		  object-start first-object-start)
-	    (while (search-forward "}" array-end t)
-	      ;; search-forward moved the point, go back to saved position
-	      (goto-char object-start)
-	      ;; move behind comma
-	      (json-skip-whitespace)
-	      (when (char-equal (json-peek) ?,)
-		(json-advance))
-	      ;(message "Next chars: %s" (buffer-substring (point) (+ (point) 5)))
-	      ;; parse json object and pass it to predicate function
-	      (setq range (json-read))
-	      (when (funcall deletion-predicate range)
-		;; when deleting the first range, the comma behind has to be deleted
-		(when (= object-start first-object-start)
-		  (json-skip-whitespace)
-		  (when (char-equal (json-peek) ?,)
-		    (json-advance)))
-		(setq object-end (point))
-		;; delete object between object-start and object-end
-		;(message "Deleting: %s" (buffer-substring object-start object-end))
-		(delete-region object-start object-end)
-		(setq delta (- object-end object-start)
-		      deleted (+ deleted delta)
-		      array-end (- array-end delta))
-		;; go back to object-start
-		(goto-char object-start))
-	      ;(message "Parsed range: %s" range)
-	      ;; save current position
-	      (setq object-start (point)))
-	    (setq new-json-end-pos (- json-end deleted))))
-	(when (not (= 0 deleted))
-	  ;; parse positions after deletion
-	  (standoff-json/file-adjust-positions pos-key-insert new-json-end-pos))
-	(not (= 0 deleted))))))
 
 (defun standoff-json/file-load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."
