@@ -24,7 +24,7 @@
 
 (require 'ert)
 (require 'standoff-test-utils)
-(require 'standoff-json)
+(require 'standoff-json-file)
 
 ;;; Functions for set up and tear down
 
@@ -52,7 +52,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 
 (defun standoff-json-test-teardown (buf)
   "Tear down the test setup for dummy testing."
-  (let ((json-buf (standoff-json/file-get-json-buffer buf)))
+  (let ((json-buf (standoff-json-file/get-json-buffer buf)))
     (when standoff-json-test-kill-buffers (kill-buffer json-buf))
     (kill-buffer buf)
     (standoff-test-utils-restore-old-config)))
@@ -62,10 +62,10 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (with-current-buffer buf
       (message "JSON Position:")
       (message "MD5 sum: %s"
-	       (standoff-json/file-get-or-parse-position "md5sum-start"))
+	       (standoff-json-file/get-or-parse-position "md5sum-start"))
       (message "Markup: %s %s"
-	       (standoff-json/file-get-or-parse-position "MarkupRanges-start")
-	       (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+	       (standoff-json-file/get-or-parse-position "MarkupRanges-start")
+	       (standoff-json-file/get-or-parse-position "MarkupRanges-insert"))
       )))
 
 (defun standoff-json-test-json-buffer-print (buf)
@@ -80,11 +80,11 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 	(json-buffer nil)
 	(markup-id nil))
     (set-buffer source-buffer)
-    (setq json-buffer (standoff-json/file-get-json-buffer source-buffer))
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
     ;; The buffer is not nil
     (should json-buffer)
     ;; still the same buffer
-    (should (equal json-buffer (standoff-json/file-get-json-buffer source-buffer)))
+    (should (equal json-buffer (standoff-json-file/get-json-buffer source-buffer)))
     (standoff-json-test-teardown source-buffer)))
 
 (ert-deftest standoff-json-test-create-read-markup ()
@@ -97,59 +97,59 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 	markup-id3
 	markup-id4)
     (set-buffer source-buffer)
-    (setq json-buffer (standoff-json/file-get-json-buffer source-buffer))
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
     (standoff-json-test-positions json-buffer)
     (setq json-buffer-size1 (buffer-size json-buffer))
     ;; reading markup before any was created
-    (should (equal '() (standoff-json/file-read-markup source-buffer)))
+    (should (equal '() (standoff-json-file/read-markup source-buffer)))
     ;; create markup elements
-    (setq markup-id1 (standoff-json/file-create-markup source-buffer 23 42 "example"))
+    (setq markup-id1 (standoff-json-file/create-markup source-buffer 23 42 "example"))
     (standoff-json-test-positions json-buffer)
     (should (> (buffer-size json-buffer) json-buffer-size1))
-    (setq markup-id2 (standoff-json/file-create-markup source-buffer 52 64 "marker"))
+    (setq markup-id2 (standoff-json-file/create-markup source-buffer 52 64 "marker"))
     (standoff-json-test-positions json-buffer)
     ;; Read
-    (setq ranges (standoff-json/file-read-markup source-buffer))
+    (setq ranges (standoff-json-file/read-markup source-buffer))
     (should (= 2 (length ranges)))
-    (setq ranges (standoff-json/file-read-markup source-buffer nil nil "example"))
+    (setq ranges (standoff-json-file/read-markup source-buffer nil nil "example"))
     (should (= 1 (length ranges)))
-    (setq ranges (standoff-json/file-read-markup source-buffer nil nil nil markup-id2))
+    (setq ranges (standoff-json-file/read-markup source-buffer nil nil nil markup-id2))
     (should (= 1 (length ranges)))
-    (setq ranges (standoff-json/file-read-markup source-buffer 51 65))
+    (setq ranges (standoff-json-file/read-markup source-buffer 51 65))
     (should (= 1 (length ranges)))
-    (setq ranges (standoff-json/file-read-markup source-buffer 1 19 "example"))
+    (setq ranges (standoff-json-file/read-markup source-buffer 1 19 "example"))
     (should (= 0 (length ranges)))
-    (should-error (standoff-json/file-read-markup source-buffer 1))
-    (should-error (standoff-json/file-read-markup source-buffer nil 2))
+    (should-error (standoff-json-file/read-markup source-buffer 1))
+    (should-error (standoff-json-file/read-markup source-buffer nil 2))
     ;; Add range (discontinous markup)
-    (setq markup-id3 (standoff-json/file-add-range source-buffer 67 68 markup-id2))
+    (setq markup-id3 (standoff-json-file/add-range source-buffer 67 68 markup-id2))
     (should (equal markup-id2 markup-id3))
     ;; Read again
-    (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
-    (should (= 2 (length (standoff-json/file-read-markup source-buffer nil nil nil markup-id2))))
+    (should (= 3 (length (standoff-json-file/read-markup source-buffer))))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer nil nil nil markup-id2))))
     ;; Try adding range with unknow element id
     (setq markup-id4 (standoff-util/create-uuid))
-    (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id4))
+    (should-error (standoff-json-file/add-range source-buffer 67 68 markup-id4))
     ;; delete last one
-    (should (equal t (standoff-json/file-delete-range source-buffer 67 68 "marker" markup-id2)))
+    (should (equal t (standoff-json-file/delete-range source-buffer 67 68 "marker" markup-id2)))
     (standoff-json-test-json-buffer-print json-buffer)
     ;; Read again
-    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer))))
     (standoff-json-test-positions json-buffer)
     ;; add range again
-    (setq markup-id3 (standoff-json/file-add-range source-buffer 107 109 markup-id1))
+    (setq markup-id3 (standoff-json-file/add-range source-buffer 107 109 markup-id1))
     ;; read again
-    (should (= 3 (length (standoff-json/file-read-markup source-buffer))))
+    (should (= 3 (length (standoff-json-file/read-markup source-buffer))))
     (standoff-json-test-json-buffer-print json-buffer)
     ;; delete the first one
-    (should (equal t (standoff-json/file-delete-range source-buffer 23 42 "example" markup-id1)))
+    (should (equal t (standoff-json-file/delete-range source-buffer 23 42 "example" markup-id1)))
     (standoff-json-test-json-buffer-print json-buffer)
     ;; read again
-    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer))))
     ;; get types
-    (should (= 2 (length (standoff-json/file-markup-types source-buffer))))
-    (should (member "example" (standoff-json/file-markup-types source-buffer)))
-    (should (member "marker" (standoff-json/file-markup-types source-buffer)))
+    (should (= 2 (length (standoff-json-file/markup-types source-buffer))))
+    (should (member "example" (standoff-json-file/markup-types source-buffer)))
+    (should (member "marker" (standoff-json-file/markup-types source-buffer)))
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
@@ -159,4 +159,4 @@ Tapete, den Bauer innerhalb der Windmuͤhle
 (when noninteractive
   (ert-run-tests-batch-and-exit (car argv)))
 
-;;; standoff-json-test.el ends here
+;;; standoff-json-file-test.el ends here

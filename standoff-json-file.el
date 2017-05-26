@@ -1,4 +1,4 @@
-;;; standoff-json.el --- JSON file backend for standoff-mode.
+;;; standoff-json-file.el --- JSON file backend for standoff-mode.
 
 ;;; Commentary:
 ;; Functions for storing and loading annotations in JSON.
@@ -9,67 +9,67 @@
 
 (require 'cl-lib)
 (require 'json)
-(require 'standoff-dummy)
+(require 'standoff-util)
 
-(defvar standoff-json/json-buffer-name nil
+(defvar standoff-json-file/json-buffer-name nil
   "The name of the buffer with the external markup.
 This is stored in a file local variable of the source buffer.")
 
 ;;;; Managing positions in the json file
 
-(defvar standoff-json/file-positions nil
+(defvar standoff-json-file/positions nil
   "The position for inserting markup.
 This is maintained for fast insertion.")
 
-(defun standoff-json/file-reset-positions ()
+(defun standoff-json-file/reset-positions ()
   "Reset all managed positions in a json file backend."
-  (setq-local standoff-json/file-positions
+  (setq-local standoff-json-file/positions
 	      (make-hash-table :test 'equal)))
 
-(defun standoff-json/file-add-position (key pos)
+(defun standoff-json-file/add-position (key pos)
   "Add a new position to the list of managed positions.
 The name of the position is given as KEY, the position as POS."
   (let ((sym (if (symbolp key) key (intern key))))
-    (puthash sym pos standoff-json/file-positions)))
+    (puthash sym pos standoff-json-file/positions)))
 
-(defun standoff-json/file-adjust-positions (key new-pos)
+(defun standoff-json-file/adjust-positions (key new-pos)
   "Adjust managed position KEY to NEW-POS."
   (let*
       ((sym (if (symbolp key) key (intern key)))
-       (old-pos (gethash sym standoff-json/file-positions))
+       (old-pos (gethash sym standoff-json-file/positions))
        (delta 0)
-       (new-positions (copy-hash-table standoff-json/file-positions)))
+       (new-positions (copy-hash-table standoff-json-file/positions)))
     (when old-pos
       (setq delta (- new-pos old-pos))
       (maphash
        (lambda
 	 (ky pos)
 	 (when (<= old-pos pos)
-	   (puthash ky (+ pos delta) standoff-json/file-positions)))
-       standoff-json/file-positions))))
+	   (puthash ky (+ pos delta) standoff-json-file/positions)))
+       standoff-json-file/positions))))
 
-(defun standoff-json/file-get-position (key)
+(defun standoff-json-file/get-position (key)
   "Return the managed position for KEY.
 Do not use this directly.  Use
-`standoff-json/file-get-or-parse-position' instead which parses
+`standoff-json-file/get-or-parse-position' instead which parses
 the json file when it is not read only."
   (let ((sym (if (symbolp key) key (intern key))))
-    (gethash sym standoff-json/file-positions nil)))
+    (gethash sym standoff-json-file/positions nil)))
 
-(defun standoff-json/file-parse-positions ()
+(defun standoff-json-file/parse-positions ()
   "Parse the managed positions in a json file backend."
   ;; FIXME: Make more use of json parsing functions
   (let
       (matched
        array-start-pos)
-    (standoff-json/file-reset-positions)
+    (standoff-json-file/reset-positions)
     (save-excursion
       ;; parse for md5sum
       (goto-char (point-min))
       (when (re-search-forward
 	     "^\"md5sum\":[[:space:]]*\"[[:alnum:]]\\{32\\}\""
 	     nil t)
-	(standoff-json/file-add-position "md5sum-start" (point)))
+	(standoff-json-file/add-position "md5sum-start" (point)))
       ;; parse for bags
       (goto-char (point-min))
       (while (re-search-forward
@@ -78,7 +78,7 @@ the json file when it is not read only."
 	(setq matched (match-string 1))
 	;; move point before opening [
 	(goto-char (- (point) 1))
-	(standoff-json/file-add-position
+	(standoff-json-file/add-position
 	 (concat matched "-start")
 	 (point))
 	(setq array-start-pos (point))
@@ -88,49 +88,49 @@ the json file when it is not read only."
 	;; move point before closing ]
 	(unless (< array-start-pos (search-backward "]" nil t))
 	  (error "Error parsing json file: no sequence closing \"]\" found for %s" matched))
-	(standoff-json/file-add-position
+	(standoff-json-file/add-position
 	 (concat matched "-insert")
 	 (point))))))
 
-(defun standoff-json/file-get-position-outer-closing ()
+(defun standoff-json-file/get-position-outer-closing ()
   "Get the position of the last closing curly brace."
   (save-excursion
     (goto-char (point-max))
     (search-backward "}")
     (point)))
 
-(defun standoff-json/file-get-or-parse-position (key)
+(defun standoff-json-file/get-or-parse-position (key)
   "Return the managed position of KEY.
 If it is not present in the managed positions, the file is
 parsed.  If the buffer is not read-only, then the buffer is
 parsed first."
   (if buffer-read-only
-      (or (standoff-json/file-get-position key)
+      (or (standoff-json-file/get-position key)
 	  (progn
 	    (message "Parsing positions, because not having key '%s'." key)
-	    (standoff-json/file-parse-positions)
-	    (standoff-json/file-get-position key)))
+	    (standoff-json-file/parse-positions)
+	    (standoff-json-file/get-position key)))
     ;; if not read only: parse the buffer
     (message "Parsing positions, because json buffer is not read only.")
-    (standoff-json/file-parse-positions)
-    (standoff-json/file-get-position key)))
+    (standoff-json-file/parse-positions)
+    (standoff-json-file/get-position key)))
 
 ;;;; Getting the json file or buffer
 
-(defun standoff-json/file-empty (source-buffer json-buffer)
+(defun standoff-json-file/empty (source-buffer json-buffer)
   "Create an empty json file for storing annotations.
 The SOURCE-BUFFER and JSON-BUFFER must be given."
   (with-current-buffer json-buffer
     (save-excursion
       (let ((buffer-read-only nil))
 	(erase-buffer)
-	(standoff-json/file-reset-positions)
+	(standoff-json-file/reset-positions)
 	(goto-char (point-min))
 	(insert "{\n")
-	(standoff-json/file-add-position "md5sum-start" (point))
+	(standoff-json-file/add-position "md5sum-start" (point))
 	(insert "\"md5sum\": \"" (md5 source-buffer) "\"\n}\n")))))
 
-(defun standoff-json/file-new (source-buffer)
+(defun standoff-json-file/new (source-buffer)
   "Create a new json file backend for SOURCE-BUFFER."
   ;; FIXME: Choose a name if default file present?
   (save-excursion
@@ -141,39 +141,39 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
       (with-current-buffer (find-file default-name)
 	(setq json-buf-name (current-buffer))
 	(read-only-mode 1)
-	(standoff-json/file-empty source-buffer (current-buffer)))
+	(standoff-json-file/empty source-buffer (current-buffer)))
       ;; set json buffer name in source file.
       (with-current-buffer source-buffer
-	(setq-local standoff-json/json-buffer-name json-buf-name)))))
+	(setq-local standoff-json-file/json-buffer-name json-buf-name)))))
 	 
-(defun standoff-json/file-get-json-buffer (source-buffer)
+(defun standoff-json-file/get-json-buffer (source-buffer)
   "Return the json buffer for SOURCE-BUFFER."
   (let
       ((json-buf nil)
        (json-buf-name nil))
     (with-current-buffer source-buffer
       (save-excursion
-	(setq json-buf-name standoff-json/json-buffer-name)
+	(setq json-buf-name standoff-json-file/json-buffer-name)
 	(unless json-buf-name
-	  (standoff-json/file-new source-buffer)
-	  (setq json-buf-name standoff-json/json-buffer-name))
+	  (standoff-json-file/new source-buffer)
+	  (setq json-buf-name standoff-json-file/json-buffer-name))
 	json-buf-name))))
 
 ;;;; General functions for accessing the json file.
 
-(defun standoff-json/file-create-object (source-buffer object-type serialized)
+(defun standoff-json-file/create-object (source-buffer object-type serialized)
   "Write a new object to json file backend.
 The source must be given in SOURCE-BUFFER.  The object, the type
 of which must be given in OBJECT-TYPE, must be given as a
 SERIALIZED json string."
   (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+      ((json-buf (standoff-json-file/get-json-buffer source-buffer)))
     (with-current-buffer json-buf
       (save-excursion
 	(let*
 	    ((pos-start-key (concat object-type "-start"))
 	     (pos-insert-key (concat object-type "-insert"))
-	     (insert-pos (standoff-json/file-get-or-parse-position pos-insert-key))
+	     (insert-pos (standoff-json-file/get-or-parse-position pos-insert-key))
 	     (buffer-read-only nil))
 	  ;; insert a comma if this is not the first object of this type.
 	  (if insert-pos
@@ -187,15 +187,15 @@ SERIALIZED json string."
 	    ;; FIXME: get back to non-whitespace
 	    (insert ";\n\n\"" object-type "\": []\n")
 	    (search-backward "]")
-	    (standoff-json/file-add-position pos-insert-key (point))
+	    (standoff-json-file/add-position pos-insert-key (point))
 	    (search-backward "[")
-	    (standoff-json/file-add-position pos-start-key (point))
+	    (standoff-json-file/add-position pos-start-key (point))
 	    (goto-char (+ (point) 1)))
 	  ;; insert a new line with the serialized object
 	  (insert "\n" serialized)
-	  (standoff-json/file-adjust-positions pos-insert-key (point)))))))
+	  (standoff-json-file/adjust-positions pos-insert-key (point)))))))
 
-(defun standoff-json/file-read-objects (source-buffer object-type filter-fun from-plist-fun)
+(defun standoff-json-file/read-objects (source-buffer object-type filter-fun from-plist-fun)
   "Read and filter annotations from json file backend.
 The source must be given in SOURCE-BUFFER, the type of
 annotations in OBJECT-TYPE, e.g. \"MarkupRanges\".  FILTER-FUN
@@ -204,14 +204,14 @@ it must take a single argument, a json plist
 object. FROM-PLIST-FUN must be a factory, that produces internal
 data from json.  Returns a list of objects that passed the filters."
   (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+      ((json-buf (standoff-json-file/get-json-buffer source-buffer))
        (json-array-type 'list)
        (json-object-type 'plist))
     (with-current-buffer json-buf
       (save-excursion
 	(let*
 	    ((pos-start-key (concat object-type "-start"))
-	     (json-start (standoff-json/file-get-or-parse-position pos-start-key)))
+	     (json-start (standoff-json-file/get-or-parse-position pos-start-key)))
 	  (if (null json-start)
 	      ;; return empty list if there are no markup ranges yet
 	      '()
@@ -223,7 +223,7 @@ data from json.  Returns a list of objects that passed the filters."
 	      filter-fun		; pass parsed to filter
 	      (json-read-array)))))))))	; parse json array at point
 
-(defun standoff-json/file-delete-json-object (source-buffer object-type deletion-predicate)
+(defun standoff-json-file/delete-json-object (source-buffer object-type deletion-predicate)
   "Delete a json object from an array of these objects.
 This it takes a SOURCE-BUFFER.  The class of the object to be
 deleted is identified is given by OBJECT-TYPE as string, i.e.
@@ -232,7 +232,7 @@ a function taking a plist parsed from json as single argument and
 is expected to return t, if the object represented by the plist
 is to be deleted."
   (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer))
+      ((json-buf (standoff-json-file/get-json-buffer source-buffer))
        (pos-key-start (concat object-type "-start"))
        (pos-key-insert (concat object-type "-insert"))
        (deleted 0)
@@ -241,8 +241,8 @@ is to be deleted."
     (with-current-buffer json-buf
       (save-excursion
 	(let*
-	    ((json-start (standoff-json/file-get-or-parse-position pos-key-start))
-	     (json-end (standoff-json/file-get-or-parse-position pos-key-insert))
+	    ((json-start (standoff-json-file/get-or-parse-position pos-key-start))
+	     (json-end (standoff-json-file/get-or-parse-position pos-key-insert))
 	     (array-end json-end)
 	     object-start
 	     first-object-start
@@ -286,7 +286,7 @@ is to be deleted."
 	    (setq new-json-end-pos (- json-end deleted))))
 	(when (not (= 0 deleted))
 	  ;; parse positions after deletion
-	  (standoff-json/file-adjust-positions pos-key-insert new-json-end-pos))
+	  (standoff-json-file/adjust-positions pos-key-insert new-json-end-pos))
 	(not (= 0 deleted))))))
 
 ;;;; Markup
@@ -343,7 +343,7 @@ offset."
    ", \"sourceEnd\": \"" (number-to-string end) "\""
    "}"))
 
-(defun standoff-json/file-create-markup (source-buffer start end markup-type)
+(defun standoff-json-file/create-markup (source-buffer start end markup-type)
   "Create an external markup element referring SOURCE-BUFFER.
 The range is defined by the character offsets START and END and the
 MARKUP-TYPE."
@@ -351,16 +351,16 @@ MARKUP-TYPE."
       ((elem-id (standoff-util/create-uuid))
        (range-id (standoff-util/create-uuid))
        (json (standoff-json/range-to-json elem-id range-id markup-type start end)))
-    (standoff-json/file-create-object source-buffer "MarkupRanges" json)
+    (standoff-json-file/create-object source-buffer "MarkupRanges" json)
     ;; return element id
     elem-id))
 
-(defun standoff-json/file-read-markup (buffer &optional startchar endchar markup-type markup-inst-id)
+(defun standoff-json-file/read-markup (buffer &optional startchar endchar markup-type markup-inst-id)
   "Read markup form the json file backend of the source BUFFER.
 This returns a list of markup elements.  The optional parameters
 STARTCHAR ENDCHAR, MARKUP-TYPE MARKUP-INST-ID can be used for
 filtering."
-  (standoff-json/file-read-objects
+  (standoff-json-file/read-objects
    source-buffer
    "MarkupRanges"
    #'(lambda
@@ -369,20 +369,20 @@ filtering."
 	startchar endchar markup-type markup-inst-id ranges))
    #'standoff-json/plist-to-list))
 
-(defun standoff-json/file-add-range (source-buffer start end elem-id)
+(defun standoff-json-file/add-range (source-buffer start end elem-id)
   "Add a markup range to external markup of SOURCE-BUFFER.
 The markup range is given by START and END character offset and
 the ELEM-ID of the markup element, that is to be continued."
   (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+      ((json-buf (standoff-json-file/get-json-buffer source-buffer)))
     (with-current-buffer json-buf
       (save-excursion
 	(let
-	    ((insert-pos (standoff-json/file-get-or-parse-position "MarkupRanges-insert"))
+	    ((insert-pos (standoff-json-file/get-or-parse-position "MarkupRanges-insert"))
 	     (range-id (standoff-util/create-uuid))
 	     ;; get the element id by reading and filtering all ranges
 	     (markup-type (nth standoff-pos-markup-type
-			       (car (standoff-json/file-read-markup
+			       (car (standoff-json-file/read-markup
 				     source-buffer nil nil nil elem-id))))
 	     ;; make json buffer writeable
 	     (buffer-read-only nil))
@@ -395,16 +395,16 @@ the ELEM-ID of the markup element, that is to be continued."
 	      (insert ",\n"
 		      (standoff-json/range-to-json elem-id range-id markup-type start end))
 	      ;; adjust positions
-	      (standoff-json/file-adjust-positions "MarkupRanges-insert" (point))
+	      (standoff-json-file/adjust-positions "MarkupRanges-insert" (point))
 	      elem-id)))))))
 
-(defun standoff-json/file-delete-range (source-buffer start end markup-type elem-id)
+(defun standoff-json-file/delete-range (source-buffer start end markup-type elem-id)
   "Delete a markup range or element from the json file backend.
 The range refers SOURCE-BUFFER and is identified by START and END
 character offsets, by its MARKUP-TYPE and by the ELEM-ID."
   (let
       (range)
-    (standoff-json/file-delete-json-object
+    (standoff-json-file/delete-json-object
      source-buffer
      "MarkupRanges"
      #'(lambda
@@ -417,16 +417,16 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (equal (nth standoff-pos-startchar range) start)
 	    (equal (nth standoff-pos-endchar range) end)))))))
 
-(defun standoff-json/file-markup-types (source-buffer)
+(defun standoff-json-file/markup-types (source-buffer)
   "Return a list of markup types used in SOURCE-BUFFER."
   (let
-      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+      ((json-buf (standoff-json-file/get-json-buffer source-buffer)))
     (with-current-buffer json-buf
       (save-excursion
 	(let
 	    ((typeshash (make-hash-table :test 'equal))
 	     (types '())
-	     (ranges (standoff-json/file-read-markup source-buffer)))
+	     (ranges (standoff-json-file/read-markup source-buffer)))
 	  (mapc #'(lambda (range) (puthash (nth standoff-pos-markup-type range) 1 typeshash))
 		ranges)
 	  ;; get all the keys from the hash table
@@ -436,7 +436,7 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 
 ;;;; Loading
 
-(defun standoff-json/file-load-file (file-name)
+(defun standoff-json-file/load-file (file-name)
   "Load the annotations from FILE-NAME into the current buffer."
   (interactive
    (list (read-file-name "File to be loaded: "
@@ -448,24 +448,24 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
   (let (json-buf (find-file file-name))
   (with-current-buffer json-buf
     (save-excursion
-      (standoff-json/file-parse-positions)))
+      (standoff-json-file/parse-positions)))
   ;; 2) set the file as backend file
-  (setq-local standoff-json/json-buffer-name (buffer-name json-buf))
+  (setq-local standoff-json-file/json-buffer-name (buffer-name json-buf))
   ;; 3) Highlight all markup
   (require 'standoff-mode)
   (standoff-highlight-markup)))
 
 
-(defun standoff-json/file-backend-setup ()
+(defun standoff-json-file/backend-setup ()
   "Set up the json file backend.
 This is to be registered as a mode hook."
   (let ((default-file (concat (buffer-file-name) ".json")))
     ;; If default json backend file present...
     (when (file-readable-p default-file)
       ;; ... use it as backend.
-      (standoff-json/file-load-file default-file))))
+      (standoff-json-file/load-file default-file))))
 
 
-(provide 'standoff-json)
+(provide 'standoff-json-file)
 
-;;; standoff-json ends here
+;;; standoff-json-file ends here
