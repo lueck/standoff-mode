@@ -417,6 +417,23 @@ character offsets, by its MARKUP-TYPE and by the ELEM-ID."
 	    (equal (nth standoff-pos-startchar range) start)
 	    (equal (nth standoff-pos-endchar range) end)))))))
 
+(defun standoff-json/file-markup-types (source-buffer)
+  "Return a list of markup types used in SOURCE-BUFFER."
+  (let
+      ((json-buf (standoff-json/file-get-json-buffer source-buffer)))
+    (with-current-buffer json-buf
+      (save-excursion
+	(let
+	    ((typeshash (make-hash-table :test 'equal))
+	     (types '())
+	     (ranges (standoff-json/file-read-markup source-buffer)))
+	  (mapc #'(lambda (range) (puthash (nth standoff-pos-markup-type range) 1 typeshash))
+		ranges)
+	  ;; get all the keys from the hash table
+	  (maphash #'(lambda (k v) (setq types (cons k types))) typeshash)
+	  ;; return types
+	  types)))))
+
 ;;;; Loading
 
 (defun standoff-json/file-load-file (file-name)

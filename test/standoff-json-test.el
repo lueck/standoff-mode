@@ -6,12 +6,17 @@
 ;; not shure, that all configuration is restored correctly. You might
 ;; loose data! -- OR BETTER: Run this test file in batch mode.
 
-;;; Code
+;;; Code:
+
+(defvar standoff-json-test-debug nil
+  "Set this to non-nil, if you would like to get various messages.")
+
+(defvar standoff-json-test-kill-buffers t
+  "Kill buffers on tear down.")
 
 (when noninteractive
-  ;; set load path to . and ..
-  (setq standoff-lib-dir (concat (file-name-directory load-file-name) "/.."))
-  (push standoff-lib-dir load-path)
+  ;; add . and .. to load path
+  (push (concat (file-name-directory load-file-name) "/..") load-path)
   (push (file-name-directory load-file-name) load-path)
   ;; pop "--" from argv
   (setq argv (cdr argv))
@@ -20,12 +25,6 @@
 (require 'ert)
 (require 'standoff-test-utils)
 (require 'standoff-json)
-
-(defconst standoff-json-test-debug nil
-  "Set this to non-nil, if you would like to get various messages.")
-
-(defconst standoff-json-test-kill-buffers t
-  "Kill buffers on tear down.")
 
 ;;; Functions for set up and tear down
 
@@ -133,6 +132,7 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (should-error (standoff-json/file-add-range source-buffer 67 68 markup-id4))
     ;; delete last one
     (should (equal t (standoff-json/file-delete-range source-buffer 67 68 "marker" markup-id2)))
+    (standoff-json-test-json-buffer-print json-buffer)
     ;; Read again
     (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
     (standoff-json-test-positions json-buffer)
@@ -144,8 +144,12 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; delete the first one
     (should (equal t (standoff-json/file-delete-range source-buffer 23 42 "example" markup-id1)))
     (standoff-json-test-json-buffer-print json-buffer)
-    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
     ;; read again
+    (should (= 2 (length (standoff-json/file-read-markup source-buffer))))
+    ;; get types
+    (should (= 2 (length (standoff-json/file-markup-types source-buffer))))
+    (should (member "example" (standoff-json/file-markup-types source-buffer)))
+    (should (member "marker" (standoff-json/file-markup-types source-buffer)))
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
