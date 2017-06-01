@@ -27,7 +27,7 @@
     (setq markup-id (funcall standoff-markup-create-function test-buffer 1 9 "w-frage"))
     (funcall standoff-markup-range-add-function test-buffer 34 41 markup-id)
     (setq ranges (funcall standoff-markup-read-function test-buffer nil nil nil markup-id))
-    (should (equal (standoff-relations--markup-string ranges) "Was kann … mahlen?"))
+    (should (equal (standoff-relations--markup-string test-buffer ranges) "Was kann … mahlen?"))
     (standoff-test-utils-teardown-source-buffer test-buffer)))
 
 ;; run tests and exit
