@@ -26,6 +26,10 @@
 ;; This is a reference implementation of the API for back-ends defined
 ;; in standoff-api.el
 
+;; To use this, make it load after standoff-mode is loaded:
+
+;; (eval-after-load 'standoff-mode (require 'standoff-dummy))
+
 ;;; Code:
 
 (require 'standoff-api)
