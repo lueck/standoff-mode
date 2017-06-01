@@ -92,13 +92,19 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
 		(standoff-relations-glyph-display (substring str (match-end 0)))))
       str)))
 
-(defun standoff-relations--markup-string (ranges)
-  "Formats a string from markup given by RANGES."
-  (let ((markup-string (nth standoff-pos-markup-string (pop ranges))))
-    (while ranges
-      (setq markup-string (concat markup-string
-				  standoff-relations--markup-string-range-delimiter
-				  (nth standoff-pos-markup-string (pop ranges)))))
+(defun standoff-relations--markup-string (source-buffer ranges)
+  "Formats a string from markup in SOURCE-BUFFER given by RANGES."
+  (let (r
+	markup-string)
+    (with-current-buffer source-buffer
+      (while ranges
+	(setq r (pop ranges))
+	(when markup-string
+	  (setq markup-string (concat markup-string
+				      standoff-relations--markup-string-range-delimiter)))
+	(setq markup-string (concat markup-string
+				    (buffer-substring (nth standoff-pos-startchar r)
+						      (nth standoff-pos-endchar r))))))
     (when standoff-relations-tags-invisible
       (setq markup-string (standoff-relations-tags-invisible markup-string)))
     (when standoff-relations-glyph-display
@@ -144,9 +150,9 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
 	       ((eq field :obj-number)
 		(number-to-string (standoff-markup-get-number source-buf obj-id)))
 	       ((eq field :subj-string)
-		(standoff-relations--markup-string subjs))
+		(standoff-relations--markup-string source-buf subjs))
 	       ((eq field :obj-string)
-		(standoff-relations--markup-string objs))
+		(standoff-relations--markup-string source-buf objs))
 	       ((eq field :subj-type)
 		(standoff-relations--markup-type-label (nth standoff-pos-markup-type (car subjs))))
 	       ((eq field :obj-type)
@@ -238,7 +244,7 @@ current buffer."
 		(cond ((equal (nth standoff-pos-literal-type attr) 'string) "L")
 		      (t "?")))
 	       ((eq field :subj-string)
-		(standoff-relations--markup-string ranges))
+		(standoff-relations--markup-string source-buf ranges))
 	       ((eq field :obj-string)
 		(nth standoff-pos-literal-value attr))
 	       ((eq field :subj-type)
