@@ -51,6 +51,92 @@ Its value is to be set by the function which initializes the
 buffer where relations are displayed and should be set to the
 same value as `standoff-xml-tags-invisible' in the source buffer.")
 
+;;;; internal variables
+
+(defvar standoff-relations-marker-char ?*
+  "In the *relations* buffer, the current mark character.
+This is what the do-commands look for, and what the mark-commands store.")
+
+(defvar standoff-relations-del-marker ?D
+  "Character used to flag relations etc. for deletion.")
+
+;;;; Marking
+
+(defun standoff-relations-unmark (arg &optional interactive)
+  "Unmark the relation at point in the *relations* buffer.
+If the region is active, unmark all relations in the region.
+Otherwise, with a prefix arg, unmark relations on the next ARG lines."
+  (interactive (list current-prefix-arg t))
+  (let ((standoff-relations-marker-char ?\040))
+    (standoff-relations-mark arg interactive)))
+
+(defun standoff-relations-flag-relation-deletion (arg &optional interactive)
+  "In the *relations* buffer, flag the current line's relation for deletion.
+If the region is active, flag all relations in the region.
+Otherwise, with a prefix arg, flag relations on the next ARG lines."
+  (interactive (list current-prefix-arg t))
+  (let ((standoff-relations-marker-char standoff-relations-del-marker))
+    (standoff-relations-mark arg interactive)))
+    
+(defun standoff-relations-mark (arg &optional interactive)
+    "Mark the relation at point in the *relations* buffer.
+If the region is active, mark all relations in the region.
+Otherwise, with a prefix arg, mark relations on the next ARG lines.
+
+Use \\[standoff-relations-unmark-all] to remove all marks and
+\\[standoff-relations-unmark] to remove a single mark."
+  (interactive (list current-prefix-arg t))
+  (if (and interactive (use-region-p))
+      ;; Mark relations in the active region.
+      (save-excursion
+	(let ((beg (region-beginning))
+	      (end (region-end)))
+	  (standoff-relations-mark-relations-in-region
+	   (progn (goto-char beg) (line-beginning-position))
+	   (progn (goto-char end) (line-beginning-position)))))
+    ;; Mark the current (or next ARG) relations.
+    (let ((inhibit-read-only t))
+      (standoff-relations-repeat-over-lines
+       (prefix-numeric-value arg)
+       #'(lambda ()
+	   (delete-char 1)
+	   (insert standoff-relations-marker-char))))))
+
+(defun standoff-relations-mark-relations-in-region (start end)
+  ""
+  (let ((inhibit-read-only t))
+    (if (> start end)
+	(error "start > end"))
+    (goto-char start)			; assumed at beginning of line
+    (while (< (point) end)
+      (delete-char 1)
+      (insert standoff-relations-marker-char)
+      (forward-line 1))))
+
+(defun standoff-relations-repeat-over-lines (arg function)
+  (let ((pos (make-marker)))
+    (beginning-of-line)
+    (while (and (> arg 0) (not (eobp)))
+      (setq arg (1- arg))
+      (beginning-of-line)
+      (save-excursion
+	(forward-line 1)
+	(move-marker pos (1+ (point))))
+      (save-excursion (funcall function))
+      ;; Advance to the next line--actually, to the line that *was* next.
+      ;; (If FUNCTION inserted some new lines in between, skip them.)
+      (goto-char pos))
+    (while (and (< arg 0) (not (bobp)))
+      (setq arg (1+ arg))
+      (forward-line -1)
+      (beginning-of-line)
+      (save-excursion (funcall function)))
+    (move-marker pos nil)
+    (beginning-of-line)))
+
+
+;;;; helpers for formatting lines in the *relations* buffers
+
 (defun standoff-relations-remove-newlines (str)
   "Replace newlines and carriage returns in STR with space character." 
   (let ((idx (string-match "\\s-" str)))
@@ -136,7 +222,8 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
   "Create a one line description of a relation for the relations list in the current buffer."
   (let* ((subjs (funcall standoff-markup-read-function source-buf nil nil nil subj-id))
 	 (objs (funcall standoff-markup-read-function source-buf nil nil nil obj-id))
-	 (line ""))
+	 (line (format " %s " rel-id)))
+    (put-text-property 1 37 'invisible t line) ; invisible relation id
     (when (and subjs objs) 
     (dolist (f-w standoff-relations-fields)
       (let ((field (car f-w))
@@ -193,7 +280,7 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
     (while relations
       (setq rel (pop relations))
       (standoff-relations--relation-handler
-       nil
+       (nth standoff-pos-relation-id rel)
        (nth standoff-pos-subject rel)
        (nth standoff-pos-predicate rel)
        (nth standoff-pos-object rel)
@@ -203,7 +290,7 @@ same value as `standoff-xml-tags-invisible' in the source buffer.")
     (while relations
       (setq rel (pop relations))
       (standoff-relations--relation-handler
-       nil
+       (nth standoff-pos-relation-id rel)
        (nth standoff-pos-subject rel)
        (nth standoff-pos-predicate rel)
        (nth standoff-pos-object rel)
@@ -297,10 +384,25 @@ current buffer."
 
 ;;;; Mode for the *Relations* Buffer
 
+(defvar standoff-relations-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "m" 'standoff-relations-mark)
+    (define-key map "u" 'standoff-relations-unmark)
+    (define-key map "d" 'standoff-relations-flag-relation-deletion)
+    map))
+
+(easy-menu-define standoff-relations-mark-menu standoff-relations-mode-map
+  "Menu for standoff-mode"
+  '("Mark"
+    ["Mark" standoff-relations-mark]
+    ["Unmark" standoff-relations-unmark]
+    ["Delete" standoff-relations-flag-relation-deletion]
+    ))
+
 (define-derived-mode standoff-relations-mode special-mode "*Relations*"
   "A mode for managing relations of an markup element in a special buffer in `standoff-mode'.
 
-\\{standoff-relations-map}
+\\{standoff-relations-mode-map}
 ")
 
 (provide 'standoff-relations)

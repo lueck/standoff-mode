@@ -1,11 +1,16 @@
 ;;; standoff-json-file.el --- JSON file backend for standoff-mode.
 
 ;;; Commentary:
+
 ;; Functions for storing to and loading annotations from a JSON file.
 
-;;; Code:
+;; To use this, make it load after standoff-mode is loaded:
 
-;;(require 'standoff-dummy)
+;; (eval-after-load 'standoff-mode (require 'standoff-json-file))
+
+;; See standoff-json.el for customization options.
+
+;;; Code:
 
 (require 'cl-lib)
 (require 'json)
@@ -140,7 +145,7 @@ The SOURCE-BUFFER and JSON-BUFFER must be given."
 	((default-name (concat (buffer-file-name source-buffer) ".json"))
 	 (json-buf-name nil))
       ;; Create a new json file.
-      (with-current-buffer (find-file default-name)
+      (with-current-buffer (find-file-noselect default-name)
 	(setq json-buf-name (current-buffer))
 	(read-only-mode 1)
 	(standoff-json-file/empty source-buffer (current-buffer)))
@@ -305,8 +310,8 @@ MARKUP-TYPE."
     ;; return element id
     elem-id))
 
-(defun standoff-json-file/read-markup (buffer &optional startchar endchar markup-type markup-inst-id)
-  "Read markup form the json file backend of the source BUFFER.
+(defun standoff-json-file/read-markup (source-buffer &optional startchar endchar markup-type markup-inst-id)
+  "Read markup form the json file backend of the SOURCE-BUFFER.
 This returns a list of markup elements.  The optional parameters
 STARTCHAR ENDCHAR, MARKUP-TYPE MARKUP-INST-ID can be used for
 filtering."
@@ -455,7 +460,7 @@ using SUBJECT-ID and OBJECT-ID."
 		;; FIXME: Bug: the equality test for the object type does not work
 		;;(message "types are: '%s' '%s'" subj-type obj-type)
 		;;(message "equal sub: %s equal obj: %s" (equal subj-type subject-type) (equal obj-type object-type))
-		;;(message "type-of: %s %s" (type-of obj-type) (type-of obj-type))
+		;;(message "type-of: %s %s" (type-of subj-type) (type-of obj-type))
 		(and ;(or (null subject-id)
 			 (equal subj-type subject-type);)
 		     ;(or (null object-id)
@@ -467,6 +472,73 @@ using SUBJECT-ID and OBJECT-ID."
 	 (rel)
 	 (plist-get rel :predicate)))))
 
+;;;; Literals
+
+(defun standoff-json-file/create-literal (source-buffer subj key value)
+  "Create a literal attribute of type KEY with VALUE on markup element SUBJ.
+Must be given as first argument.  The id of the new literal
+attribute is returned."
+  (let*
+      ((lit-id (standoff-util/create-uuid))
+       (json (standoff-json/literal-to-json lit-id subj key value)))
+    (standoff-json-file/create-object source-buffer "Literals" json)
+    ;; return literal id
+    lit-id))
+
+(defun standoff-json-file/read-literals (source-buffer &optional sub key value value-regex lit-id)
+  "Read literal attributes in SOURCE-BUFFER from json file backend.
+The literal attributes may be filtered by SUB, KEY, VALUE and LIT-ID."
+  (standoff-json-file/read-objects
+   source-buffer
+   "Literals"
+   #'(lambda
+       (lits)
+       (standoff-json/filter-literals
+	lits sub key value value-regex lit-id))
+   #'standoff-json/literal-plist-to-internal))
+
+(defun standoff-json-file/delete-literal (source-buffer literal-id)
+  "Delete all literal attributes in SOURCE-BUFFER matching LITERAL-ID."
+  (standoff-json-file/delete-json-object
+   source-buffer
+   "Literals"
+   #'(lambda
+       (json-plist)
+       ;; deletion condition
+       (equal
+	literal-id
+	(nth standoff-pos-literal-id (standoff-json/literal-plist-to-internal json-plist))))))
+
+(defun standoff-json-file/used-literal-keys (source-buffer &optional subject-id)
+  "Return the keys of literal attributes used for this type of markup.
+The existing literal attributes in SOURCE-BUFFER are examined.
+The markup type is determined using SUBJECT-ID."
+  ;; FIXME: do not hardcode json properties
+  (let*
+      ((subject-type (nth
+		      standoff-pos-markup-type
+		      (car (standoff-json-file/read-markup source-buffer nil nil nil subject-id))))
+       subj-type)
+    (standoff-json-file/read-objects
+     source-buffer
+     "Literals"
+     #'(lambda
+	 (lits)
+	 (cl-remove-if-not
+	  #'(lambda
+	      (lit)
+	      (progn
+		(setq subj-type (nth standoff-pos-markup-type (car (standoff-json-file/read-markup source-buffer nil nil nil (plist-get lit :subjectId)))))
+		(and (or (null subject-id)
+			 (equal subj-type subject-type)))
+		))
+	  lits))
+     #'(lambda
+	 (lit)
+	 (plist-get lit :key)))))
+
+
+
 ;;;; Loading
 
 (defun standoff-json-file/load-file (file-name)
@@ -477,17 +549,19 @@ using SUBJECT-ID and OBJECT-ID."
 			 nil
 			 'confirm
 			 (file-relative-name (concat (buffer-file-name) ".json")))))
-  ;; 1) parse the managed positions
-  (let (json-buf (find-file file-name))
-  (with-current-buffer json-buf
-    (save-excursion
-      (standoff-json-file/parse-positions)))
-  ;; 2) set the file as backend file
-  (setq-local standoff-json-file/json-buffer-name (buffer-name json-buf))
-  ;; 3) Highlight all markup
-  (require 'standoff-mode)
-  (standoff-highlight-markup)))
-
+  (let
+      ;; 1) open the json file
+      ((json-buf (find-file-noselect file-name)))
+    (with-current-buffer json-buf
+      ;; 2) make it read only
+      (read-only-mode 1)
+      ;; 3) parse managed positions
+      (standoff-json-file/parse-positions))
+    ;; 4) set the file as backend file
+    (setq-local standoff-json-file/json-buffer-name (buffer-name json-buf))
+    ;; 5) Highlight all markup
+    (require 'standoff-mode)
+    (standoff-highlight-markup)))
 
 (defun standoff-json-file/backend-setup ()
   "Set up the json file backend.
@@ -498,6 +572,33 @@ This is to be registered as a mode hook."
       ;; ... use it as backend.
       (standoff-json-file/load-file default-file))))
 
+(add-hook 'standoff-mode-hook 'standoff-json-file/backend-setup)
+
+;;;; Registration
+
+(defun standoff-json-file/register-backend ()
+  "Register the json file backend.
+This should be used as a mode hook to standoff-mode."
+  (setq
+   ;; markup
+   standoff-markup-create-function 'standoff-json-file/create-markup
+   standoff-markup-range-add-function 'standoff-json-file/add-range
+   standoff-markup-read-function 'standoff-json-file/read-markup
+   standoff-markup-delete-range-function 'standoff-json-file/delete-range
+   standoff-markup-types-used-function 'standoff-json-file/markup-types
+   ;; relations
+   standoff-predicates-used-function 'standoff-json-file/used-predicates
+   standoff-relation-create-function 'standoff-json-file/create-relation
+   standoff-relations-read-function 'standoff-json-file/read-relations
+   standoff-relations-delete-function 'standoff-json-file/delete-relation
+   ;; literals
+   standoff-literal-keys-used-function 'standoff-json-file/used-literal-keys
+   standoff-literal-create-function 'standoff-json-file/create-literal
+   standoff-literals-read-function 'standoff-json-file/read-literals
+   standoff-literal-delete-function 'standoff-json-file/delete-literal
+   ))
+
+(add-hook 'standoff-mode-hook 'standoff-json-file/register-backend)
 
 (provide 'standoff-json-file)
 

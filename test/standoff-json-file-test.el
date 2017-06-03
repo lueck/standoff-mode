@@ -111,6 +111,9 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; Read
     (setq ranges (standoff-json-file/read-markup source-buffer))
     (should (= 2 (length ranges)))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer nil nil nil nil))))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer nil nil nil))))
+    (should (= 2 (length (standoff-json-file/read-markup source-buffer nil nil))))
     (setq ranges (standoff-json-file/read-markup source-buffer nil nil "example"))
     (should (= 1 (length ranges)))
     (setq ranges (standoff-json-file/read-markup source-buffer nil nil nil markup-id2))
@@ -209,6 +212,40 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; FIXME!
     (should (= 1 (length (standoff-json-file/used-predicates source-buffer markup-id1 markup-id2))))
     ;;(message "%s" (standoff-json-file/used-predicates source-buffer markup-id2 markup-id1))
+    ;; tear down
+    (standoff-json-test-teardown source-buffer)))
+    
+
+
+(ert-deftest standoff-json-test-create-read-literal ()
+  (let ((source-buffer (standoff-json-test-setup-source-buffer))
+	json-buffer
+	json-buffer-size1
+	json-buffer-size2
+	markup-id1
+	markup-id2
+	markup-id3
+	markup-id4
+	literal-id1
+	literal-id2)
+    (set-buffer source-buffer)
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
+    ;; read literal before there are any
+    (should (= 0 (length (standoff-json-file/read-literals source-buffer))))
+    ;; create markup elements
+    (setq markup-id1 (standoff-json-file/create-markup source-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-json-file/create-markup source-buffer 52 64 "marker"))
+    (setq markup-id3 (standoff-json-file/create-markup source-buffer 45 50 "example"))
+    ;; create literals
+    (setq literal-id1 (standoff-json-file/create-literal source-buffer markup-id1 "Paraphrase" "id"))
+    (should (= 1 (length (standoff-json-file/read-literals source-buffer))))
+    (setq literal-id2 (standoff-json-file/create-literal source-buffer markup-id2 "Name" "Dido"))
+    (should (= 2 (length (standoff-json-file/read-literals source-buffer))))
+    (should (= 1 (length (standoff-json-file/read-literals source-buffer markup-id1))))
+    (should (= 1 (length (standoff-json-file/read-literals source-buffer markup-id2))))
+    (should (= 1 (length (standoff-json-file/read-literals source-buffer nil "Paraphrase"))))
+    (should (= 2 (length (standoff-json-file/read-literals source-buffer nil nil nil "id"))))
+    (should (= 1 (length (standoff-json-file/read-literals source-buffer nil nil nil "Di"))))
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
     

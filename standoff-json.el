@@ -113,6 +113,55 @@ RELATION-ID."
 		  (equal obj object-id)))))
    relations))
 
+;;;; Literals
+
+(defun standoff-json/literal-to-json (literal-id subject-id key value)
+  "Serialize a relation to json.
+The relation is given by LITERAL-ID, SUBJECT-ID, KEY and VALUE."
+  (concat
+   "{\"tag\": \"Literal\""
+   ", \"literalId\": \"" literal-id "\""
+   ", \"subjectId\": \"" subject-id "\""
+   ", \"key\": \"" key "\""
+   ", \"value\": \"" value "\""
+   "}"))
+
+(defun standoff-json/literal-plist-to-internal (literal)
+  "Convert a plist LITERAL attribute to a list representing a relation.
+Return a the relation as a list like described in api."
+  ;; FIXME: add some more?
+  (list
+   ;; see api for order
+   (plist-get literal :literalId)
+   (plist-get literal :subjectId)
+   (plist-get literal :key)
+   (plist-get literal :value)
+   ))
+
+(defun standoff-json/filter-literals (literals &optional subject-id key value value-regex literal-id)
+  "Filter LITERALS given as list of plists.
+Filter predicates are SUBJECT-ID, KEY, VALUE, VALUE-REGEX and
+LITERAL-ID."
+  (cl-remove-if-not			; filter
+   #'(lambda (r)
+       (let ((rel-id (plist-get r :literalId)) ; FIXME: do not hardcode
+	     (sub (plist-get r :subjectId))
+	     (lky (plist-get r :key))
+	     (val (plist-get r :value)))
+	 ;; condition
+	 (and (or (not literal-id)
+		  (equal rel-id literal-id))
+	      (or (not subject-id)
+		  (equal sub subject-id))
+	      (or (not key)
+		  (equal lky key))
+	      (or (not value)
+		  (equal val value))
+	      (or (not value-regex)
+		  (string-match value-regex val)))))
+   literals))
+
+
 (provide 'standoff-json)
 
 ;;; standoff-json.el ends here
