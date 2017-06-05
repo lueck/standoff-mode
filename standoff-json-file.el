@@ -17,6 +17,7 @@
 (require 'standoff-api)
 (require 'standoff-util)
 (require 'standoff-json)
+(require 'standoff-log)
 
 (defvar standoff-json-file/json-buffer-name nil
   "The name of the buffer with the external markup.
@@ -114,11 +115,12 @@ parsed first."
   (if buffer-read-only
       (or (standoff-json-file/get-position key)
 	  (progn
-	    (message "Parsing positions, because not having key '%s'." key)
+	    (standoff-log "JSON file backend: Parsing positions, because not having key '%s'.\n"
+			  key)
 	    (standoff-json-file/parse-positions)
 	    (standoff-json-file/get-position key)))
     ;; if not read only: parse the buffer
-    (message "Parsing positions, because json buffer is not read only.")
+    (standoff-log "JSON file backend: Parsing positions, because json buffer is not read only.\n")
     (standoff-json-file/parse-positions)
     (standoff-json-file/get-position key)))
 
@@ -282,6 +284,7 @@ is to be deleted."
 		;; delete object between object-start and object-end
 		;(message "Deleting: %s" (buffer-substring object-start object-end))
 		(delete-region object-start object-end)
+		(standoff-log "JSON file backend: %s %s deleted.\n" object-type range)
 		(setq delta (- object-end object-start)
 		      deleted (+ deleted delta)
 		      array-end (- array-end delta))
@@ -307,6 +310,7 @@ MARKUP-TYPE."
        (range-id (standoff-util/create-uuid))
        (json (standoff-json/range-to-json elem-id range-id markup-type start end)))
     (standoff-json-file/create-object source-buffer "MarkupRanges" json)
+    (standoff-log "JSON file backend: Markup range %s created.\n" elem-id)
     ;; return element id
     elem-id))
 
@@ -351,14 +355,14 @@ the ELEM-ID of the markup element, that is to be continued."
 		      (standoff-json/range-to-json elem-id range-id markup-type start end))
 	      ;; adjust positions
 	      (standoff-json-file/adjust-positions "MarkupRanges-insert" (point))
+	      (standoff-log "JSON file backend: Markup range added to %s.\n" elem-id)
 	      elem-id)))))))
 
 (defun standoff-json-file/delete-range (source-buffer start end markup-type elem-id)
   "Delete a markup range or element from the json file backend.
 The range refers SOURCE-BUFFER and is identified by START and END
 character offsets, by its MARKUP-TYPE and by the ELEM-ID."
-  (let
-      (range)
+  (let (range)
     (standoff-json-file/delete-json-object
      source-buffer
      "MarkupRanges"
@@ -398,6 +402,7 @@ Must be given as first argument.  The id of the new relation is returned."
       ((rel-id (standoff-util/create-uuid))
        (json (standoff-json/relation-to-json rel-id subj pred obj)))
     (standoff-json-file/create-object source-buffer "Relations" json)
+    (standoff-log "JSON file backend: Relation %s created.\n" rel-id)
     ;; return relation id
     rel-id))
 
@@ -413,10 +418,9 @@ The relations may be filtered by SUB, PRED, OBJ and REL-ID."
 	rels sub pred obj rel-id))
    #'standoff-json/relation-plist-to-internal))
 
-(defun standoff-json-file/delete-relation (source-buffer subj pred obj)
-  "Delete all relations in SOURCE-BUFFER matching SUBJ, PRED, OBJ."
-  (let
-      (rel)
+(defun standoff-json-file/delete-relation (source-buffer subj pred obj &optional rel-id)
+  "Delete all relations in SOURCE-BUFFER matching SUBJ, PRED, OBJ or REL-ID."
+  (let (rel)
     (standoff-json-file/delete-json-object
      source-buffer
      "Relations"
@@ -424,10 +428,13 @@ The relations may be filtered by SUB, PRED, OBJ and REL-ID."
 	 (json-plist)
 	 (progn
 	   (setq rel (standoff-json/relation-plist-to-internal json-plist))
-	   (and		; deletion condition
-	    (equal (nth standoff-pos-subject rel) subj)
-	    (equal (nth standoff-pos-predicate rel) pred)
-	    (equal (nth standoff-pos-object rel) obj)))))))
+	   (or				; deletion condition
+	    (and rel-id			; rel-id given: only check id
+		 (equal (nth standoff-pos-relation-id rel) rel-id))
+	    (and	       ; no rel-id given: check sub, pred, obj
+	     (equal (nth standoff-pos-subject rel) subj)
+	     (equal (nth standoff-pos-predicate rel) pred)
+	     (equal (nth standoff-pos-object rel) obj))))))))
 
 (defun standoff-json-file/used-predicates (source-buffer subject-id object-id)
   "Return the predicates used for the combination of subject and object types.
@@ -483,6 +490,7 @@ attribute is returned."
        (json (standoff-json/literal-to-json lit-id subj key value)))
     (standoff-json-file/create-object source-buffer "Literals" json)
     ;; return literal id
+    (standoff-log "JSON file backend: Created literal %s.\n" lit-id)
     lit-id))
 
 (defun standoff-json-file/read-literals (source-buffer &optional sub key value value-regex lit-id)

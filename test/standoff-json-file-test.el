@@ -186,7 +186,9 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     (should (= 1 (length (standoff-json-file/read-relations source-buffer nil "markiert"))))
     ;; As long as used-predicates fails, it is manteled in its own test
     ;; (should (= 1 (length (standoff-json-file/used-predicates source-buffer markup-id1 markup-id2))))
-    
+    ;; Deleting
+    (standoff-json-file/delete-relation source-buffer nil nil nil relation-id1)
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer))))
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
