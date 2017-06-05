@@ -1,6 +1,6 @@
 ;;; standoff-relations.el --- part of standoff-mode, a mode for creating stand-off markup
 
-;; Copyright (C) 2015 Christian Lück
+;; Copyright (C) 2015-2017 Christian Lück
 
 ;; Author: Christian Lück <christian.lueck@ruhr-uni-bochum.de>
 ;; URL: https://github.com/lueck/standoff-mode
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; This file contains things related to the buffer displaying
+;; This file contains UI parts related to the buffer displaying
 ;; relations between markup elements.
 
 ;;; Code
