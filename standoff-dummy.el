@@ -255,7 +255,7 @@ as a wildcard."
 	     (setq relations (cons relation relations))))
       relations)))
 
-(defun standoff-dummy-delete-relation (buf subj-id predicate obj-id)
+(defun standoff-dummy-delete-relation (buf subj-id predicate obj-id &optional rel-id)
   "Delete a relation from the dummy backend.
 The relation is given by SUBJ-ID, PREDICATE and OBJ-ID in the
 context of buffer BUF. All duplicates of this relations are
@@ -266,9 +266,12 @@ removed."
 	  (relation))
       (while data
 	(setq relation (pop data))
-	(when (not (and (equal (nth standoff-pos-subject relation) subj-id)
+	(when (or
+	       (and rel-id		; rel-id given, only check id
+		    (equal rel-id (nth standoff-pos-relation-id relation)))
+	       (not (and (equal (nth standoff-pos-subject relation) subj-id)
 			(equal (nth standoff-pos-predicate relation) predicate)
-			(equal (nth standoff-pos-object relation) obj-id)))
+			(equal (nth standoff-pos-object relation) obj-id))))
 	  (setq new-relations (cons relation new-relations))))
       (setq standoff-dummy-relations new-relations))))
 
