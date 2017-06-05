@@ -30,6 +30,8 @@
 
 (require 'standoff-api)
 (require 'standoff-xml)
+(require 'standoff-mark)
+(require 'standoff-log)
 
 (defcustom standoff-relations--markup-string-range-delimiter " … "
   "A string that delimits the content of two markup ranges."
@@ -50,90 +52,6 @@
 Its value is to be set by the function which initializes the
 buffer where relations are displayed and should be set to the
 same value as `standoff-xml-tags-invisible' in the source buffer.")
-
-;;;; internal variables
-
-(defvar standoff-relations-marker-char ?*
-  "In the *relations* buffer, the current mark character.
-This is what the do-commands look for, and what the mark-commands store.")
-
-(defvar standoff-relations-del-marker ?D
-  "Character used to flag relations etc. for deletion.")
-
-;;;; Marking
-
-(defun standoff-relations-unmark (arg &optional interactive)
-  "Unmark the relation at point in the *relations* buffer.
-If the region is active, unmark all relations in the region.
-Otherwise, with a prefix arg, unmark relations on the next ARG lines."
-  (interactive (list current-prefix-arg t))
-  (let ((standoff-relations-marker-char ?\040))
-    (standoff-relations-mark arg interactive)))
-
-(defun standoff-relations-flag-relation-deletion (arg &optional interactive)
-  "In the *relations* buffer, flag the current line's relation for deletion.
-If the region is active, flag all relations in the region.
-Otherwise, with a prefix arg, flag relations on the next ARG lines."
-  (interactive (list current-prefix-arg t))
-  (let ((standoff-relations-marker-char standoff-relations-del-marker))
-    (standoff-relations-mark arg interactive)))
-    
-(defun standoff-relations-mark (arg &optional interactive)
-    "Mark the relation at point in the *relations* buffer.
-If the region is active, mark all relations in the region.
-Otherwise, with a prefix arg, mark relations on the next ARG lines.
-
-Use \\[standoff-relations-unmark-all] to remove all marks and
-\\[standoff-relations-unmark] to remove a single mark."
-  (interactive (list current-prefix-arg t))
-  (if (and interactive (use-region-p))
-      ;; Mark relations in the active region.
-      (save-excursion
-	(let ((beg (region-beginning))
-	      (end (region-end)))
-	  (standoff-relations-mark-relations-in-region
-	   (progn (goto-char beg) (line-beginning-position))
-	   (progn (goto-char end) (line-beginning-position)))))
-    ;; Mark the current (or next ARG) relations.
-    (let ((inhibit-read-only t))
-      (standoff-relations-repeat-over-lines
-       (prefix-numeric-value arg)
-       #'(lambda ()
-	   (delete-char 1)
-	   (insert standoff-relations-marker-char))))))
-
-(defun standoff-relations-mark-relations-in-region (start end)
-  ""
-  (let ((inhibit-read-only t))
-    (if (> start end)
-	(error "start > end"))
-    (goto-char start)			; assumed at beginning of line
-    (while (< (point) end)
-      (delete-char 1)
-      (insert standoff-relations-marker-char)
-      (forward-line 1))))
-
-(defun standoff-relations-repeat-over-lines (arg function)
-  (let ((pos (make-marker)))
-    (beginning-of-line)
-    (while (and (> arg 0) (not (eobp)))
-      (setq arg (1- arg))
-      (beginning-of-line)
-      (save-excursion
-	(forward-line 1)
-	(move-marker pos (1+ (point))))
-      (save-excursion (funcall function))
-      ;; Advance to the next line--actually, to the line that *was* next.
-      ;; (If FUNCTION inserted some new lines in between, skip them.)
-      (goto-char pos))
-    (while (and (< arg 0) (not (bobp)))
-      (setq arg (1+ arg))
-      (forward-line -1)
-      (beginning-of-line)
-      (save-excursion (funcall function)))
-    (move-marker pos nil)
-    (beginning-of-line)))
-
 
 ;;;; helpers for formatting lines in the *relations* buffers
 
@@ -259,11 +177,31 @@ Use \\[standoff-relations-unmark-all] to remove all marks and
     (insert (concat line "\n"))
     ))
 
+(defun standoff-relations-get-relation-id-of-line ()
+  "Return the id of the relation in the current line."
+  (let ((chars 0)
+	start
+	end)
+    (beginning-of-line)
+    (forward-char 1)
+    (setq start (point))
+    ;; FIXME: better use regexp
+    (while (and (not (eolp)) (< chars 37))
+      (forward-char 1)
+      (setq chars (1+ chars)))
+    (backward-char 1)
+    ;;(message "uuid: %s chars: %s" (buffer-substring start (point)) chars)
+    (if (= chars 37)
+	(buffer-substring start (point))
+      (error "No relation id found in this line"))))
+
 (defvar standoff-relations--relations-buffer "*Relations*"
   "The name of the buffer in which relations are displayed.")
 
 (defun standoff-relations-for-markup (markup-number)
+  "Show the relations for MARKUP-NUMBER in a special buffer."
   (interactive "NNumber of markup element: ")
+  (standoff-util/set-source-buffer (current-buffer))
   (let* ((markup-inst-id (standoff-markup-get-by-number (current-buffer) markup-number))
 	 (relations)
 	 (rel)
@@ -301,6 +239,44 @@ Use \\[standoff-relations-unmark-all] to remove all marks and
     ;;(when glyph-display (standoff-xml-toggle-char-ref-glyph-substitute 1))
     ;;(when tags-invisible (standoff-xml-tags-invisible 1))
     (switch-to-buffer rel-buffer)))
+
+(defun standoff-relations-do-delete (&optional arg)
+  "Delete all marked (or next ARG) relations."
+  (interactive "P")
+  (standoff-mark/internal-do-deletions
+   ;; this may move point if ARG is an integer
+   (standoff-mark/map-over-marks
+    #'(lambda () (cons (standoff-relations-get-relation-id-of-line) (point)))
+    arg)
+   arg
+   #'(lambda (rel-id) (funcall standoff-relations-delete-function
+			       (standoff-util/get-source-buffer)
+			       nil nil nil rel-id))
+   nil 					; delete, do not trash
+   ))
+
+(defun standoff-relations-do-flagged-delete (&optional nomessage)
+  "In the *Relations* buffer, delete the relations flagged for deletion.
+If NOMESSAGE is non-nil, we don't display any message
+if there are no flagged relations."
+  (interactive)
+  (let* ((standoff-mark/marker-char standoff-mark/del-marker)
+	 (regexp (standoff-mark/marker-regexp))
+	 case-fold-search)
+    (if (save-excursion (goto-char (point-min))
+			(re-search-forward regexp nil t))
+	(standoff-mark/internal-do-deletions
+	 ;; this can't move point since ARG is nil
+	 (standoff-mark/map-over-marks
+	  #'(lambda () (cons (standoff-relations-get-relation-id-of-line) (point)))
+	  nil)
+	 nil
+	 #'(lambda (rel-id) (funcall standoff-relations-delete-function
+				     (standoff-util/get-source-buffer)
+				     nil nil nil rel-id))
+	 nil)				; delete, do not trash
+      (or nomessage
+	  (message "(No deletions requested)")))))
 
 ;;;; Literals/Attributes
 
@@ -386,25 +362,26 @@ current buffer."
 
 (defvar standoff-relations-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "m" 'standoff-relations-mark)
-    (define-key map "u" 'standoff-relations-unmark)
-    (define-key map "d" 'standoff-relations-flag-relation-deletion)
+    (set-keymap-parent map (make-composed-keymap
+			    special-mode-map
+			    standoff-mark/mark-map))
+    (define-key map "D" 'standoff-relations-do-delete)
+    (define-key map "x" 'standoff-relations-do-flagged-delete)
     map))
 
-(easy-menu-define standoff-relations-mark-menu standoff-relations-mode-map
-  "Menu for standoff-mode"
-  '("Mark"
-    ["Mark" standoff-relations-mark]
-    ["Unmark" standoff-relations-unmark]
-    ["Delete" standoff-relations-flag-relation-deletion]
+(easy-menu-define standoff-relations-operate-menu standoff-relations-mode-map
+  "Operations menu for *Relations* buffer."
+  '("Operate"
+    ["Delete" standoff-relations-do-delete]
+    ["Delete flagged" standoff-relations-do-flagged-delete]
     ))
 
 (define-derived-mode standoff-relations-mode special-mode "*Relations*"
-  "A mode for managing relations of an markup element in a special buffer in `standoff-mode'.
+  "A mode for managing relations in a special buffer of `standoff-mode'.
 
 \\{standoff-relations-mode-map}
 ")
 
 (provide 'standoff-relations)
 
-;;; standoff-relations.el ends here.
+;;; standoff-relations.el ends here
