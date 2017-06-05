@@ -1,12 +1,33 @@
 ;;; standoff-mark.el --- Marking and operating on items.
 
+;; Copyright (C) 2015 Christian Lück
+
+;; Author: Christian Lück <christian.lueck@ruhr-uni-bochum.de>
+;; URL: https://github.com/lueck/standoff-mode
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with standoff-mode. If not, see
+;; <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
 
-;; This are some function for marking and operating on marks that can
-;; be reused in different buffers listing annotations one by line like
-;; files in a Dired buffer.
+;; This file defines some commands for marking and operating on marks
+;; that can be reused in different buffers listing annotations one by
+;; line like files in a Dired buffer.
 
-;; Adapted from dired.el
+;; Adapted from dired.el from GNU Emacs.
 
 ;; While adapting from dired.el, the word 'files' was subsituted with
 ;; 'items', which was the most general term. We could also have said
