@@ -290,12 +290,14 @@ wildcard.")
 (defvar standoff-relations-delete-function 'standoff-dummy-delete-relation
   "The function that deletes a relation from some backend.
 This variable must be set to the function's symbol (name). The
-function must take the following arguments:
+function takes the following arguments:
 
-BUFFER SUBJECT-ID PREDICATE OBJECT-ID
+BUFFER SUBJECT-ID PREDICATE OBJECT-ID &optional RELATION-ID
 
-The relation that is to be deleted is given by the three last
-arguments. All duplicates of the relation should be removed.")
+The relation that is to be deleted is given either by the three
+arguments SUBJECT-ID PREDICATE OBJECT-ID or by RELATION-ID. In
+the first case, all duplicates of the relation should be
+removed.")
 
 (defvar standoff-literal-keys-used-function 'standoff-dummy-literal-keys-used
   "")
