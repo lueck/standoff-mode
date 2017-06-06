@@ -30,6 +30,7 @@
 
 (require 'standoff-api)
 (require 'standoff-xml)
+(require 'standoff-util)
 (require 'standoff-mark)
 (require 'standoff-log)
 
