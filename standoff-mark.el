@@ -36,6 +36,7 @@
 
 ;;; Code:
 
+(require 'standoff-util)
 (require 'standoff-log)
 
 ;;;; Marking
@@ -234,8 +235,8 @@ Optional prefix ARG says how many lines to move; default is one line."
     (let ((limit (end-of-line))
 	  rel-id)
       (beginning-of-line)
-      (if (re-search-forward standoff-utils/re-uuid limit t)
-	  (setq rel-id (match-string))	; returns item id
+      (if (re-search-forward standoff-util/re-uuid limit t)
+	  (setq rel-id (match-string 0))	; returns item id
 	(error "No Id found in this line")))))
 
 (defun standoff-mark/map-over-marks (body arg &optional show-progress
@@ -417,7 +418,11 @@ marked item, return (t ITEM-ID) instead of (ITEM-ID)."
 
 (defvar standoff-mark/deletion-confirmer 'yes-or-no-p) ; or y-or-n-p?
 
-(defvar standoff-mark/query 'y-or-n-p)
+(defun standoff-mark/query (symbol query-string &rest subst)
+  "Query the user QUERY-STRING formatted with SUBST.
+SYMBOL is ignored."
+  ;; FIXME: Adapt from dired.
+  (y-or-n-p (format query-string subst)))
 
 (defun standoff-mark/internal-do-deletions (l arg delete-function &optional trash)
   "L is an alist of items to delete, with their buffer positions.
@@ -539,6 +544,13 @@ argument or confirmation)."
 	  (if (eq (car items) t) (cdr items) items))
 	 (remove-text-properties (point-min) (point-max)
 				 '(mouse-face nil help-echo nil)))))))
+
+;;;; formatting
+
+(defun standoff-mark/format-columns-of-items (items)
+  "Do nothing at the moment with ITEMS."
+  ;; FIXME
+  )
 
 ;;;; mode maps
 
