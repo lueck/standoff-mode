@@ -60,9 +60,34 @@
 
 ;;; Code:
 
+(require 'standoff-log)
 (require 'standoff-api)
 (require 'standoff-xml)
 (require 'standoff-relations)
+
+(defgroup standoff nil
+  "Customization options for stand-off mode.")
+
+(defcustom standoff-backend nil
+  "Choose a back-end for storing annotations.
+The JSON file back-end is recommended for starters.  Type
+\"standoff-json-file\" (without quotes) into the form, then apply
+and save the new value.  You need to restart Emacs (at least to
+close the file, which was opened in stand-off mode) to get the
+newly configured back-end activated.
+
+If you already worked with stand-off mode and until now always
+dumped your annotations to file with the suffix .dump.el, then
+you will want the dummy back-end.  In this case, type
+\"standoff-dummy\" (without quotes) into the form, then apply and
+save the new value.
+
+Follow the \"Manual\" below link to get more information."
+  :group 'standoff
+  :tag "Back-End"
+  :link '(custom-manual "(standoff-en)Back-Ends")
+  :type 'symbol
+  :options '('standoff-json-file 'standoff-dummy))
 
 ;;;; Checksum of source document
 
@@ -85,7 +110,8 @@ interactively, but will have no effect, if the hash was already
 calculated. The hash will show up in the minibuffer."
   (unless standoff-source-md5
     (setq-local standoff-source-md5 (md5 (current-buffer))))
-  (message "The document's md5 checksum is: %s" standoff-source-md5))
+  (standoff-log (message "The document's md5 checksum is: %s" standoff-source-md5))
+  (standoff-log t))
 
 ;; Run from mode command directly
 ;;(add-hook 'standoff-mode-hook 'standoff-source-checksum)
@@ -241,6 +267,8 @@ backend, e.g. by automatic incrementation of an integer."
 	  (current-buffer)
 	  "Markup type: "
 	  standoff-markup-type-require-match)))
+  (standoff-log "Creating markup element from %i to %i as %s ...\n"
+		beg end markup-type)
   (let ((markup-id nil))
     (save-restriction
       (widen)
@@ -250,9 +278,10 @@ backend, e.g. by automatic incrementation of an integer."
 	(when markup-id
 	  ;; highlight the new markup
 	  (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id)
-	  ;; run hook to notify success
+	  ;; run post processing hooks
 	  (run-hook-with-args 'standoff-markup-post-functions
 			      (current-buffer) beg end markup-type markup-id))))
+    (standoff-log t)
     (deactivate-mark)))
 
 (defun standoff-markup-region-continue (beg end markup-number)
@@ -268,6 +297,8 @@ enables the user to create discontinues markup."
 	 (markup-id-from-backend nil))
     (if duplicate
 	(error "Overlapping markup with the same id and element name! Not creating a duplicate")
+      (standoff-log "Adding range to markup element %s spanning from %i to %i...\n" 
+		    markup-id beg end)
       (save-restriction
 	(widen)
 	(save-excursion
@@ -276,21 +307,10 @@ enables the user to create discontinues markup."
 	  (when markup-id-from-backend
 	    ;; highlight the new markup
 	    (standoff-highlight-markup-range (current-buffer) beg end markup-type markup-id-from-backend)
-	    ;; run hook to notify success
+	    ;; run post processing hooks
 	    (run-hook-with-args 'standoff-markup-post-functions (current-buffer) beg end markup-type markup-id-from-backend))))
+      (standoff-log t)
       (deactivate-mark))))
-
-(defun standoff-markup-notify (buf startchar endchar markup-type markup-id)
-  "Notify the creation of a markup element or range.
-This is a handler function that can be hooked to the
-`standoff-markup-post-functions' hook, which is called when ever
-an markup is being done. This function does nothing but notify
-the user with a message in the minibuffer (and in the *Messages*
-buffer)."
-  (message "Annotating from %i to %i as %s with id %s." 
-	   startchar endchar markup-type markup-id))
-
-(add-hook 'standoff-markup-post-functions 'standoff-markup-notify)
 
 (defun standoff-markup-delete-range-at-point (point)
   "Delete the range of a markup element at point.
@@ -323,6 +343,9 @@ works only if there is one and exactly one overlay."
 	  (when last-range
 	    (standoff-markup-remove-number-mapping (current-buffer) markup-inst-id))
 	  (delete-overlay ovly)
+	  (standoff-log "Deleted markup range from %i to %i as %s with id %s.\n" 
+			startchar endchar markup-type markup-inst-id)
+	  (standoff-log t)
 	  (message "... deleted."))))))
 
 ;;;; Highlighning and Hiding Markup
@@ -781,10 +804,11 @@ given by the number mapping to its id."
 		      (error "Invalid markup number")))
 	  (predicate (standoff-predicate-from-user-input (current-buffer) subj-id obj-id)))
      (list subj-id predicate obj-id)))
-  (message "Creating relation %s %s %s." subject-id predicate object-id)
+  (standoff-log "Creating relation %s %s %s ...\n" subject-id predicate object-id)
   (if (funcall standoff-relation-create-function (current-buffer) subject-id predicate object-id)
       (run-hook-with-args 'standoff-markup-changed (current-buffer))
-    (error "Creation of relation failed")))
+    (error "Creation of relation failed"))
+  (standoff-log t))
 
 ;;;; Literals
 
@@ -873,12 +897,13 @@ at point serves as subject."
 	  (val (read-string "Value: ")))
      (list markup-inst-id key val)))
   (let ((val-type (or typ (type-of val))))
-    (message "Creating attribute with literal value: %s %s %s %s %s."
+    (standoff-log "Creating attribute with literal value: %s %s %s %s %s ...\n"
 	     markup-inst-id key val val-type other-type)
     (if (funcall standoff-literal-create-function
 		 (current-buffer) markup-inst-id key val val-type other-type)
 	(run-hook-with-args 'standoff-markup-changed (current-buffer))
-      (error "Creation of attribute with literal value failed"))))
+      (error "Creation of attribute with literal value failed"))
+    (standoff-log t)))
 
 ;;;; Dumping
 
@@ -937,10 +962,15 @@ further arguments."
 
 ;;;; Displaying the Manual
 
-(defcustom standoff-info-language nil
-  "The language of the manual to show up with `standoff-display-manual'."
+(defcustom standoff-info-language "en"
+  "The language of the manual to show up with `standoff-display-manual'.
+Defaults to the english (en) manual.  There is also a german (de)
+manual.  `standoff-display-manual' is bound to ? in stand-off
+mode.  When set to nil, the system-message-locale and the
+environment variable LANG are evaluated."
   :group 'standoff
-  :type 'string)
+  :type 'string
+  :options '("en" "de"))
 
 (defun standoff-display-manual ()
   "Display the manual for stand-off mode.
@@ -950,10 +980,12 @@ Depending on language and current mode an info page is opened."
 		  system-messages-locale
 		  (getenv "LANG"))))
     (cond
-     ((string-prefix-p "de" lang)
+     ((string-prefix-p "de" lang)	; german manual
       (cond ((equal major-mode "*Relations*") (info "(standoff-de)Relationen anzeigen"))
 	    (t (info "(standoff-de)"))))
-     (t (message "There is no other manual yet but the one in German language.")))))
+     (t					; other languages -> english manual
+      (cond ((equal major-mode "*Relations*") (info "(standoff-en)Relations"))
+	    (t (info "(standoff-en)")))))))
 
 ;;;; Major Mode
 
@@ -1040,8 +1072,16 @@ are bound to commands instead.
   ;; run just before running hooks
   (standoff-markup-number-mapping-setup)
   (standoff--overlay-property-obarray-init)
-  (standoff-source-checksum))
-
+  (standoff-source-checksum)
+  ;; load the back-end if configured.
+  (if (require standoff-backend nil t)
+      (standoff-log "Stand-off mode started with back-end \"%s\".\n" standoff-backend)
+    (standoff-log "Stand-off mode started without back-end.\n")
+    (standoff-log "Value of `standoff-backend' customization variable: \"%S\"\nIts type: %s\n"
+		  standoff-backend
+		  (type-of standoff-backend))
+    (standoff-log "Please refer to the manual of stand-off mode and configure a backend.\n"))
+  (standoff-log t))
 
 (provide 'standoff-mode)
 
