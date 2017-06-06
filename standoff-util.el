@@ -4,6 +4,16 @@
 
 ;;; Code:
 
+;;;; meta data
+
+;; In order to silence the compiler, we only define, but do not initialize this variable.
+(defvar standoff-login-name)
+
+(defun standoff-util/user-name ()
+  "Return the user name configured in standoff-user-name or the login name."
+  (or standoff-login-name
+      (user-login-name)))
+
 ;;;; getting and setting the source buffer
 
 (defvar standoff-current-source-buffer nil
