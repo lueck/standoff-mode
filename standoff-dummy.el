@@ -472,6 +472,8 @@ This may be usefull for development."
    standoff-literal-delete-function 'standoff-dummy-delete-literal
    ))
 
+(add-hook 'standoff-mode-hook 'standoff-dummy-register-backend)
+
 (provide 'standoff-dummy)
 
 ;;; standoff-dummy.el ends here
