@@ -1,6 +1,6 @@
 ;;; standoff-api.el --- API for back-ends in standoff-mode
 
-;; Copyright (C) 2015 Christian Lueck
+;; Copyright (C) 2015-2017 Christian Lueck
 
 ;; This file is not part of GNU Emacs.
 
@@ -147,7 +147,7 @@ using XSD.")
 
 ;;;; Pointers to Functions to be Implemented
 
-(defvar standoff-api-evolve-make-value-function 'standoff-dummy-evolve-make-value
+(defvar standoff-api-evolve-make-value-function 'standoff-api-backend-not-configured
   "The function that evolves a data cell to the current version of the api.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
@@ -155,30 +155,30 @@ function must take the following arguments:
 BUFFER DATA-ITEM DATA-SYMBOL CELL-SYMBOL OLD-API
 ")
 
-(defvar standoff-markup-create-function 'standoff-dummy-create-markup
-  "The function that writes a markup element to some backend.
+(defvar standoff-markup-create-function 'standoff-api-backend-not-configured
+  "The function that writes a markup element to some back-end.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
 BUFFER STARTCHAR ENDCHAR MARKUP-NAME
 
 The function is expected to return the ID of the markup
-element. When storing to the backend was not successfull, it
+element. When storing to the back-end was not successfull, it
 should return nil.")
 
-(defvar standoff-markup-range-add-function 'standoff-dummy-add-range
-  "The function that adds a range to a markup element in some backend.
+(defvar standoff-markup-range-add-function 'standoff-api-backend-not-configured
+  "The function that adds a range to a markup element in some back-end.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
 BUFFER STARTCHAR ENDCHAR MARKUP-INST-ID
 
 The function is expected to return the ID of the markup
-element. When storing to the backend was not successfull, it
+element. When storing to the back-end was not successfull, it
 should return nil.")
 
-(defvar standoff-markup-read-function 'standoff-dummy-read-markup
-  "The function that gets the markup from some backend.
+(defvar standoff-markup-read-function 'standoff-api-backend-not-configured
+  "The function that gets the markup from some back-end.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
@@ -208,8 +208,8 @@ range--i.e. discontinous markup--the same values for MARKUP-NAME
 and MARKUP-INST-ID must occur in more than one of those markup
 lists.")
 
-(defvar standoff-markup-delete-range-function 'standoff-dummy-delete-range
-  "The function that deletes (a range of a) markup from some backend.
+(defvar standoff-markup-delete-range-function 'standoff-api-backend-not-configured
+  "The function that deletes (a range of a) markup from some back-end.
 This variable must be set to the function's symbol (name). The
 function should delete a markup element or only a range of this
 markup element in case of discountinous markup. The element or
@@ -220,16 +220,16 @@ BUFFER STARTCHAR ENDCHAR MARKUP-NAME MARKUP-INST-ID
 
 The function should return nil or throw an error if the range
 could not be deleted and t on successfull deletion. It's up to
-the backend to control deletion preconditions which might be:
+the back-end to control deletion preconditions which might be:
 
 - any relation to other markup elements. If the markup element
   would consist of only one range then the relation would get
-  invalid after deletion. The backend may interact with the user
+  invalid after deletion. The back-end may interact with the user
   in this case.
 
 ")
 
-(defvar standoff-markup-types-used-function 'standoff-dummy-markup-types
+(defvar standoff-markup-types-used-function 'standoff-api-backend-not-configured
   "The function that returns names the types of markup in use.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
@@ -253,8 +253,8 @@ BUFFER: the buffer the markup relates to, aka the source document
 
 The return value of the hooked functions is not evaluated at all.")
 
-(defvar standoff-predicates-used-function 'standoff-dummy-used-predicates
-  "The function which returns a list of used relation predicates from some backend. 
+(defvar standoff-predicates-used-function 'standoff-api-backend-not-configured
+  "The function which returns a list of used relation predicates from some back-end. 
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
@@ -265,19 +265,19 @@ names for the combination of subject and object. Should return
 nil or an empty true list if there are no valid predicates for
 this combination.")
 
-(defvar standoff-relation-create-function 'standoff-dummy-create-relation
-  "The function which writes a new relation to some backend.
+(defvar standoff-relation-create-function 'standoff-api-backend-not-configured
+  "The function which writes a new relation to some back-end.
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
 BUFFER SUBJECT-ID PREDICATE-NAME OBJECT-ID
 
 The function is expected to return a non-nil value, if writing
-the relation to the backend was successful, nil in case of
+the relation to the back-end was successful, nil in case of
 failure.")
 
-(defvar standoff-relations-read-function 'standoff-dummy-read-relations
-  "The function which reads relations from some backend. 
+(defvar standoff-relations-read-function 'standoff-api-backend-not-configured
+  "The function which reads relations from some back-end. 
 This variable must be set to the function's symbol (name). The
 function must take the following arguments:
 
@@ -287,8 +287,8 @@ The optional arguments should be interpreted as filter parameters
 and a value of nil in either of them should be interpreted as a
 wildcard.")
 
-(defvar standoff-relations-delete-function 'standoff-dummy-delete-relation
-  "The function that deletes a relation from some backend.
+(defvar standoff-relations-delete-function 'standoff-api-backend-not-configured
+  "The function that deletes a relation from some back-end.
 This variable must be set to the function's symbol (name). The
 function takes the following arguments:
 
@@ -299,17 +299,22 @@ arguments SUBJECT-ID PREDICATE OBJECT-ID or by RELATION-ID. In
 the first case, all duplicates of the relation should be
 removed.")
 
-(defvar standoff-literal-keys-used-function 'standoff-dummy-literal-keys-used
+(defvar standoff-literal-keys-used-function 'standoff-api-backend-not-configured
   "")
 
-(defvar standoff-literal-create-function 'standoff-dummy-create-literal
+(defvar standoff-literal-create-function 'standoff-api-backend-not-configured
   "")
 
-(defvar standoff-literals-read-function 'standoff-dummy-read-literals
+(defvar standoff-literals-read-function 'standoff-api-backend-not-configured
   "")
 
-(defvar standoff-literal-delete-function 'standoff-dummy-delete-literal
+(defvar standoff-literal-delete-function 'standoff-api-backend-not-configured
   "")
+
+(defun standoff-api-backend-not-configured (&rest args)
+  "Raise an error if function is not configured."
+  (message "No back-end configured. Please configure stand-off mode!")
+  (customize-variable 'standoff-backend))
 
 ;;;; Generations / Versions of this API
 
