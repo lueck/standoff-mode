@@ -52,7 +52,7 @@ Cf. the
 and the [OpenAnnotation](http://www.openannotation.org/spec/core/)
 ontology.
 
-## Features of `standoff-mode`##
+## Features of `standoff-mode` ##
 
 - allows discontinuous markup
 
@@ -155,12 +155,12 @@ customization dialog, when trying to create an annotation. For
 starters, the json file back-end is recommended. Write
 "standoff-json-file" (without quotes) into the form of the
 customization dialog, then apply and save the changes. You can also
-configure stand-off mode to use this backend by putting the following
+configure stand-off mode to use this back-end by putting the following
 line in your Emacs init file:
 
 	(setq standoff-backend 'standoff-json-file)
 
-## Documentation
+## Documentation ##
 
 There is a manual in german language which is installed with the
 package und can be viewed with Emacs' info-browser. Type
