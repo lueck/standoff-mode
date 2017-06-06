@@ -8,6 +8,18 @@
 (require 'cl-lib)
 (require 'json)
 (require 'standoff-api)
+(require 'standoff-util)
+
+(defun standoff-json/creation-meta-to-json (&optional created-at created-by)
+  "Serialize creation meta data to json.
+Use CREATED-AT or the current time for creation time.  Use
+CREATED-BY or the return value of `standoff-util/user-name' for
+creator."
+  (let ((timestamp (or created-at (current-time)))
+	(creator (or created-by (standoff-util/user-name))))
+    (concat
+     ", \"createdAt\": \"" (format-time-string "%FT%TZ" timestamp) "\""
+     ", \"createdBy\": \"" creator "\"")))
 
 ;;; Markup
 
@@ -22,6 +34,7 @@ offset."
    ", \"qualifiedName\": \"" typ "\""
    ", \"sourceStart\": \"" (number-to-string start) "\""
    ", \"sourceEnd\": \"" (number-to-string end) "\""
+   (standoff-json/creation-meta-to-json)
    "}"))
 
 (defun standoff-json/range-plist-to-internal (range)
@@ -78,6 +91,7 @@ OBJECT-ID."
    ", \"subjectId\": \"" subject-id "\""
    ", \"predicate\": \"" predicate "\""
    ", \"objectId\": \"" object-id "\""
+   (standoff-json/creation-meta-to-json)
    "}"))
 
 (defun standoff-json/relation-plist-to-internal (relation)
@@ -124,6 +138,7 @@ The relation is given by LITERAL-ID, SUBJECT-ID, KEY and VALUE."
    ", \"subjectId\": \"" subject-id "\""
    ", \"key\": \"" key "\""
    ", \"value\": \"" value "\""
+   (standoff-json/creation-meta-to-json)
    "}"))
 
 (defun standoff-json/literal-plist-to-internal (literal)
