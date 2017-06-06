@@ -18,6 +18,9 @@
 (require 'standoff-test-utils)
 (require 'standoff-mode)
 
+;; run tests with dummy back-end:
+(setq standoff-backend 'standoff-dummy)
+
 ;; Tests
 
 (ert-deftest standoff-markup-types-from-overlay-definition-test ()
