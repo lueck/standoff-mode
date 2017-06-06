@@ -79,9 +79,14 @@ ontology.
 - everything can be done with the keyboard an key-codes, no need to
   use the mouse
 
-- several pluggable back-ends (under development)
+- several pluggable back-ends: `json file back-end` for storing
+  annotations in a JSON file on local disk; `dummy back-end` for
+  storing annotations in s-expressions (dumped emacs-lisp data); `json
+  rest back-end` is under development and will store annotations in a
+  database exposed through a restful webservice.
 
-- manual based on GNU Texinfo, English (under development) and German
+- manual based on GNU Texinfo, English (still lacks some sections) and
+  German
 
 - makes XML-files readable for humans by optionally hiding XML-tags
   and by substituting character references with glyphs. (Note:
@@ -93,19 +98,18 @@ ontology.
 
 `standoff-mode` is under active development. Here's the roadmap:
 
+- back-end for storing annotations in a database
+
 - text comments
 
-- SQL back-end
+- improve UI
 
 ## Requirements ##
 
 Only [GNU Emacs](http://www.gnu.org/software/emacs/#Obtaining) is
 required. After the installation of the editor the `standoff-mode`
 package has to be installed. It was tested on Windows, Linux and Mac,
-with versions 24.3 and 24.5.
-
-If you want to store your markup in SQL-tables or as RDF-triples, a
-RDBMS or a SPARQL-endpoint is required.
+with versions >= 24.3.
 
 ## Installation ##
 
@@ -135,10 +139,26 @@ Alternatively you can use the menu for installing packages:
 Then search `standoff-mode`, use `i` to mark it for installation and
 `x` to install the marked package(s).
 
+To activate `standoff-mode` on a source document and start annotating,
+open that that document and type
+
+	M-x standoff-mode RET
+
 For configuration und usage see the info files (currently german
 only):
 
 	C-h i m stand-off RET
+
+Before working with stand-off mode, the back-end has to be
+choosen. Using it for the first time, you will be redirected to a
+customization dialog, when trying to create an annotation. For
+starters, the json file back-end is recommended. Write
+"standoff-json-file" (without quotes) into the form of the
+customization dialog, then apply and save the changes. You can also
+configure stand-off mode to use this backend by putting the following
+line in your Emacs init file:
+
+	(setq standoff-backend 'standoff-json-file)
 
 ## Documentation
 
