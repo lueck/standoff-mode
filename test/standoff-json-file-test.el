@@ -26,6 +26,9 @@
 (require 'standoff-test-utils)
 (require 'standoff-json-file)
 
+;; set in standoff-mode.el
+(setq standoff-login-name nil)
+
 ;;; Functions for set up and tear down
 
 (defun standoff-json-test-setup-source-buffer ()
