@@ -453,7 +453,11 @@ This may be usefull for development."
 ;; This actually restores the default values for handler function
 ;; variables defined in `standoff-dummy.el'.
 (defun standoff-dummy-register-backend ()
+  "Register the dummy backend.
+See standoff-api.el for the functions."
   (setq
+   ;; api evolution
+   standoff-api-evolve-make-value-function 'standoff-dummy-evolve-make-value
    ;; markup
    standoff-markup-create-function 'standoff-dummy-create-markup
    standoff-markup-range-add-function 'standoff-dummy-add-range
