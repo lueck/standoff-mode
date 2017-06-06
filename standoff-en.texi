@@ -1,0 +1,1065 @@
+\input texinfo.tex @c -*-texinfo-*-
+
+@c Documentation for Emacs standoff-mode.
+
+@setfilename standoff-en.info
+@documentencoding UTF-8
+@documentlanguage en
+
+@include version.texi
+@ifclear VERSION
+@set VERSION 
+@end ifclear
+
+@settitle Stand-Off Mode @value{VERSION} Manual (english)
+
+@dircategory Emacs
+@direntry
+* Stand-Off Mode: (standoff-en).Creating stand-off markup. English manual.
+@end direntry
+
+@c semantic markup for this file
+@alias emenu = samp @c menu entry
+@alias markuptype = samp @c markup type
+@alias markuplabel = samp @c markup label
+
+@macro nsarb{TYPE}
+@c @markuptype{http://beispiel.fernuni-hagen.de/ontologies/beispiel#\TYPE\}
+@markuptype{http://arb.fernuni-hagen.de/owl/bsp#\TYPE\}
+@end macro
+
+@copying
+Copyright @copyright{} 2015 Christian Lück
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License.''
+@end quotation
+@end copying
+
+@titlepage
+@title Stand-Off Mode 
+@subtitle User Manual
+
+@author Christian Lück
+
+@c  The following two commands
+@c  start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@c Published by ...
+@end titlepage
+
+@c So the toc is printed at the start.
+@contents
+
+@ifnottex
+@node Top, Introduction, (dir), (dir)
+@top Stand-Off Mode
+
+User Manual for Stand-Off Mode, version @value{VERSION}.
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction::
+* Starting and quitting stand-off mode::
+* Markup elements::
+* Relations::
+* Attributes::
+* Comments::
+* Configuration::
+* GNU Free Documentation License::
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Introduction
+
+* Stand-Off Markup::
+* Character Offsets::
+* This manual::
+
+Starting and quitting stand-off mode
+
+* Stand-Off Mode aktivieren::
+* Lesbarkeit des Buffers::
+* Speichern::
+* Bereits früher erfasstes  Markup laden::
+
+Markup elements
+
+* Erfassen::
+* Hervorheben und Ausblenden::
+* Navigieren::
+* Löschen::
+* Diskontinuierliches Markup::
+
+Relations
+
+* Form::
+* Erfassen: Relationen erfassen.
+* Anzeigen: Relationen anzeigen.
+* Löschen: Relationen löschen.
+
+Attributes
+
+* Literal-Attribut erfassen::
+* Anzeigen: Attribute anzeigen.
+* Löschen: Attribute löschen.
+
+Configuration
+
+@c TODO
+
+@end detailmenu
+@end menu
+
+@node Introduction, Starting and quitting stand-off mode, Top, Top
+@chapter Introduction
+
+Standoff-mode turns Emacs into a tagger for annotating texts. In
+contrast to internal markup, when creating stand-off markup, aka
+external markup, no tags are inserted into the document. But the
+annotations are stored somewhere else and refer the annotated file by
+character offsets.
+
+Standoff-mode lets you create different types of annotations: a)
+@emph{markup elements}, i.e. passages or spans of your text, b)
+@emph{relations}, which interrelate two such markup elements in a
+directed fashion, c) @emph{Attributes} on markup elements, which are
+key-value pairs, d) free text @emph{comments} on one (or more) markup
+elements.
+
+@menu
+* Common terms::
+* Character offsets::
+* This manual::
+@end menu
+
+
+@node Common terms, Character offsets, , Introduction
+@section Common terms
+
+This manual makes use of some common terms regarding standoff markup.
+
+@table @b
+
+@item source document
+That's the document, the external annotations refer to. It may be a
+plain text file, but may also contain markup, e.g. XML-Tags.
+
+@item internal markup
+That's the markup, which is already contained in the source document,
+e.g. the XML-Tags contained there.
+
+@item stand-off markup / annotations
+That's the markup, which exits beside the source document. Stand-Off
+mode produces this kind of markup.
+
+@item external document
+That's a document, that contains stand-off annotations, which refer an
+other document.
+
+@item internalizing
+That's a procedure, which adds external annotations into a source
+document, e.g. by producing a (new) XML document. This is not done by
+standoff-mode, but by an other tool. See
+@url{http://github.com/lueck/standoff-tools}.
+
+@item externalizing
+That's a procedure, which extracts annotations from a document and
+generates external markup from them.
+
+@end table
+
+See also
+@url{http://www.tei-c.org/release/doc/tei-p5-doc/de/html/SA.html#SASO}
+and @url{http://www.openannotation.org/spec/core/}.
+
+@node Character offsets, This manual, Stand-off markup, Introduction
+@section Character offsets
+
+An @emph{external document} produced by stand-off mode looks like this:
+
+@example
+(setq standoff-markup-read-function-dumped
+ (quote
+  (("ac06be81-d86e-4fe5-b84e-4952b1e571c9"
+    "http://beispiel.fernuni-hagen.de/ontologies/beispiel#beispiel"
+    28095
+    28100
+    "Dante")
+   ("a29ca667-0f99-4933-b0aa-8a7b1c1929e9"
+    "http://beispiel.fernuni-hagen.de/ontologies/beispiel#konzept"
+    28057
+    28070
+    "Große Dichter")
+   ...)))
+
+(setq standoff-source-md5-dumped "a2997fcd8c318048abf34889212c1982")
+@end example
+
+That's a representation of the external markup in so called
+s-expressions, which is used by the dummy backend which simply dumps
+emacs lisp data into a file. There is also a JSON backend. See @c TODO
+for more info about representation formats and backends.
+
+All text spans from the source document, that where annotated, make up a
+list of markup elements, stored in the variable
+@code{standoff-markup-read-function-dumped}. Each markup element is
+delimited by paratheses and has positional arguments.
+
+The first positional arguments is made from 32 letters and digits,
+separted by '-' into 5 blocks, and is a universally unique identifier
+(UUID) of the markup element.
+
+The second positional argument, which has the form of a URI, gives the
+type or class of the markup element. In the first case, it's a
+``beispiel'' (german for ``example'') from the namespace
+@code{http://beispiel.fernuni-hagen.de/ontologies/beispiel}, in the
+second case it is ``konzept'' (german for ``term'') from the same
+namespace.
+
+The next two positional arguments give the @emph{charater offsets} of
+the start and end of the text span in the source document. Here, the
+annotated passage spans from character 28095 to 28100. 
+
+The fifth positional entry is the string from the source document, that
+spans from the start to the end character offset. The latin capital
+letter @code{D} in @code{Dante} has position 28095, the @code{e} in the
+end of the name has position 28099.
+
+Further down there is the checksum for the source document. The checksum
+is calculated, when the document is opened. As soon as the source
+document is changed, the checksum changes and stand-off mode alarms you
+with an error, because the @emph{character offsets} are likely to be
+incorrect now.
+
+@node This manual, , Character offsets, Introduction
+@section This manual
+
+This manual is available in three formats: PDT, as HTML, and as info
+files, which can be read using Emacs' info browser.
+
+The commands offered by stand-off mode are represented in tables with
+three columns throughout this manual. The first column gives the key
+code for the command. The second column gives the menu entry in the
+Stand-Off menu. The third column gives the command name. The manual and
+other manuals can be read using the info browser in these three ways:
+
+@multitable @columnfractions .08 .40 .50
+@headitem Key @tab Menu @tab command 
+@item @kbd{?}
+@tab @emenu{Manual}
+@tab @code{standoff-display-manual}
+@item @kbd{C-h i}
+@tab @emenu{Help --> More Manuals --> All other (info)}
+@tab @code{info}
+@end multitable
+
+So typing @kbd{?} opens this manual, provided the current buffer is in
+stand-off mode. Alternatively you could open it using the menu entry
+@emenu{Manual} under the @emenu{Stand-Off} menu. You could also call the
+command @code{standoff-display-manual} using its name.
+
+All installed manuals can be viewed by the key code @kbd{C-h i} etc.
+
+
+
+Um in Emacs ein Kommando interaktiv über seinen Namen aufzurufen, geben
+Sie die Tastenkombination @kbd{M-x} gefolgt vom Namen des Kommandos,
+gefolgt von @kbd{@key{RET}} (= Eingabetaste) ein, in diesem Fall also
+@kbd{M-x} @code{standoff-display-manual} @kbd{@key{RET}}. Die der
+Tastenkombination @kbd{M-x} folgende Eingabe des Kommandonamens ist am
+unteren Ende des Emacs-Fensters, im sogenannten Minibuffer, mitlesbar.
+
+@kbd{M-x} ist die Kombination aus Meta-Taste und @kbd{x}. Die Meta-Taste
+ist der zweite @emph{modifier key} neben @kbd{@key{CTRL}}. Auf
+herkömmlichen Tastaturen trägt die Meta-Taste die Aufschrift
+@kbd{@key{ALT}}. @kbd{M-x} heißt also @kbd{@key{ALT}} halten und dabei
+einmal @kbd{x} tippen. Ist auf der Tastatur die Taste @kbd{@key{ALT}}
+nicht vorhanden, kann für die Meta-Kombination @kbd{M-} ersatzweise die
+Taste @kbd{@key{ESC}} einmal kurz gedrückt werden (nicht halten).
+@ifinfo
+@xref{User Input,,, emacs}
+@end ifinfo
+
+Nach der Aktivierung von Stand-Off Mode ist das Aufrufen eines Kommandos
+über seinen Namen bei den allerwenigsten Befehlen von Stand-Off Mode
+nötig. Nur solche Befehle, die riskant für Ihre Daten sind und die Sie
+nur anwenden sollten, wenn Sie genau wissen, was Sie tun, sind nicht
+über das Menü erreichbar.
+
+
+@ifset PRAKTIKUM
+@node Hinweise zur Arbeit mit GNU Emacs, Stand-Off Mode starten und beenden, Einführung, Top
+@chapter Hinweise zur Arbeit mit GNU Emacs
+
+GNU Emacs ist ein sehr funktionsreiches Programm zur Verarbeitung von
+Text-Dateien unterschiedlichster Formate. Konzipiert als Text-Editor und
+Werkzeug für Programmierer, hat es aufgrund seiner
+Programmierschnittstelle Erweiterung und Anwendung in verschiedenen
+Bereichen gefunden. Stand-Off Mode ist solch eine Erweiterung, die neue
+Anwendungsfelder erschließt.
+
+Der Gebrauch von GNU Emacs ist gewöhnungsbedürftig, weswegen hier einige
+Grund-Konzepte vorgestellt werden.
+
+@table @b
+
+@item Kommandos
+Über die Menü-Leiste, Icons oder Tastenkombinationen eine Operation
+ausführen, heißt, dass ein Kommando aufgerufen und ausgeführt wird.
+
+@item Echo Area/Minibuffer
+Am unteren Ende des Fensters befindet sich der sogenannte
+@emph{Minibuffer} bzw. die @emph{Echo Area}. Hier werden von Kommandos
+erzeugte Meldungen angezeigt (@emph{Echo}), oder ein aufgerufenes
+Kommando wartet auf die Eingabe weiterer Parameter durch den Benutzer
+(@emph{Minibuffer}).
+
+@item @kbd{C-g} 
+Ein teilweise ausgeführtes Kommando, das auf weitere Eingaben durch den
+Benutzer wartet, kann durch die Tasten-Kombination @kbd{C-g} abgebrochen
+werden. @kbd{C-g} heißt: Die Taste @key{CTRL} (=@key{STRG}) gedrückt
+halten und zusätzlich kurz einmal die Taste @kbd{g} drücken. Dieses
+Kommando zum Abbruch eines Kommandos ist das wichtigste Kommando bei der
+Arbeit mit Emacs. Sie sollten sich die Tastenkombination merken und
+nicht scheuen, sie zu nutzen. Die Eingabe von @kbd{C-g} führt zum Echo
+``Quit'' in der Echo Area.
+
+@item Buffer
+Buffer sind ein Grund-Konzept von Emacs. In einem Buffer wird
+beispielsweise der Inhalt einer Datei angezeigt. Aber ein Buffer kann
+auch andere Daten darstellen. So werden in Stand-Off etwa die
+Eigenschaften eines ausgewählten Markup-Elements in einem Buffer
+angezeigt.
+
+Zur Laufzeit von Emacs gibt es nicht nur einen Buffer, sondern eine
+ganze Reihe von Buffern. Über das Menü @emenu{Buffers} kann man
+auswählen, welcher Buffer in den Vordergrund gehoben werden soll.
+
+@item Window
+Buffer werden in einem Window dargestellt. Normalerweise wird im Fenster
+von Emacs ein Window mit einem Buffer dargestellt. Aber es kann auch
+eine (vertikale oder horizontale) Teilung vorgenommen werden, so dass
+verschiedene Buffer gleichzeitig im Vordergrund sind. Solche Teilungen
+können im Menü @emenu{Datei} unter @emenu{New Window ...}  vor- oder
+unter @emenu{Remove other Window} zurückgenommen werden.
+
+@item Frame
+Frames in Emacs entsprechen Fenstern in Windows. Probieren Sie aus, was
+sich im Menü @emenu{File} hinter den Kommandos @emenu{New Frame}
+bzw. @emenu{Delete Frame} verbirgt.
+
+@item Point
+Point in Emacs ist die Position des mit der Tastatur gesteuerten Cursers
+(also nicht der Mauszeiger).
+
+@item Mark
+Emacs kann sich Positionen in einer Datei (bzw. in einem Buffer) merken
+(und auf Kommando mit dem Point dahin zurückkehren). Zudem wird ein Mark
+benötigt, um eine Text-Passage auszuwählen. Eine Art einen Mark zu
+setzen, ist die Auswahl einer Text-Passage mit der Maus. Dabei wird ein
+Mark auf die Stelle gesetzt, an welcher die linke Maustaste zuerst
+gedrückt wurde; der Point wird dann auf die Position gesetzt, wo die
+Maustaste wieder losgelassen wird.
+
+Statt mit der Maus kann ein Mark auch mit der Tastatur gesetzt werden,
+nämlich mit der Tastenkombination @kbd{C-@key{SPC}}, also: @kbd{CTRL}
+(=@kbd{@key{STRG}}) halten und @kbd{@key{SPC}} (=@kbd{@key{Leertaste}})
+drücken. Probieren Sie es aus, auch zweimal @kbd{C-@key{SPC}} nach
+einander, bewegen Sie zwischendurch den Point mittels der Pfeiltasten
+ihrer Tastatur, und denken Sie an @kbd{C-g}. Halten Sie bei diesen
+Experimenten auch den Minibuffer im Auge. Mit @kbd{C-u C-@key{SPC}}
+(d.h. @kbd{@key{CTRL}} halten und nach einander @kbd{u} und
+@kbd{@key{SPC}} drücken) können Sie zu zuvor gesetzten Marks
+zurückkehren. @b{Zur Übung:} Experimentieren Sie so lange, bis sie
+verstehen, worin der Unterschied zwischen der einfachen und der
+doppelten Anwendung der Tastenkombination @kbd{C-@key{SPC}} besteht.
+
+@item Region
+Die Region oder @emph{active Region} bezeichnet die Text-Passage
+zwischen dem aktiven Mark am einen Ende und Point am anderen, also den
+Bereich, der durch Maus-Auswahl oder durch die eben beschriebenen
+Tastenkombinationen hervorgehogen wird. Die Region benötigen Sie in
+Stand-Off Mode, um eine Text-Passage mit Markup auszuzeichnen.
+
+@item Modeline
+Direkt über dem Minibuffer befindet sich die (grau hinterlegte)
+Modeline, eine Statuszeile, in der Informationen zum drüber angezeigten
+Buffer angezeigt werden. Von links nach rechts: Datei geändert etc.;
+Name des Buffers bzw. der Datei; vertikale Position innerhalb des
+Buffers in Prozent; Nummer der Zeile, in der sich Point befindet; Emacs
+Mode in Klammern, z.B. Stand-Off Mode.
+
+@item Mode
+@emph{Modes} gibt es für die verschiedensten Dateiformate und für die
+verschiedensten Operationen. Modes stellen Kommandos mit
+unterschiedlichen Funktionen bereit. Der aktive Modus wird in der
+Modeline angezeigt.
+
+@item Menüs
+Anders als in vielen anderen Programmen mit graphischer
+Benutzeroberfläche sind die Menüs in Emacs nicht statisch, sondern
+hängen vom Mode ab. Weil das @emenu{Stand-Off}-Menü nur im Stand-Off
+Mode sinnvoll ist, ist es auch nur vorhanden, wenn sich der im aktiven
+Window dargestellte Buffer im Stand-Off Mode befindet. Wenn man sich
+gerade im Minibuffer aufhält (also Tastatur-Eingaben im Minibuffer
+erscheinen), ist das Stand-Off-Menü verschwunden, weil sich der
+Minibuffer eben nicht im Stand-Off Mode befindet. Wenn das Menü gerade
+nicht sichtbar ist, dann sollte der Abbruch des gerade ausgeführten
+Kommandos mittels @kbd{C-g} und gegebenenfalls das einfache Klicken mit
+dem Mauszeiger auf den Buffer mit dem zu annotierenden Quell-Dokument
+das Menü @emenu{Stand-Off} wieder zurückbringen.
+
+@item read-only Buffer
+Ein Ändern des Quell-Dokuments ist nicht sinnvoll, weil mit jeder
+Änderung die Referenzierung des externen Markups neu adjustiert werden
+müsste. Daher ist ein Buffer im Stand-Off Mode read-only.
+
+@item Tastenkombinationen
+GNU Emacs macht umfänglich Gebrauch von Tastenkombinationen.
+
+In solchen Buffern, die read-only sind, können Kommandos einfach ohne
+@kbd{@key{STRG}}-Kombination mit Tasten verbunden werden, weil diese ja
+nicht für das Einfügen von Zeichen benötigt werden. Stand-Off Mode macht
+davon Gebrauch. Die entsprechenden Tasten sind im Menü vermerkt.
+
+@c @item @kbd{M-x}
+@c Kommandos können nicht nur über das Menü, Icons oder Tastenkombinationen
+@c aufgerufen werden, sondern auch über ihren Namen. Wechseln Sie dazu
+@c zunächst in den Buffer, mit den Daten, die Sie mit dem Kommando
+@c verarbeiten wollen. Geben Sie dann die Tastenkombination @kbd{M-x} ein,
+@c d.h. @kbd{@key{ALT}} halten und @kbd{x} drücken (oder alternativ
+@c @kbd{@key{ESC}} drücken und dann @kbd{x} drücken), und geben Sie im dann
+@c aktiven Minibuffer den Namen des Befehls ein.
+
+@c Nach der Aktivierung von Stand-Off Mode ist dieses Vorgehen bei den
+@c allerwenigsten Befehlen von Stand-Off Mode nötig. Nur solche Befehle,
+@c die riskant für Ihre Daten sind und die Sie nur anwenden sollten, wenn
+@c Sie genau wissen, was Sie tun, sind nicht über das Menü erreichbar.
+
+@end table
+
+Für eine umfassende Darstellung sei auf die gute
+@url{http://www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf,Einführung
+von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen} verwiesen und
+auf das englischsprachige
+@ifinfo
+Manual zu GNU Emacs. @xref{Top,,, emacs}.
+@end ifinfo 
+@ifnotinfo
+@url{https://www.gnu.org/software/emacs/manual/emacs.html,Manual zu GNU Emacs} verwiesen.
+@end ifnotinfo
+
+@end ifset
+
+@ifset PRAKTIKUM
+@node Stand-Off Mode starten und beenden, Markup-Elemente, Hinweise zur Arbeit mit GNU Emacs, Top
+@end ifset
+@ifclear PRAKTIKUM
+@node Stand-Off Mode starten und beenden, Markup-Elemente, Einführung, Top
+@end ifclear
+@chapter Stand-Off Mode starten und beenden
+
+
+@menu
+* Stand-Off Mode aktivieren::
+* Lesbarkeit des Buffers::
+* Speichern::
+@ifset PRAKTIKUM
+* Buffer bzw. Datei schließen und Emacs beenden::
+@end ifset
+* Bereits früher erfasstes  Markup laden::
+@end menu
+
+
+
+@node Stand-Off Mode aktivieren, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden, Stand-Off Mode starten und beenden
+@section Stand-Off Mode aktivieren
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab 
+@tab @code{standoff-mode}
+@end multitable
+
+Nach dem Öffnen einer Datei und ihrer Darstellung in einem Buffer kann
+für diesen Buffer der Stand-Off Mode aktiviert werden durch Eingabe von
+@kbd{M-x standoff-mode @kbd{RET}}, also kurzes Drücken von
+@kbd{@key{ESC}}, gefolgt von einem kurzen Drücken von @kbd{x}, gefolgt
+von der Eingabe von @code{standoff-mode} im dann aktiven Minibuffer und
+anschließendes Betätigen der Eingabe-Taste.
+
+@ifset PRAKTIKUM
+Die Konfigurationsdateien, die im Rahmen des Praktikums im Archiv des
+Beispiels mitgeliefert werden, veranlassen Emacs, beim Öffnen der
+verwendeten Quell-Dokumente mit der Endung @code{.TEI-P5.xml}
+automatisch in den Stand-Off Mode zu wechseln. Deswegen sollte nicht
+nötig sein, dieses Kommando interaktiv aufzurufen.
+@end ifset
+
+Im Stand-Off Mode ist der Buffer read-only, ein Editieren des Textes ist
+also nicht möglich. In der Modeline wird (Stand-Off) als aktiver Modus
+angezeigt. Zudem erscheint im Hauptmenü der Punkt @emenu{Stand-Off}.
+
+Bei Aktivierung von Stand-Off Mode werden bereits früher erfasste
+Annotationen geladen. @xref{Bereits früher erfasstes Markup laden}.
+
+
+@node Lesbarkeit des Buffers, Speichern, Stand-Off Mode aktivieren, Stand-Off Mode starten und beenden
+@section Lesbarkeit des Buffers
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab @emenu{Hide/Show XML-tags}
+@tab @code{standoff-xml-tags-invisible}
+@item
+@tab @emenu{Substitute character references with glyphs}
+@tab @code{standoff-xml-toggle-char-ref-glyph-substitute}
+@end multitable
+
+Mit diesen beiden Kommandos kann die Lesbarkeit des Buffers verbessert
+werden. Tags, d.h. Zeichenketten in spitzen Klammern wie @code{<p>},
+lassen sich ausblenden. Character References der Form @code{&#xNNNN;}
+lassen sich durch das entsprechende Unicode-Zeichen in der Darstellung
+ersetzen, zum Beispiel @code{&#x017F;} durch das lange s der alten
+Fraktur-Schrift. Nochmaliges Aufrufen des Kommandos macht die Tags
+bzw. Character References wieder sichtbar.
+
+@ifset PRAKTIKUM
+Bei der Arbeit mit den @code{TEI-P5.xml}-Dateien des Archivs des
+Beispiels sind das Ausblenden der Tags wie das Ersetzen der Character
+References sehr zu empfehlen, weil diese Dateien sonst für das
+menschliche Auge kaum lesbar sind.
+
+Insbesondere das Ersetzen der Character-References ist bei den größeren,
+ein ganzes Buch umfassenden Dateien im Archiv des Beispiels
+rechen-aufwendig und kann mitunter eine Minute dauern.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Speichern, Buffer bzw. Datei schließen und Emacs beenden, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden
+@end ifset
+@ifclear PRAKTIKUM
+@node Speichern, Bereits früher erfasstes Markup laden, Lesbarkeit des Buffers, Stand-Off Mode starten und beenden
+@end ifclear
+@section Speichern
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{u}
+@tab @emenu{Dump to file (SAVE)}
+@tab @code{standoff-dump-elisp}
+@end multitable
+
+Mit diesem Kommando wird das erfasste Markup gespeichert. Da es sich um
+Stand-Off-Markup handelt, wird es nicht in der bearbeitete Datei,
+sondern extern gespeichert. Die Datei, in der es gespeichert wird, ist
+nach Aufruf des Kommandos im Minibuffer bzw. in einem Datei-Dialog
+anzugeben. Voreingestellt ist eine Datei, die denselben Dateinamen
+trägt, wie das Quell-Dokument, jedoch erweitert durch die Endung
+@code{.dump.el}. Wenn eine Datei dieses Namens vorliegt, wird sie bei
+Aktivierung von Stand-Off Mode geladen.
+
+@ifset PRAKTIKUM
+Deshalb ist es sehr empfehlenswert, beim Speichern einfach diesen
+voreingestellten Namen durch Drücken der Return-Taste @kbd{@key{RET}} zu
+bestätigen.
+@end ifset
+
+Sofern bereits eine Datei dieses Namens existiert, erstellt Emacs vor
+dem Überschreiben der Datei eine Sicherungskopie mit dem Dateinamen
+@code{.dump.el~}.
+
+@ifset PRAKTIKUM
+Kopieren Sie bitte die @code{dump.el}-Datei regelmäßig während Ihrer
+Arbeit im Archiv des Beispiels, indem Sie den Dateinamen beispielsweise
+vorn um ein Datum ergänzen,
+z.B. @code{2015-06-02-rosenkranz_aesthetik_1853.TEI-P5.xml.dump.el} für
+den Stand Ihrer Arbeit vom 2ten Juni 2015. (Die Form JJJJ-MM-TT -- also
+vierstelliges Jahr, zweistelliger Monat und zweistelliger Tag -- kann
+durch den Computer anders als das im Deutschen gesprochene Datum
+Tag-Monat-Jahr sinnvoll sortiert werden.) Wenn Sie an einem Tag mehrere
+Sicherungen machen wollen, empfiehlt sich hinter dem Datum die Ergänzung
+durch die Uhrzeit oder durch eine Zähl-Ziffer,
+z.B. @code{2015-06-02_3_rosenkranz_aesthetik_1853.TEI-P5.xml.dump.el}
+für die dritte Sicherungskopie am 2. Juni.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Buffer bzw. Datei schließen und Emacs beenden, Bereits früher erfasstes  Markup laden, Speichern, Stand-Off Mode starten und beenden
+@section Buffer bzw. Datei schließen und Emacs beenden
+
+@multitable @columnfractions .09 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{C-x k}
+@tab @emenu{File --> Close}
+@tab @code{kill-buffer}
+@item @kbd{C-x C-c} 
+@tab @emenu{File --> Quit}
+@tab @code{save-buffers-kill-terminal}
+@end multitable
+
+Mit diesen Kommandos schließen Sie die Datei bzw. Emacs.
+
+Denken Sie daran, vorher Ihre Arbeiten zu sichern. @xref{Speichern}.
+@end ifset
+
+
+@ifset PRAKTIKUM
+@node Bereits früher erfasstes  Markup laden,  , Buffer bzw. Datei schließen und Emacs beenden, Stand-Off Mode starten und beenden
+@end ifset
+@ifclear PRAKTIKUM
+@node Bereits früher erfasstes  Markup laden,  , Speichern, Stand-Off Mode starten und beenden
+@end ifclear
+@section Bereits früher erfasstes Markup laden
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item
+@tab
+@tab @code{standoff-dummy-load-dumped}
+@end multitable
+
+Mit diesem Befehl lassen sich Markup-Daten aus einer Emacs-lisp-Datei
+mit der Endung @code{.el} laden. Das Kommando fragt im Minibuffer
+bzw. in einem Datei-Dialog-Fenster nach der zu ladenden Datei.
+
+Beim Aktivieren von Stand-Off Mode wird dieses Kommando automatisch
+ausgeführt und versucht, die Datei zu laden, die denselben Dateinamen
+wie das geöffnete Quell-Dokument, erweitert durch die Endung
+@code{.dump.el}, hat. Der Befehl wird also nur benötigt, um in einer
+anders benannten Datei gespeichertes Markup zu laden.
+
+
+@node Markup-Elemente, Relationen, Stand-Off Mode starten und beenden, Top
+@chapter Markup-Elemente
+
+Markup-Elemente sind die Grund-Bausteine der Text-Annotation. Mit ihnen
+wird eine Passage eines Textes ausgezeichnet. Alle anderen in den
+folgenden Kapiteln beschriebenen Bausteine -- Relationen, Attribute und
+Kommentare -- beziehen sich auf Markup-Elemente.
+
+Jedes Markup-Element hat einen Start- und einen End-Punkt im
+Quell-Dokument, zeichnet darin also eine bestimmte Text-Passage
+aus. Zudem ist es einem Typ zugehörig (ist Instanz einer Klasse in
+bestimmter Hinsicht gleichartige Dinge auszeichnender Markup-Elemente),
+d.h. es zeichnet die Passage als @emph{etwas} aus, z.B. als
+@emph{Person}, als @emph{Ort}, als @emph{Beispiel} etc. Außerdem hat es
+eine Kennziffer, mit der es identifiziert werden kann.
+
+Nach dem Erstellen wird ein Markup-Element im Buffer des Quell-Dokuments
+dargestellt, indem die entsprechende Text-Passage farblich hervorgehoben
+wird. Außerdem werden am Start- und End-Punkt Klammern sowie die
+Kennziffer in den Text eingeschoben. Klammern und Kennziffern sind aber
+nur in der Darstellung vorhanden (technisch als Overlay), nicht
+tatsächlich in die Datei des Quell-Dokuments; deswegen kann man den
+@emph{Point} auch nicht an einer Klammer oder Kennziffer
+positionieren. Der Typ wird als Tooltip angezeigt, also in einem gelben
+Kasten, der erscheint, nachdem der Mauszeiger über dem Element
+positioniert worden ist.
+
+@ifset PRAKTIKUM
+Im Praktikum sollen Sie Passagen des Textes als @markuptype{Beispiel}
+auszeichnen, andere Passagen als @markuptype{Beispiel-Markierung},
+wieder andere als @markuptype{Konzept} oder @markuptype{Kontext}. Dafür
+stehen Ihnen folgende Markup-Typen zur Verfügung:
+
+@table @markuplabel
+@item Beispiel
+@nsarb{beispiel}
+@item Beispiel-Markierung
+@nsarb{marker}
+@item Konzept
+@nsarb{konzept}
+@item Kontext
+@nsarb{kontext}
+@end table
+
+@end ifset
+
+@menu
+* Erfassen::
+* Hervorheben und Ausblenden::
+* Navigieren::
+* Löschen::
+* Diskontinuierliches Markup::
+@end menu
+
+@node Erfassen, Hervorheben und Ausblenden, Markup-Elemente, Markup-Elemente
+@section Erfassen
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{m}
+@tab @emenu{Create new markup element}
+@tab @code{standoff-markup-region}
+@end multitable
+
+Mit diesem Kommando wird ein neues Markup-Element erfasst. Es erstreckt
+sich über die @emph{active Region}, also den ausgewählten
+Text-Ausschnitt. Im Minibuffer wird nach dem Typ des zu erfassenden
+Elements gefragt. Durch Drücken von @kbd{@key{TAB}}
+(=@kbd{@key{Tabulator}}) erhält man eine Auswahl bzw. eine begonnene
+Eingabe wird vervollständigt. Das neu erstellte Element wird visuell
+hervorgehoben (highlight).
+
+@c @xref{Markup-Typ}, wo eine Beschränkung der Eingabe des Typs
+@c konfiguriert wird.
+
+@ifset PRAKTIKUM
+Für das Praktikum im Archiv des Beispiels ist Emacs so konfiguriert,
+dass die Auswahl des Types auf vordefinierte Typen beschränkt ist.
+@end ifset
+
+
+@node Hervorheben und Ausblenden, Navigieren, Erfassen, Markup-Elemente
+@section Hervorheben und Ausblenden
+
+@multitable @columnfractions .05 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{L} 
+@tab @emenu{Highlight markup in buffer}
+@tab @code{standoff-highlight-markup-buffer}
+@item
+@tab @emenu{Highlight markup in region}
+@tab @code{standoff-highlight-markup-region}
+@item @kbd{l}
+@tab @emenu{Highlight markup with number}
+@tab @code{standoff-highlight-markup-by-number}
+@item @kbd{H}
+@tab @emenu{Hide markup in buffer}
+@tab @code{standoff-hide-markup-buffer}
+@item
+@tab @emenu{Hide markup in region}
+@tab @code{standoff-hide-markup-region}
+@item @kbd{h}
+@tab @emenu{Hide markup at point}
+@tab @code{standoff-hide-markup-at-point}
+@item @kbd{ħ} @c (=@kbd{@key{Alt Gr}-h})
+@tab @emenu{Hide markup with number}
+@tab @code{standoff-hide-markup-by-number}
+@end multitable
+
+Mit diesen Kommandos lassen sich Markup-Elemente hervorheben (highlight)
+oder die Hervorhebung ausschalten (hide). Sie verändern nicht den
+Bestand der Markup-Elemente, nur ihr Anzeige-Status wird verändert.
+
+Das Ausschalten von Hervorhebungen kann bisweilen von Vorteil sein, wenn
+dadurch die Übersichtlichkeit steigt und exakter festgelegt werden kann,
+von wo bis wo ein neu aufzunehmendes Markup-Element sich erstrecken
+soll. Außerdem sind einige Kommandos, etwa das zum Löschen, darauf
+angewiesen, dass man den @emph{Point} über @emph{genau einem}
+hervorgehobenem Element positioniert. Das Ausschalten der Hervorhebung
+von anderen überlappenden Elementen dient dann der Desambiguierung der
+Auswahl.
+
+@node Navigieren, Löschen, Hervorheben und Ausblenden, Markup-Elemente
+@section Navigieren
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{n}
+@tab @emenu{Navigate to next highlighted element}
+@tab @code{standoff-navigate-next}
+@item @kbd{p}
+@tab @emenu{Navigate to previous highlighted element}
+@tab @code{standoff-navigate-previous}
+@end multitable
+
+Mit diesen beiden Kommandos kann von einem hervorgehobenem
+Markup-Element zum nächsten und zurück navigiert werden, d.h. der
+@emph{Point} springt.
+
+
+@node Löschen, Diskontinuierliches Markup, Navigieren, Markup-Elemente
+@section Löschen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{d}
+@tab @emenu{Delete markup at point}
+@tab @code{standoff-markup-delete-range-at-point}
+@end multitable
+
+Zum Löschen eines Markup-Elements ist der @emph{Point} auf dieses
+Element zu positionieren. Es muss zudem hervorgehoben sein (highlight),
+und es muss sich um das einzige hervorgehobene Element an der Position
+von @emph{Point} handeln, überlappende andere Elemente sind also
+auszublenden. Wird nicht genau ein hervorgehobenes Element an
+@emph{Point} gefunden, erfolgt eine Fehlermeldung.
+
+@node Diskontinuierliches Markup,  , Löschen, Markup-Elemente
+@section Diskontinuierliches Markup
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando 
+@item @kbd{M}
+@tab @emenu{Continue markup element}
+@tab @code{standoff-markup-region-continue}
+@end multitable
+
+Ein Markup-Element kann aus mehreren, nicht zusammenhängenden
+Text-Passagen bestehen. Solches diskontinuierliches Markup wird erzeugt,
+indem zu einem bestehenden Markup-Element eine weitere Text-Passage
+(@emph{range}) hinzugefügt wird. Dazu dient dieses Kommando. Vor Aufruf
+ist die Text-Passage etwa mittels der Maus auszuwählen. Nach Aufruf des
+Kommandos wird man im Minibuffer nach der Nummer des zugehörigen
+Elements gefragt.
+
+Die komplizierte Auswahl beim Löschen ist nötig, weil Stand-Off Mode
+sogenanntes diskontinuierliches Markup zulässt. Eine Auswahl über die
+Nummer ist bei diskontinuierlichem Markup ambig.
+
+@ifset PRAKTIKUM
+Im Archiv des Beispiels ist die Erzeugung von diskontinuierlichem Markup
+häufig nötig.
+@end ifset
+
+
+@node Relationen, Attribute, Markup-Elemente, Top
+@chapter Relationen
+
+Relationen setzen zwei Markup-Elemente miteinander in
+Beziehung. Aufgrund ihrer Form gewinnen Annotationen durch Relationen
+zwischen Elementen an Ausdrucksstärke.
+
+@ifset PRAKTIKUM
+Im Archiv des Beispiels sind Relationen ganz besonders wichtig, denn
+ohne sie blieben die ausgezeichneten Markup-Elemente
+@markuptype{Beispiel}, @markuptype{Marker}, @markuptype{Konzept} und
+@markuptype{Kontext} ganz unverbunden. Die Datenbank wäre nicht in der
+Lage, einen @markuptype{Marker} einem @markuptype{Beispiel}
+zuzuordnen. Und über die Verbindung der Elemente untereinander hinaus:
+Über die Relation erfolgt auch die Kategorisierung der Beispiele, denn
+ein @markuptype{Beispiel} kann erläuternd, belegend, suggestiv etc. in
+einem @markuptype{Kontext} angeführt werden, und dieses Erläutern,
+Belegen, Suggerieren etc. ist neben den beiden Markup-Elementen der
+dritte Bestandteil einer Relation, ihr sogenanntes Prädikat.
+@end ifset
+
+@menu
+* Form::
+* Erfassen: Relationen erfassen.
+* Anzeigen: Relationen anzeigen.
+* Löschen: Relationen löschen.
+@end menu
+
+@node Form, Relationen erfassen, Relationen, Relationen
+@section Form
+
+Ihrer Form nach sind Relationen in Stand-Off Mode dreiwertige,
+gerichtete Aussagen, die zwei Markup-Elemente über ein Prädikat
+miteinander in Beziehung setzen. Das Prädikat verbindet das eine
+Element, das in der Position des Subjektes steht, mit dem anderen
+Element, das in der Position des Objektes steht. Die allgemeine Form
+ist: Subjekt Prädikat Objekt. Das Prädikat sollte durch ein Verb
+repräsentiert werden.
+
+Die Form lässt sich an einem Beispiel erläutern. Werden in einem Text
+Personen und Orte ausgezeichnet, dann lassen sich Orte und Personen
+mittels verschiedener Prädikate in Relation bringen: @emph{wohnt in},
+@emph{stammt aus}, @emph{zieht nach}, @emph{hält sich auf in},
+@emph{meidet}, @emph{war noch nie in}, usw. Sämtliche dieser genannten
+Prädikate sind derart gerichtet, dass die Person in die Position des
+Subjekts zu setzen ist und der Ort in die Position des Objekts. Andere
+Prädikate sind anders herum gerichtet, etwa @emph{zieht an}. Diese
+Prädikate wären für manch anderen Type Auszeichungsobjekt, etwa
+Medikamente oder Verkehrsmittel, eher ungeeignet.
+
+Eine Relation ist also wesentlich durch ihr Prädikat bestimmt. Es
+beschränkt die Typen von Markup-Elementen, die als Subjekt und als
+Objekt vorkommen können.
+
+In Stand-Off Mode sind beim Erfassen einer Relation zunächst Subjekt und
+Objekt einzugeben. Das Prädikat ist anschließend aus einer Liste von bei
+dieser Kombination von Subjekt und Objekt passenden Prädikaten
+auszuwählen.
+
+Es gibt auch Prädikate, die ihrer Semantik nach nicht gerichtet
+sind. Technisch gesehen heißt das jedoch nur, dass jede
+Subjekt-Objekt-Kombination für das Prädikat auch als
+Objekt-Subjekt-Kombination erlaubt ist. Beim Erfassen einer Relation mit
+einem solchen Prädikat muss eine Entscheidung getroffen werden, welches
+Element Subjekt, welches Objekt sein soll.
+
+
+@node Relationen erfassen, Relationen anzeigen, Form, Relationen
+@section Erfassen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{r}
+@tab @emenu{Relate markup element at point to some other}
+@tab @code{standoff-markup-relate}
+@end multitable
+
+Mit diesem Kommando wird eine Relation erfasst. Vor dem Aufruf ist der
+@emph{Point} über dem hervorgehobenen Markup-Element zu positionieren,
+das Subjekt der Relation sein soll. Nach Aufruf des Kommmandos ist im
+Minibuffer die Nummer des Markup-Elements einzugeben, das Objekt der
+Relation sein soll. Anschließend ist im Minibuffer noch das Prädikat
+anzugeben, wobei bei Drücken der Tabulator-Taste @kbd{@key{TAB}} eine
+Auswahl erlaubter Prädikate angezeigt wird, aus der man entweder durch
+Maus-Klick oder durch Tastatureingabe auswählen kann, oder eine bereits
+begonnene Eingabe wird vervollständigt.
+
+
+@node Relationen anzeigen,  Relationen löschen, Relationen erfassen, Relationen
+@section Anzeigen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{R}
+@tab @emenu{List relations for markup element}
+@tab @code{standoff-relations-for-markup}
+@end multitable
+
+Mit diesem Befehl werden die Relationen eines Markup-Elements
+angezeigt. Nach Aufruf ist im Minibuffer die Nummer des Elements
+anzugeben. Anschließend werden die Relationen in einem neuen Buffer
+namens @code{*Relations*} angezeigt. Angezeigt werden Relationen, in
+denen das angegebene Markup-Element als Subjekt oder als Objekt
+vorkommt. Jede Relationen wird in einer Zeile des Buffers
+dargestellt. Zum Verlassen des Buffers kann die Taste @kbd{q} (quit)
+gedrückt werden, oder der gewünschte Buffer aus im Hauptmenü
+@emenu{Buffers} ausgewählt werden.
+
+Weil der Buffer @code{*Relations*} nicht in Stand-Off Mode ist, steht
+das Stand-Off-Menü nicht zur Verfügung. 
+
+@c Stattdessen stehen folgende Kommandos zur Verfügung.
+
+
+@node Relationen löschen, , Relationen anzeigen, Relationen
+@section Löschen
+
+Das Löschen von Relationen ist noch nicht implementiert.
+
+
+@node Attribute, Kommentare, Relationen, Top
+@chapter Attribute
+
+Attribute ermöglichen, Markup-Elemente mit zusätzlichen Informationen zu
+versehen. Anders als Relationen verbinden Sie nicht (oder zumindest
+ihrer Anlage nach nicht zwingend) zwei Markup-Elemente, sondern beziehen
+sich (meist) auf nur ein einzelnes Markup-Element. Strukturell ähneln
+sie Relationen jedoch, insofern auch sie dreiwertig sind: Sie beziehen
+sich auf ein a) Markup-Element, haben einen b) Namen (Key) und einen c)
+Wert (value). Der Wert kann verschiedener Struktur sein, etwa eine
+Zeichenkette (Literal), eine Ganzzahl (Integer), eine Fließkommazahl
+(Float) usw.
+
+Weil ihr Wert auch ein URI (uniform resource identifier) bzw. IRI
+(internationalized resource identifier) sein kann, können alle
+Relationen als Attribute aufgefasst werden: Das als URI/IRI
+identifizierte Objekt stellt dann den Wert dar, das Prädikat den
+Attribut-Namen. Relationen sind insofern also ein Spezialfall von
+Attributen. Attribute können in Stand-Off Mode verwendet werden, um
+Relationen zwischen Markup-Elementen in verschiedenen Quell-Dokumenten
+zu realisieren.
+
+@ifset PRAKTIKUM
+Das Annotationsschema des Archiv des Beispiels verlangt, für Konzepte
+und Kontexte eine Paraphrase anzugeben. Dies ist als Attribut mit
+literalem Wert und dem Attribute-Namen @code{Paraphrase} realisiert.
+@end ifset
+
+@menu
+* Literal-Attribut erfassen::
+* Attribute anzeigen::
+* Attribute löschen::
+@end menu
+
+
+@node Literal-Attribut erfassen, Attribute anzeigen, , Attribute
+@section Literal-Attribut erfassen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{}
+@tab @emenu{Create attribute with literal value}
+@tab @code{standoff-literal-value-attribute}
+@end multitable
+
+Mit diesem Kommando wird eine Attribut mit literalem Wert erfasst, also
+mit einer Zeichenkette als Wert. Vor dem Aufruf ist der @emph{Point}
+über dem hervorgehobenen Markup-Element zu positionieren, dem das
+Attribut zugeordnet sein soll.
+
+Nach Aufruf des Kommmandos ist im Minibuffer der Attribut-Namen (Key)
+anzugeben, wobei bei Drücken der Tabulator-Taste @kbd{@key{TAB}} eine
+Auswahl erlaubter Prädikate angezeigt wird, aus der man entweder durch
+Maus-Klick oder durch Tastatureingabe auswählen kann, oder eine bereits
+begonnene Eingabe wird vervollständigt.
+
+Nach Eingabe bzw. Auswahl des Attribut-Namens ist im Minibuffer der
+Attribut-Wert anzugeben. Die Eingabe wird durch Drücken der Eingabetaste
+@kbd{@key{RET}} beendet. Die Eingabe eines mehrzeiligen Textes ist also
+nicht möglich (sondern Kommentaren vorbehalten).
+
+@ifset PRAKTIKUM
+Im Rahmen des Praktikums beim Archiv des Beispiels sollen Sie alle als
+Konzept ausgezeichneten Textpassagen mit eigenen Worten
+umschreiben. Dazu sollen Sie den hier beschriebenen Befehl und den
+Attribut-Namen @code{Paraphrase} verwenden.
+@end ifset
+
+@node Attribute anzeigen, Attribute löschen, Literal-Attribut erfassen, Attribute
+@section Anzeigen
+
+@multitable @columnfractions .08 .40 .50
+@headitem Tast. @tab Menü @tab Kommando
+@item @kbd{}
+@tab @emenu{List attributes for markup element}
+@tab @code{standoff-literals-for-markup}
+@end multitable
+
+Die Anzeigen von Attributen erfolgt in derselben Ansicht, in der auch
+Relationen dargestellt werden. Das Markup-Element, zu dem das Attribut
+gehört, steht in der Subjekt-Spalte, der Attribut-Name in der
+Prädikat-Spalte und der Wert in der Objekt-Spalte.
+
+@xref{Relationen anzeigen}.
+
+
+@node Attribute löschen, , Attribute anzeigen, Attribute
+@section Attribute löschen
+
+Das Löschen von Attributen ist noch nicht implementiert.
+
+
+@node Kommentare, Konfiguration, Attribute, Top
+@chapter Kommentare
+
+Dieses Feature ist noch nicht implementiert.
+
+
+@node Konfiguration, GNU Free Documentation License, Kommentare, Top
+@chapter Konfiguration
+
+Über die Konfiguration gibt die englischsprachige Fassung des
+Benutzerhandbuches Auskunft.
+
+
+@node GNU Free Documentation License,  , Konfiguration, Top
+@appendix GNU Free Documentation License
+@documentlanguage en_US
+@include fdl.texi
+@bye 
+
+@c  LocalWords:  Emacs Meta kbd ifinfo xref
