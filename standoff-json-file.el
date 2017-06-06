@@ -40,6 +40,12 @@
 (require 'standoff-json)
 (require 'standoff-log)
 
+;;;; silencing the compiler
+
+(declare-function standoff-highlight-markup "standoff-mode.el" nil)
+
+;;;; internal varibales
+
 (defvar standoff-json-file/json-buffer-name nil
   "The name of the buffer with the external markup.
 This is stored in a file local variable of the source buffer.")
@@ -278,7 +284,8 @@ is to be deleted."
 	     first-object-start
 	     object-end
 	     (json-object-type 'plist)
-	     (buffer-read-only nil))
+	     (buffer-read-only nil)
+	     range)
 	  (if (null json-start)
 	      (error "No %s in json file backend" object-type)
 	    (goto-char json-start)
