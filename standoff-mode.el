@@ -82,12 +82,23 @@ you will want the dummy back-end.  In this case, type
 \"standoff-dummy\" (without quotes) into the form, then apply and
 save the new value.
 
-Follow the \"Manual\" below link to get more information."
+Follow the \"Manual\" link below to get more information."
   :group 'standoff
   :tag "Back-End"
   :link '(custom-manual "(standoff-en)Back-Ends")
   :type 'symbol
   :options '('standoff-json-file 'standoff-dummy))
+
+(defcustom standoff-login-name nil
+  "Your login name.
+When generating meta data on your annotations, the login name of
+the current system user is used.  To override this behaviour, set
+this option.  When working on a database back-end, you have to
+set this to the database user."
+  :group 'standoff
+  :tag "Login Name"
+  :link '(custom-manual "(standoff-en)JSON rest back-end")
+  :type 'string)
 
 ;;;; Checksum of source document
 
@@ -100,7 +111,6 @@ broken.")
 (make-variable-buffer-local 'standoff-source-md5)
 
 (defun standoff-source-checksum ()
-  (interactive)
   "Set the checksum of the source document if and only if not yet set.
 This function makes an md5 hash and stores it to the
 buffer-local variable `standoff-source-md5'.  This function will
@@ -108,6 +118,7 @@ be called via a mode hook, so that the checksum is there right
 away for running checks against it. It can be called
 interactively, but will have no effect, if the hash was already
 calculated. The hash will show up in the minibuffer."
+  (interactive)
   (unless standoff-source-md5
     (setq-local standoff-source-md5 (md5 (current-buffer))))
   (standoff-log (message "The document's md5 checksum is: %s" standoff-source-md5))
