@@ -83,46 +83,46 @@ User Manual for Stand-Off Mode, version @value{VERSION}.
 
 Introduction
 
-* Stand-Off Markup::
-* Character Offsets::
+* Common terms::
+* Character offsets::
 * This manual::
 
 Starting and quitting stand-off mode
 
-* Stand-Off Mode aktivieren::
-* Lesbarkeit des Buffers::
-* Speichern::
-* Bereits früher erfasstes  Markup laden::
-
-Markup elements
-
-* Erfassen::
-* Hervorheben und Ausblenden::
-* Navigieren::
-* Löschen::
-* Diskontinuierliches Markup::
-
-Relations
-
-* Form::
-* Erfassen: Relationen erfassen.
-* Anzeigen: Relationen anzeigen.
-* Löschen: Relationen löschen.
-
-Attributes
-
-* Literal-Attribut erfassen::
-* Anzeigen: Attribute anzeigen.
-* Löschen: Attribute löschen.
+* Activating stand-off mode::
+* Readability of XML source documents::
+* Performance::
+* Saving annotations::
+* Loading annotations::
 
 Configuration
 
-@c TODO
+* Back-Ends::
+* Annotation schema::
+
+Back-Ends
+
+* JSON file back-end::
+* JSON object keys::
+* Dummy back-end::
+
+JSON object keys
+
+* JSON keys for markup ranges::
+* JSON keys for relations::
+* JSON keys for attributes::
+* JSON keys for meta data::
+
+Defining an annotation schema
+
+* Strict or loose handling of an annotation schema::
+* Defining a schema using Emacs lisp::
+* Generating an annotation schema from OWL::
 
 @end detailmenu
 @end menu
 
-@node Introduction, Starting and quitting stand-off mode, Top, Top
+@node  Introduction, Starting and quitting stand-off mode, Top, Top
 @chapter Introduction
 
 Standoff-mode turns Emacs into a tagger for annotating texts. In
@@ -138,14 +138,15 @@ directed fashion, c) @emph{Attributes} on markup elements, which are
 key-value pairs, d) free text @emph{comments} on one (or more) markup
 elements.
 
+
+
 @menu
 * Common terms::
 * Character offsets::
 * This manual::
 @end menu
 
-
-@node Common terms, Character offsets, , Introduction
+@node Common terms, Character offsets, Introduction, Introduction
 @section Common terms
 
 This manual makes use of some common terms regarding standoff markup.
@@ -184,7 +185,7 @@ See also
 @url{http://www.tei-c.org/release/doc/tei-p5-doc/de/html/SA.html#SASO}
 and @url{http://www.openannotation.org/spec/core/}.
 
-@node Character offsets, This manual, Stand-off markup, Introduction
+@node Character offsets, This manual, Common terms, Introduction
 @section Character offsets
 
 An @emph{external document} produced by stand-off mode looks like this:
@@ -243,7 +244,7 @@ document is changed, the checksum changes and stand-off mode alarms you
 with an error, because the @emph{character offsets} are likely to be
 incorrect now.
 
-@node This manual, , Character offsets, Introduction
+@node This manual,  , Character offsets, Introduction
 @section This manual
 
 This manual is available in three formats: PDF, HTML, and info files,
@@ -314,12 +315,13 @@ called by key combinations or from the menus.
 @menu
 * Activating stand-off mode::
 * Readability of XML source documents::
+* Performance::
 * Saving annotations::
 * Loading annotations::
 @end menu
 
 
-@node Activating stand-off mode, Readability of XML source documents, , Starting and quitting stand-off mode
+@node Activating stand-off mode, Readability of XML source documents, Starting and quitting stand-off mode, Starting and quitting stand-off mode
 @section Activating stand-off mode
 
 @deffn Command standoff-mode
@@ -327,9 +329,9 @@ Activate standoff mode for the file displayed in the current buffer.
 @end deffn
 
 After opening a file, standoff mode can be activated by @kbd{M-x
-standoff-mode @kbd{RET}}. See @xref{Stand-Off mode for files of a
-specific type} to configure Emacs to always open files with a specific
-suffix in standoff mode.
+standoff-mode @kbd{RET}}.  @xref{Stand-Off mode for files of a specific
+type} to configure Emacs to always open files with a specific suffix in
+standoff mode.
 
 In standoff mode, the buffer is read-only. This absolutely makes sense,
 because the external markup references spans of the source document by
@@ -454,8 +456,7 @@ When working with a back-end, that stores the annotations on local disk,
 it is recommended to use the JSON file back-end.  Reason: It always asks
 you if you want to save your the json file before quitting Emacs.
 
-@node Loading annotations, , Saving annotations, Starting and quitting stand-off mode
-@end ifclear
+@node Loading annotations,  , Saving annotations, Starting and quitting stand-off mode
 @section Loading annotations
 
 One of the following load commands is called automatically after
@@ -483,7 +484,7 @@ source document, plus the suffix @code{.dump.el}.
 
 For more information on back-ends and configuration, @ref{Back-Ends}.
 
-@node Markup elements, Relations, Starting and quitting standoff mode, Top
+@node Markup elements, Relations, Starting and quitting stand-off mode, Top
 @chapter Markup elements
 
 @node Relations, Attributes, Markup elements, Top
@@ -500,12 +501,18 @@ For more information on back-ends and configuration, @ref{Back-Ends}.
 
 
 @menu
+* Stand-Off mode for files of a specific type::
 * Back-Ends::
 * Annotation schema::
 @end menu
 
 
-@node Back-Ends, Annotation schema, , Configuration
+@node Stand-Off mode for files of a specific type, Back-Ends, Configuration, Configuration
+@section Stand-Off mode for files of a specific type
+
+
+
+@node Back-Ends, Annotation schema, Stand-Off mode for files of a specific type, Configuration
 @section Back-Ends
 
 With standoff mode you have some options where to store you annotations
@@ -524,12 +531,13 @@ stores the annotations as s-expressions known from programming languages
 like LISP, in fact they are dumped Emacs-lisp expressions. The JSON rest
 back-end uses JSON to communicate with the database.
 
+@defopt standoff-backend
 Configuring, which back-end to use, is simple.  There are two ways: (1)
 Customize the user option @code{standoff-backend}.  You are
 automatically directed to the customization dialog if you try working
 with stand-off mode without a back-end.  (2) Edit your Emacs startup
 file by adding:
-@vindex{standoff-backend}
+@vindex standoff-backend
 
 @example
 @code{(setq standoff-backend 'standoff-json-file)}
@@ -539,30 +547,436 @@ for using the JSON file back-end, or
 
 @example
 @code{(setq standoff-backend 'standoff-dummy)}
-
+@end example
 
 for using the dummy back-end.
 
+Note, that the type of @code{standoff-backend} must be a feature, and
+thus must be quoted like a symbol.
+@end defopt
+
 @menu
 * JSON file back-end::
-* JSON rest back-end::
-* Common settings on JSON back-ends::
+* JSON object keys::
 * Dummy back-end::
-* Writing new back-ends::
 @end menu
 
-@node JSON file back-end, JSON rest back-end, , Back-Ends
+@node JSON file back-end, JSON object keys, Back-Ends, Back-Ends
 @subsection JSON file back-end
 
+In order to configure Emacs to use the JSON file back-end, customize the
+@code{standoff-backend} user option or put the following line in your
+init fill:
+
+@example
+(setq standoff-backend 'standoff-json-file)
+@end example
+
+We recommend using this back-end, because you're always asked if you
+want to save your annotations before quitting Emacs (while the dummy
+back-end does not).  As the annotations are stored in JSON format, they
+can be processed by most programming languages.  Moreover, there is no
+further setup needed.  But if you want (or need), you can configure the
+names of the keys of a JSON object. @xref{JSON object keys}.
+
+The backend provides the following interactive command:
+
+@deffn Command standoff-dummy-load-dumped FILENAME
+Load annotations from a Emacs lisp file with dumped annotations.  You
+will be prompted for a FILENAME.  It defaults to the file name of the
+source document, plus the suffix @code{.dump.el}.
+@end deffn
 
 
-@node Annotation schema, , Back-Ends, Configuration
-@section Annotation schema
+@node JSON object keys, Dummy back-end, JSON file back-end, Back-Ends
+@subsection JSON object keys
+
+You can customize the keys of JSON objects to your needs. We recommend
+setting them in the init file.  Example:
+
+@example
+(setq standoff-json/markup-type-key "qualifiedName"
+      standoff-json/relation-predicate-key "qualifiedName"
+      standoff-json/attribute-name-key "qualifiedName")
+@end example
+
+Note that there standoff mode produces meta data on each object.  The
+keys for these meta data can be customized, too.
+
+(TODO: implement all of the following!)
 
 @menu
-* Using Emacs-lisp for defining an annotation schema::
+* JSON keys for markup ranges::
+* JSON keys for relations::
+* JSON keys for attributes::
+* JSON keys for meta data::
+@end menu
+
+@node JSON keys for markup ranges, JSON keys for relations, JSON object keys, JSON object keys
+@subsubsection JSON keys for markup ranges
+
+@defopt standoff-json/markup-array-key
+The JSON key of array of markup ranges/elements. Defaults to @code{MarkupRanges}.
+@end defopt
+
+@defopt standoff-json/markup-tag-key
+The JSON key for the tag of a markup range/element. Defaults to @code{tag}.
+@end defopt
+
+@defopt standoff-json/markup-tag-value
+The JSON value of the tag of a markup range/element. Defaults to
+@code{MarkupRange}.  The tag's value is used to identify, which type of
+object this is.
+@end defopt
+
+@defopt standoff-json/markup-element-id-key
+The JSON key of the Id of a markup element. Defaults to @code{elementId}.
+@end defopt
+
+@defopt standoff-json/markup-range-id-key
+The JSON key of the Id of a markup range. Defaults to @code{rangeId}.
+@end defopt
+
+@defopt standoff-json/markup-type-key
+The JSON key for the markup type. Defaults to @code{type}.
+@end defopt
+
+@defopt standoff-json/markup-start-key
+The JSON key of the Id of the start character offset. Defaults to @code{sourceStart}.
+@end defopt
+
+@defopt standoff-json/markup-end-key
+The JSON key of the Id of the end character offset. Defaults to @code{sourceEnd}.
+@end defopt
+
+
+@node JSON keys for relations, JSON keys for attributes, JSON keys for markup ranges, JSON object keys
+@subsubsection JSON keys for relations
+
+@defopt standoff-json/relation-id-key
+The JSON key for the id of a relation. Defaults to @code{relationId}.
+@end defopt
+
+@defopt standoff-json/relation-subject-key
+The JSON key for the Id of a relation's subject. Defaults to @code{subjectId}.
+@end defopt
+
+@defopt standoff-json/relation-predicate-key
+The JSON key for the predicate of a relation. Defaults to @code{predicate}.
+@end defopt
+
+@defopt standoff-json/relation-object-key
+The JSON key for the Id of a relation's object. Defaults to @code{objectId}.
+@end defopt
+
+
+@node JSON keys for attributes, JSON keys for meta data, JSON keys for relations, JSON object keys
+@subsubsection JSON keys for attributes
+
+@defopt standoff-json/attribute-element-key
+The JSON key for the Id of the markup element the attribute refers to. Defaults to @code{elementId}.
+@end defopt
+
+@defopt standoff-json/attribute-name-key
+The JSON key for the name of an attribute. Defaults to @code{name}.
+@end defopt
+
+@defopt standoff-json/attribute-value-key
+The JSON key for the value of an attribute. Defaults to @code{value}.
+@end defopt
+
+
+@node JSON keys for meta data,  , JSON keys for attributes, JSON object keys
+@subsubsection JSON keys for meta data
+
+@defopt standoff-json/created-by-key
+The JSON key for meta data about the creator. Defaults to @code{createdBy}.
+@end defopt 
+
+@defopt standoff-json/created-at-key
+The JSON key for meta data about the creation time. Defaults to @code{createdAt}.
+@end defopt 
+
+
+
+@node Dummy back-end,  , JSON object keys, Back-Ends
+@subsection Dummy back-end
+
+The dummy back-end is a very simple implementation of the API for
+standoff mode back-ends.  We recommend using the JSON file back-end,
+because with the dummy implementation, you can easily loose data.
+Annotations are stored in memory, bot in a buffer visiting a file. So
+when you quit Emacs, everything is lost, unless you dumped it before
+quitting. So do not forget the following command:
+
+
+@deffn Command standoff-dump-elisp FILENAME
+(@kbd{u}) (@emenu{Stand-Off->Dump to file (SAVE)}) Save the annotations
+as s-expressions in a Emacs lisp file. You will be prompted for a
+FILENAME.  It defaults to the file name of the source document, plus the
+suffix @code{.dump.el}, since that's the name of the file that is
+automatically loaded on activation.
+@end deffn
+
+
+@deffn Command standoff-dummy-load-dumped FILENAME
+Load annotations from a Emacs lisp file with dumped annotations.  You
+will be prompted for a FILENAME.  It defaults to the file name of the
+source document, plus the suffix @code{.dump.el}.
+@end deffn
+
+Configuration options for the dummy backend:
+
+@defopt standoff-dummy-create-id-function
+Pointer to the function (actually the function symbol) for creating ids
+used in the dummy backend.  Defaults to @code{
+'standoff-util/create-uuid}, which creates a universally unique id.
+@end defopt
+
+@defopt standoff-dummy-user-logging
+Whether or not to log time and user meta data when creating markup.  You
+can keep out big brother by setting this to @code{nil}.  Defaults to
+@code{t}.
+@end defopt
+
+
+@node Annotation schema,  , Back-Ends, Configuration
+@section Defining an annotation schema
+
+An annotation schema defines, which markup types may be used, which
+relation predicates can be used for a certain combination of subject and
+object types, which names attributes of a certain type of markup element
+are allowed.
+
+@menu
+* Strict or loose handling of an annotation schema::
+* Defining a schema using Emacs lisp::
 * Generating an annotation schema from OWL::
 @end menu
+
+@node Strict or loose handling of an annotation schema, Defining a schema using Emacs lisp, Annotation schema, Annotation schema
+@subsection Strict or loose handling of an annotation schema
+
+You can configure, how strict standoff mode enforces an annotation
+schema.  You can configure, to not restrict markup types, relation
+predicates etc. at all.  Then, the annotator is free to use what ever
+type or predicate comes to his mind.  But even then, a list of types,
+predicates etc. he used before is presented to him on the UI; but he can
+ignore it and type in a new type, predicate etc.  Let's call this
+process of implicitly generating an open annotation schema
+@emph{a posteriori}.
+
+The other alternative is to restrict the user input regarding markup
+types, relation predicates etc. to an annotation schema given @emph{a
+priori}.
+
+@defopt standoff-markup-type-require-match
+@defoptx standoff-predicate-require-match
+@defoptx standoff-literal-key-require-match
+These user options define how restrictive the markup schema is handled.
+If set to @code{t} then the entered type must be amongst the members of
+the list of markup types, relation predicates of attribute name defined
+in the schema or so far used in the source document.  If set to
+@code{nil}, the user may exit his input with any type.  If set to
+@code{'confirm} (quoted symbol), the user may exit with any type, but is
+asked to confirm his input.  All these user options default to
+@code{'confirm}.
+@end defopt
+
+@defopt standoff-markup-types-allowed
+@defoptx standoff-relations-allowed
+@defoptx standoff-literal-keys-allowed
+These user options each take a list of allowed types, predicates of
+attribute names.  Default is the empty list @code{'()}.
+@end defopt
+
+@node Defining a schema using Emacs lisp, Generating an annotation schema from OWL, Strict or loose handling of an annotation schema, Annotation schema
+@subsection Defining a schema using Emacs lisp
+
+You can use Emacs lisp, a LISP dialect, to define an annotation schema.
+We recommend @ref{Generating an annotation schema from OWL}, but even
+then, you should have read about definition in lisp, because that is,
+what standoff mode effectively reads.  All of the code below must go
+into your init file (or a file loaded by the init file).
+
+@defopt standoff-markup-types-allowed
+@defoptx standoff-relations-allowed
+@defoptx standoff-literal-keys-allowed
+These user options each take a list of allowed types, predicates of
+attribute names.  Default is the empty list @code{'()}.  Here is an
+example definition:
+@end defopt
+
+@example
+(setq standoff-markup-types-allowed '(
+  "http://arb.fernuni-hagen.de/owl/beispiel#Beispiel"
+  "http://arb.fernuni-hagen.de/owl/beispiel#Marker"
+  "http://xmlns.com/foaf/0.1/Person"
+  ))
+
+(setq standoff-relations-allowed '(
+  (("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" "http://arb.fernuni-hagen.de/owl/beispiel#Person" "http://arb.fernuni-hagen.de/owl/beispiel#Werk" ) "http://arb.fernuni-hagen.de/owl/beispiel#hatMarker" ("http://arb.fernuni-hagen.de/owl/beispiel#Marker" ))
+))
+
+(setq standoff-literal-keys-allowed '(
+  (("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" "http://arb.fernuni-hagen.de/owl/beispiel#Kontext" "http://arb.fernuni-hagen.de/owl/beispiel#Konzept" ) "http://arb.fernuni-hagen.de/owl/beispiel#paraphrase" )
+  ))
+@end example
+
+Instead of displaying these long IRIs on the UI, you can define labels.
+
+@defopt standoff-markup-types-labels
+@defoptx standoff-relations-labels
+@defoptx standoff-literal-keys-labels
+See the example below.
+@end defopt
+
+@example
+(setq standoff-markup-labels '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" . "Beispiel")
+  ("http://xmlns.com/foaf/0.1/Person" . "Person")
+  ))
+
+(setq standoff-predicate-labels '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#markiert" . "markiert")
+)
+
+(setq standoff-literal-key-labels '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#paraphrase" . "Paraphrase")
+  ))
+@end example
+
+Customizing the face of annotated text ranges depending on markup type
+makes a usable a tagger:
+
+@defopt standoff-markup-overlays
+@defoptx standoff-markup-overlays-front
+@defoptx standoff-markup-overlays-after
+Use these user options to set font faces and text properties.  Example:
+@end defopt
+
+@example
+(setq standoff-markup-overlays '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" ('face 'standoff-arb-beispiel))
+      standoff-markup-overlays-front '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" ('face 'standoff-arb-beispiel))
+      standoff-markup-overlays-after '(
+  ("http://arb.fernuni-hagen.de/owl/beispiel#Beispiel" ('face 'standoff-arb-beispiel))
+  ))
+@end example
+
+Note that the face names must be defined to:
+
+@example
+    (defface standoff-arb-beispiel
+      '((((type x))
+	 (:family
+	  "misc-fixed"
+	  :foreground
+	  "dark red"
+	  :weight
+	  normal
+	  :slant
+	  normal))
+	(t
+	 (:foreground
+	  "dark red"
+	  :weight
+	  normal
+	  :slant
+	  normal)))
+      "Face used \"beispiel\" markup type."
+      :group 'standoff-faces)
+@end example
+
+
+@node Generating an annotation schema from OWL,  , Defining a schema using Emacs lisp, Annotation schema
+@subsection Generating an annotation schema from OWL
+
+You can use the expressiveness of the web ontology language (OWL) to
+define your annotation schema.  standoff mode comes with some XSL style
+sheets for transforming OWL/XML into a schema definition in Emacs lisp
+which can be loaded by standoff mode.
+
+The main idea is, to use
+
+@table @code
+@item owl:Class
+to define the types of markup elements
+@item owl:ObjectProperty
+to define the predicates for relations
+@item owl:DatatypeProperty
+to define the attributes for markup elements
+@item rdfs:label
+to define labels on all such definitions.  These labels are displayed in
+the UI of standoff mode instead of the IRIs.  You can also
+internationalize your OWL labels using the @code{xml:lang}
+attribute. The transformation will pick the label in the right language,
+when you pass a parameter to the style sheet processor.
+@end table
+
+There are three style sheets and a file with a few OWL definitions:
+
+@table @file
+@item mistake-owl4config.xsl
+As expressed in the name, this style sheet mistakes the semantics of the
+OWL, namely in the context of relations. It uses @code{rdfs:domain} and
+@code{rdfs:range} to restrict a predicate to a combination of
+@code{rdfs:domain} as markup type of the object and @code{rdfs:range} as
+the markup type of the subject.  Strictly speaking, this does not make
+sense, but is rather redundant:  These constructs are for reasoning, not
+for restriction.  But it might serve you well.
+
+@item owl4config.xsl
+This style sheet introduces annotation properties to restrict predicates
+of relations to certain combinations of markup types of subject and
+object while following the rules of OWL.  These annotations are defined
+in @file{standoff.owl}.
+
+@item standoff.owl
+@code{http://github.com/lueck/standoff-mode/owl#allowedSubject} can be
+used to define allowed subject type for a relation predicate. 
+@code{http://github.com/lueck/standoff-mode/owl#allowedObject} can be
+used to define allowed object type for a relation predicate.
+@code{http://github.com/lueck/standoff-mode/owl#face} is also defined,
+and lets you define a highlighting face for a markup type.
+
+@item owl2manual.xsl
+This generates a TeX file from OWL which can be used to generate a PDF
+of your annotation schema.  The OWL annotation properties defined in
+@file{standoff.owl} are evaluated, so that the restrictions expressed
+with them go into the document.
+@end table 
+
+See the @url{http://github.com/lueck/standoff-mode/arb/} for an example
+schema definition using OWL and @file{standoff.owl}: @file{arb.owl}
+defines an schema for annotating examples in scholar texts about
+aesthetics in the 18th century Germany.  Generate a Emacs lisp schema
+with german labels e.g. by running this command in a terminal:
+
+@example
+xsltproc --output standoff-arb-schema.el \
+--param config-file \"standoff-arb-schema.el\" \
+--param lang \"de\" \
+--param provide \"true\" \
+owl2config.xsl \
+arb.owl
+@end example
+
+Put the following line into your Emacs init file, in order to load the
+schema in generated @file{standoff-arb-schema.el}:
+
+@example
+;; set how restrictive markup types and predicates and attribute
+;; keys are handled depending on presence of annotation schema
+(if (featurep 'standoff-arb-schema)
+ (setq standoff-markup-type-require-match t
+       standoff-predicate-require-match t
+       standoff-literal-key-require-match t)
+ (setq standoff-markup-type-require-match 'confirm
+       standoff-predicate-require-match 'confirm
+       standoff-literal-key-require-match 'confirm))
+@end example
 
 
 @node GNU Free Documentation License,  , Configuration, Top
