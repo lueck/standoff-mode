@@ -246,31 +246,31 @@ incorrect now.
 @node This manual, , Character offsets, Introduction
 @section This manual
 
-This manual is available in three formats: PDT, as HTML, and as info
-files, which can be read using Emacs' info browser.
+This manual is available in three formats: PDF, HTML, and info files,
+which can be read using Emacs' info browser.
 
-The commands offered by stand-off mode are represented in tables with
-three columns throughout this manual. The first column gives the key
-code for the command. The second column gives the menu entry in the
-Stand-Off menu. The third column gives the command name. The manual and
-other manuals can be read using the info browser in these three ways:
+Throughout this manual, commands offered by stand-off mode are
+represented like follows. 
 
-@multitable @columnfractions .08 .40 .50
-@headitem Key @tab Menu @tab command
-@item @kbd{?}
-@tab @emenu{Manual}
-@tab @code{standoff-display-manual}
-@item @kbd{C-h i}
-@tab @emenu{Help --> More Manuals --> All other (info)}
-@tab @code{info}
-@end multitable
+@deffn Command standoff-display-manual
+@kindex ?
+(@kbd{?})  (@emenu{Stand-Off->Manual}) Open the manual for standoff
+mode. There are manuals in two languages: english and german.  The
+customization option @code{standoff-info-language} is used, to select a
+language. If is set to ``de'', the german manual is opened. If it is
+nil, then the @code{LANG} environment variable is evaluated.  When the
+result of the evaluation is not ``de'', the english manual is opened.
+@vindex standoff-info-language
+@end deffn
 
-So typing @kbd{?} opens this manual, provided the current buffer is in
-stand-off mode. Alternatively you could open it using the menu entry
-@emenu{Manual} under the @emenu{Stand-Off} menu. You could also call the
-command @code{standoff-display-manual} using its name.
-
-All installed manuals can be viewed by the key code @kbd{C-h i} etc.
+You can call such a command in three ways. (1) Call it by name, (2) by
+key code, (3) select it from the menu.  The name is given in the first
+line right after the keyword Command.  Here, the command's name is
+@code{standoff-display-manual}.  The key code is given in the first
+parentheses, here it is @kbd{?}.  So you can call the manual by simply
+pressing the @kbd{?} on your keyboard, provided that the current buffer
+is in standoff mode.  The menu entry is given in the second parenthesis,
+here it is the menu entry ``Manual'' in the menu ``Stand-Off''. 
 
 In Emacs, to call a command by its name, type @kbd{M-x} followed by the
 name of the command, and then type @kbd{@key{RET}} (=
@@ -281,18 +281,28 @@ For the key code @kbd{M-x}, hold down @kbd{@key{ALT}} and press
 key besides @kbd{@key{C-}} (= Control) in Emacs. (Alternatively, e.g. if
 no @kbd{@key{ALT}}-key is present, you can press @kbd{@key{ESC}}
 followed by @kbd{x}.) This sets focus on the minibuffer on the bottom
-line of the Emacs windows, where you can type the command name. Read
-more on the basics of Emacs in the
+line of the Emacs windows, where you can type the command name. For more
+information on the basics of Emacs,
 @ifinfo
-GNU Emacs manual@xref{Top,,, emacs}, especially on @xref{User Input,,, emacs}.
+@xref{Top,,, emacs}, and especially @xref{User Input,,, emacs}.
 @end ifinfo
 @ifnotinfo
-@url{https://www.gnu.org/software/emacs/manual/emacs.html,GNU Emacs manual}.
+see @url{https://www.gnu.org/software/emacs/manual/emacs.html,GNU Emacs manual}.
 @end ifnotinfo
+
+The info reader of Emacs makes lots of good manuals available directly
+in the editor.  Have a look at the Emacs tutorial or user manual for
+basic handling of the editor.
+
+@deffn Command info
+@kindex C-h i
+(@kbd{C-h i})  (@emenu{Help->More Manuals->All Other Manuals})  Browse
+the list installed manuals. 
+@end deffn
 
 
 In standoff-mode, there are only a few commands, that have to be called
-by name.  They are commands that could mess up your annotation data, so
+by name.  These are commands that could mess up your annotation data, so
 you better know what you are doing.  Most other commands can either be
 called by key combinations or from the menus.
 
@@ -312,54 +322,100 @@ called by key combinations or from the menus.
 @node Activating stand-off mode, Readability of XML source documents, , Starting and quitting stand-off mode
 @section Activating stand-off mode
 
-@multitable @columnfractions .05 .40 .50
-@headitem key @tab menu @tab command
-@item
-@tab
-@tab @code{standoff-mode}
-@end multitable
+@deffn Command standoff-mode
+Activate standoff mode for the file displayed in the current buffer.
+@end deffn
 
 After opening a file, standoff mode can be activated by @kbd{M-x
-standoff-mode @kbd{RET}}. See @xref{TODO} to configure Emacs to always
-open files with a specific suffix in standoff mode.
+standoff-mode @kbd{RET}}. See @xref{Stand-Off mode for files of a
+specific type} to configure Emacs to always open files with a specific
+suffix in standoff mode.
 
 In standoff mode, the buffer is read-only. This absolutely makes sense,
-because external markup references spans of the source document by
+because the external markup references spans of the source document by
 character offsets. Modifying the source document would break these
 character offsets.
 
-If standoff mode is active, the Stand-Off shows up in the modeline and
+If standoff mode is active, ``Stand-Off'' shows up in the modeline and
 the menu @emenu{Stand-Off} is present (not present if minibuffer is
 active).
 
 Right after activating, standoff mode tries to load existing
 annotations. Depending on the back-end, standoff mode loads the
 annotations of a file in the same directory and with the same file name
-as the source document, but with the @code{.json} (JSON file back-end),
-or @code{.dump.el} (dummy back-end).  @xref{Back-Ends}.
+as the source document, but with the additional suffix @code{.json}
+(JSON file back-end), or @code{.dump.el} (dummy back-end).
+@xref{Back-Ends}.
 
 Be aware, that a back-end has to be configured, before standoff mode is
 ready to be used.
 
-@node Readability of XML source documents, Saving annotations, Activating stand-off mode, Starting and quitting stand-off mode
+@node Readability of XML source documents, Performance, Activating stand-off mode, Starting and quitting stand-off mode
 @section Readability of XML source documents
-
-@multitable @columnfractions .05 .40 .50
-@headitem key @tab menu @tab command
-@item
-@tab @emenu{Hide/Show XML-tags}
-@tab @code{standoff-xml-tags-invisible}
-@item
-@tab @emenu{Substitute character references with glyphs}
-@tab @code{standoff-xml-toggle-char-ref-glyph-substitute}
-@end multitable
 
 XML-Files often aren't friendly to the user's eye. Readability can be
 improved by hiding XML tags like @code{<p>}. Also character references
 of the form @code{&#xNNNN;} can be substituted with the corresponding
 glyphs.
 
-@node Saving annotations, Loading annotations, Readability of XML source documents, Starting and quitting stand-off mode
+@deffn Command standoff-xml-tags-invisible
+(@emenu{Stand-Off->Hide/Show XML-tags})  Hide XML tags when they are
+visible, show them, when they are invisible.
+@end deffn
+
+@deffn Command standoff-xml-toggle-char-ref-glyph-substitute
+(@emenu{Stand-Off->Substitute character references with glyphs})  Replace
+XML character references with the corresponding glyph.
+@end deffn
+
+When executing, these commands take some time.  On larger files (some
+MBs), you might have to wait a minute.
+
+Hiding these XML internals makes sense not only regarding human
+readability.  It also helps making the annotations syntactically
+correct.  Starting or ending a markup range inside an XML tag or
+character reference would result in an error or in invalid XML, when
+internalized.  By hiding these internals, a markup range can never start
+or end inside.
+
+But hiding can result in bad performance of the editor. For solving
+this, @ref{Performance}.
+
+@node Performance, Saving annotations, Readability of XML source documents, Starting and quitting stand-off mode
+@section Performance
+
+Standoff mode generates tons of overlays.  Overlays are an Emacs
+technique to alter the visual appearance of a buffer's text on the
+screen, for the sake of presentation features.  Replacing XML character
+references with the corresponding glyphs is done by overlays.  Showing
+markup ranges in the source document is also done by overlays, since
+they allow adding visual features and even characters while not changing
+the underlying text.  (That's why the point can't be positioned over a
+markup ranges' bounding bracket and number.  They are not really in the
+buffers text, but only seem to be there.)
+
+When working with larger XML files, the tons of overlays may slow down
+Emacs significantly, even render it unusable.  But there is another
+Emacs feature, to work around this: Narrowing the buffer down to a
+portion of the file.  When you run into performance problems with
+standoff mode, please try narrowing.
+
+@deffn Command narrow-to-region REGION
+@kindex C-x n n
+(@kbd{C-x n n}) Narrow the buffer to the region.  The REGION must be
+active when calling this command.  Calling it the first time, you will
+be asked if you really want to activate the narrowing feature.
+@end deffn
+
+@deffn Command widen
+@kindex C-x n w
+(@kbd{C-x n w}) Widen narrowed buffer to see the full file again.
+@end deffn
+
+@xref{(Emacs)Narrowing}.
+
+
+@node Saving annotations, Loading annotations, Performance, Starting and quitting stand-off mode
 @section Saving annotations
 
 Saving the external markup depends on the back-end, that is used in
@@ -376,19 +432,19 @@ If the dummy back-end is configured, the annotations are kept in memory
 only, while annotating the source document.  If Emacs quits, the
 annotations are lost.  But they can be dumped to disk by calling a dump
 command and they can be loaded from the dump file in the next session.
-The default name of the dump file is the file name of the source
-document plus the suffix @code{.dump.el}.
 
-@multitable @columnfractions .05 .40 .50
-@headitem key @tab menu @tab command
-@item @kbd{u}
-@tab @emenu{Dump to file (SAVE)}
-@tab @code{standoff-dump-elisp}
-@end multitable
+@deffn Command standoff-dump-elisp FILENAME
+@kindex u
+(@kbd{u}) (@emenu{Stand-Off->Dump to file (SAVE)}) Save the annotations
+as s-expressions in a Emacs lisp file. You will be prompted for a
+FILENAME.  It defaults to the file name of the source document, plus the
+suffix @code{.dump.el}, since that's the name of the file that is
+automatically loaded on activation.
+@end deffn
 
 Note, that this command is always present.  So, whatever back-end is
 used, you're able to dump the annotations to local disk.  Use
-standoff-tools to generate various other formats from it:
+@emph{standoff-tools} to generate various other formats from it:
 @url{http://github.com/lueck/standoff-tools}.
 
 @strong{Be aware to always dump your annotations, if the dummy back-end
@@ -402,25 +458,30 @@ you if you want to save your the json file before quitting Emacs.
 @end ifclear
 @section Loading annotations
 
-One of the load commands is called automatically after standoff mode is
-activated.  Which one, depends on the back-end used.  The command asks
-for the name of the file with the external markup, if and only if the
-default file name is not present.  The default file names are the file
-name of the source document plus a suffix specific for the back-end.
+One of the following load commands is called automatically after
+standoff mode is activated.  Which one, depends on the back-end used.
+Automatic loading on activation succeeds, if a file matching the default
+file name of the command (see below) is present.
 
-@multitable @columnfractions .05 .20 .50 .20
-@headitem key @tab menu @tab command  @tab suffix
-@item
-@tab
-@tab @code{standoff-json-file/load-file}
-@tab @code{.json}
-@item
-@tab
-@tab @code{standoff-dummy-load-dumped}
-@tab @code{.dump.el}
-@end multitable
+The loading commands can even be called interactively by the user.  They
+are neither bound to the menu nor to a key code, since calling them
+unwittingly might damage your annotation data.  (Using the JSON backend,
+there is only a minor risk.)
 
-@xref{Back-Ends}.
+@deffn Command standoff-json-file/load-file FILENAME
+Load annotations from a JSON file.  You will be prompted for the
+FILENAME.  It defaults to the file name of the source document, plus the
+suffix @code{.json}.
+@end deffn
+
+@deffn Command standoff-dummy-load-dumped FILENAME
+Load annotations from a Emacs lisp file with dumped annotations.  You
+will be prompted for a FILENAME.  It defaults to the file name of the
+source document, plus the suffix @code{.dump.el}.
+@end deffn
+
+
+For more information on back-ends and configuration, @ref{Back-Ends}.
 
 @node Markup elements, Relations, Starting and quitting standoff mode, Top
 @chapter Markup elements
@@ -449,13 +510,13 @@ name of the source document plus a suffix specific for the back-end.
 
 With standoff mode you have some options where to store you annotations
 and in which format.  Storing annotations is done by a @dfn{back-end}.
-Before working with standoff mode, it is required to choose a backend.
+Before working with standoff mode, it is required to choose a back-end.
 
 The annotations can be stored in a file on the local disk or in a
 central database.  The @dfn{JSON file back-end} and the dummy back-end
 store them locally on disk.  The @dfn{JSON rest back-end} (under
 development) stores them in a database communicating via a restful
-webservice.
+web-service.
 
 The JSON file back-end stores the annotations in JSON format, and the
 names of keys of the JSON objects are configurable. The dummy back-end
@@ -468,12 +529,17 @@ Customize the user option @code{standoff-backend}.  You are
 automatically directed to the customization dialog if you try working
 with stand-off mode without a back-end.  (2) Edit your Emacs startup
 file by adding:
+@vindex{standoff-backend}
 
+@example
 @code{(setq standoff-backend 'standoff-json-file)}
+@end example
 
 for using the JSON file back-end, or
 
+@example
 @code{(setq standoff-backend 'standoff-dummy)}
+
 
 for using the dummy back-end.
 
