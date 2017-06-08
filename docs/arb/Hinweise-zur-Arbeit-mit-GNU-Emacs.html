@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Hinweise zur Arbeit mit GNU Emacs</title>
+
+<meta name="description" content="Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Hinweise zur Arbeit mit GNU Emacs">
+<meta name="keywords" content="Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Hinweise zur Arbeit mit GNU Emacs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Inhaltsverzeichnis">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" rel="next" title="Stand-Off Mode starten und beenden">
+<link href="Dieses-Handbuch.html#Dieses-Handbuch" rel="prev" title="Dieses Handbuch">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.indentedblock {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style:oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nocodebreak {white-space:nowrap}
+span.nolinebreak {white-space:nowrap}
+span.roman {font-family:serif; font-weight:normal}
+span.sansserif {font-family:sans-serif; font-weight:normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+<a name="Hinweise-zur-Arbeit-mit-GNU-Emacs"></a>
+<div class="header">
+<p>
+Next: <a href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" accesskey="n" rel="next">Stand-Off Mode starten und beenden</a>, Previous: <a href="Einfuhrung.html#Einf_00fchrung" accesskey="p" rel="prev">Einführung</a>, Nach oben: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+</div>
+<hr>
+<a name="Hinweise-zur-Arbeit-mit-GNU-Emacs-1"></a>
+<h2 class="chapter">2 Hinweise zur Arbeit mit GNU Emacs</h2>
+
+<p>GNU Emacs ist ein sehr funktionsreiches Programm zur Verarbeitung von
+Text-Dateien unterschiedlichster Formate. Konzipiert als Text-Editor und
+Werkzeug für Programmierer, hat es aufgrund seiner
+Programmierschnittstelle Erweiterung und Anwendung in verschiedenen
+Bereichen gefunden. Stand-Off Mode ist solch eine Erweiterung, die neue
+Anwendungsfelder erschließt.
+</p>
+<p>Der Gebrauch von GNU Emacs ist gewöhnungsbedürftig, weswegen hier einige
+Grund-Konzepte vorgestellt werden.
+</p>
+<dl compact="compact">
+<dt><b>Kommandos</b></dt>
+<dd><p>Über die Menü-Leiste, Icons oder Tastenkombinationen eine Operation
+ausführen, heißt, dass ein Kommando aufgerufen und ausgeführt wird.
+</p>
+</dd>
+<dt><b>Echo Area/Minibuffer</b></dt>
+<dd><p>Am unteren Ende des Fensters befindet sich der sogenannte
+<em>Minibuffer</em> bzw. die <em>Echo Area</em>. Hier werden von Kommandos
+erzeugte Meldungen angezeigt (<em>Echo</em>), oder ein aufgerufenes
+Kommando wartet auf die Eingabe weiterer Parameter durch den Benutzer
+(<em>Minibuffer</em>).
+</p>
+</dd>
+<dt><b><kbd>C-g</kbd></b></dt>
+<dd><p>Ein teilweise ausgeführtes Kommando, das auf weitere Eingaben durch den
+Benutzer wartet, kann durch die Tasten-Kombination <kbd>C-g</kbd> abgebrochen
+werden. <kbd>C-g</kbd> heißt: Die Taste <tt class="key">CTRL</tt> (=<tt class="key">STRG</tt>) gedrückt
+halten und zusätzlich kurz einmal die Taste <kbd>g</kbd> drücken. Dieses
+Kommando zum Abbruch eines Kommandos ist das wichtigste Kommando bei der
+Arbeit mit Emacs. Sie sollten sich die Tastenkombination merken und
+nicht scheuen, sie zu nutzen. Die Eingabe von <kbd>C-g</kbd> führt zum Echo
+&ldquo;Quit&rdquo; in der Echo Area.
+</p>
+</dd>
+<dt><b>Buffer</b></dt>
+<dd><p>Buffer sind ein Grund-Konzept von Emacs. In einem Buffer wird
+beispielsweise der Inhalt einer Datei angezeigt. Aber ein Buffer kann
+auch andere Daten darstellen. So werden in Stand-Off etwa die
+Eigenschaften eines ausgewählten Markup-Elements in einem Buffer
+angezeigt.
+</p>
+<p>Zur Laufzeit von Emacs gibt es nicht nur einen Buffer, sondern eine
+ganze Reihe von Buffern. Über das Menü &lsquo;<samp>Buffers</samp>&rsquo; kann man
+auswählen, welcher Buffer in den Vordergrund gehoben werden soll.
+</p>
+</dd>
+<dt><b>Window</b></dt>
+<dd><p>Buffer werden in einem Window dargestellt. Normalerweise wird im Fenster
+von Emacs ein Window mit einem Buffer dargestellt. Aber es kann auch
+eine (vertikale oder horizontale) Teilung vorgenommen werden, so dass
+verschiedene Buffer gleichzeitig im Vordergrund sind. Solche Teilungen
+können im Menü &lsquo;<samp>Datei</samp>&rsquo; unter &lsquo;<samp>New Window ...</samp>&rsquo;  vor- oder
+unter &lsquo;<samp>Remove other Window</samp>&rsquo; zurückgenommen werden.
+</p>
+</dd>
+<dt><b>Frame</b></dt>
+<dd><p>Frames in Emacs entsprechen Fenstern in Windows. Probieren Sie aus, was
+sich im Menü &lsquo;<samp>File</samp>&rsquo; hinter den Kommandos &lsquo;<samp>New Frame</samp>&rsquo;
+bzw. &lsquo;<samp>Delete Frame</samp>&rsquo; verbirgt.
+</p>
+</dd>
+<dt><b>Point</b></dt>
+<dd><p>Point in Emacs ist die Position des mit der Tastatur gesteuerten Cursers
+(also nicht der Mauszeiger).
+</p>
+</dd>
+<dt><b>Mark</b></dt>
+<dd><p>Emacs kann sich Positionen in einer Datei (bzw. in einem Buffer) merken
+(und auf Kommando mit dem Point dahin zurückkehren). Zudem wird ein Mark
+benötigt, um eine Text-Passage auszuwählen. Eine Art einen Mark zu
+setzen, ist die Auswahl einer Text-Passage mit der Maus. Dabei wird ein
+Mark auf die Stelle gesetzt, an welcher die linke Maustaste zuerst
+gedrückt wurde; der Point wird dann auf die Position gesetzt, wo die
+Maustaste wieder losgelassen wird.
+</p>
+<p>Statt mit der Maus kann ein Mark auch mit der Tastatur gesetzt werden,
+nämlich mit der Tastenkombination <kbd>C-<span class="key">SPC</span></kbd>, also: <kbd>CTRL</kbd>
+(=<kbd><span class="key">STRG</span></kbd>) halten und <kbd><span class="key">SPC</span></kbd> (=<kbd><span class="key">Leertaste</span></kbd>)
+drücken. Probieren Sie es aus, auch zweimal <kbd>C-<span class="key">SPC</span></kbd> nach
+einander, bewegen Sie zwischendurch den Point mittels der Pfeiltasten
+ihrer Tastatur, und denken Sie an <kbd>C-g</kbd>. Halten Sie bei diesen
+Experimenten auch den Minibuffer im Auge. Mit <kbd>C-u C-<span class="key">SPC</span></kbd>
+(d.h. <kbd><span class="key">CTRL</span></kbd> halten und nach einander <kbd>u</kbd> und
+<kbd><span class="key">SPC</span></kbd> drücken) können Sie zu zuvor gesetzten Marks
+zurückkehren. <b>Zur Übung:</b> Experimentieren Sie so lange, bis sie
+verstehen, worin der Unterschied zwischen der einfachen und der
+doppelten Anwendung der Tastenkombination <kbd>C-<span class="key">SPC</span></kbd> besteht.
+</p>
+</dd>
+<dt><b>Region</b></dt>
+<dd><p>Die Region oder <em>active Region</em> bezeichnet die Text-Passage
+zwischen dem aktiven Mark am einen Ende und Point am anderen, also den
+Bereich, der durch Maus-Auswahl oder durch die eben beschriebenen
+Tastenkombinationen hervorgehogen wird. Die Region benötigen Sie in
+Stand-Off Mode, um eine Text-Passage mit Markup auszuzeichnen.
+</p>
+</dd>
+<dt><b>Modeline</b></dt>
+<dd><p>Direkt über dem Minibuffer befindet sich die (grau hinterlegte)
+Modeline, eine Statuszeile, in der Informationen zum drüber angezeigten
+Buffer angezeigt werden. Von links nach rechts: Datei geändert etc.;
+Name des Buffers bzw. der Datei; vertikale Position innerhalb des
+Buffers in Prozent; Nummer der Zeile, in der sich Point befindet; Emacs
+Mode in Klammern, z.B. Stand-Off Mode.
+</p>
+</dd>
+<dt><b>Mode</b></dt>
+<dd><p><em>Modes</em> gibt es für die verschiedensten Dateiformate und für die
+verschiedensten Operationen. Modes stellen Kommandos mit
+unterschiedlichen Funktionen bereit. Der aktive Modus wird in der
+Modeline angezeigt.
+</p>
+</dd>
+<dt><b>Menüs</b></dt>
+<dd><p>Anders als in vielen anderen Programmen mit graphischer
+Benutzeroberfläche sind die Menüs in Emacs nicht statisch, sondern
+hängen vom Mode ab. Weil das &lsquo;<samp>Stand-Off</samp>&rsquo;-Menü nur im Stand-Off
+Mode sinnvoll ist, ist es auch nur vorhanden, wenn sich der im aktiven
+Window dargestellte Buffer im Stand-Off Mode befindet. Wenn man sich
+gerade im Minibuffer aufhält (also Tastatur-Eingaben im Minibuffer
+erscheinen), ist das Stand-Off-Menü verschwunden, weil sich der
+Minibuffer eben nicht im Stand-Off Mode befindet. Wenn das Menü gerade
+nicht sichtbar ist, dann sollte der Abbruch des gerade ausgeführten
+Kommandos mittels <kbd>C-g</kbd> und gegebenenfalls das einfache Klicken mit
+dem Mauszeiger auf den Buffer mit dem zu annotierenden Quell-Dokument
+das Menü &lsquo;<samp>Stand-Off</samp>&rsquo; wieder zurückbringen.
+</p>
+</dd>
+<dt><b>read-only Buffer</b></dt>
+<dd><p>Ein Ändern des Quell-Dokuments ist nicht sinnvoll, weil mit jeder
+Änderung die Referenzierung des externen Markups neu adjustiert werden
+müsste. Daher ist ein Buffer im Stand-Off Mode read-only.
+</p>
+</dd>
+<dt><b>Tastenkombinationen</b></dt>
+<dd><p>GNU Emacs macht umfänglich Gebrauch von Tastenkombinationen.
+</p>
+<p>In solchen Buffern, die read-only sind, können Kommandos einfach ohne
+<kbd><span class="key">STRG</span></kbd>-Kombination mit Tasten verbunden werden, weil diese ja
+nicht für das Einfügen von Zeichen benötigt werden. Stand-Off Mode macht
+davon Gebrauch. Die entsprechenden Tasten sind im Menü vermerkt.
+</p>
+
+
+</dd>
+</dl>
+
+<p>Für eine umfassende Darstellung sei auf die gute
+<a href="http://www.fernuni-hagen.de/imperia/md/content/zmi_2010/a028.pdf">Einführung
+von Manuela Jürgens vom Rechenzentrum der Fernuni-Hagen</a> verwiesen und
+auf das englischsprachige
+<a href="https://www.gnu.org/software/emacs/manual/emacs.html">Manual zu GNU Emacs</a> verwiesen.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" accesskey="n" rel="next">Stand-Off Mode starten und beenden</a>, Previous: <a href="Einfuhrung.html#Einf_00fchrung" accesskey="p" rel="prev">Einführung</a>, Nach oben: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+</div>
+
+
+
+</body>
+</html>

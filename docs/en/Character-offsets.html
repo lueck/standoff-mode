@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Stand-Off Mode 0.4.2 Manual (english): Character offsets</title>
+
+<meta name="description" content="Stand-Off Mode 0.4.2 Manual (english): Character offsets">
+<meta name="keywords" content="Stand-Off Mode 0.4.2 Manual (english): Character offsets">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Introduction.html#Introduction" rel="up" title="Introduction">
+<link href="Conventions.html#Conventions" rel="next" title="Conventions">
+<link href="Common-terms.html#Common-terms" rel="prev" title="Common terms">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.indentedblock {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style:oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nocodebreak {white-space:nowrap}
+span.nolinebreak {white-space:nowrap}
+span.roman {font-family:serif; font-weight:normal}
+span.sansserif {font-family:sans-serif; font-weight:normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+<a name="Character-offsets"></a>
+<div class="header">
+<p>
+Next: <a href="Conventions.html#Conventions" accesskey="n" rel="next">Conventions</a>, Previous: <a href="Common-terms.html#Common-terms" accesskey="p" rel="prev">Common terms</a>, Up: <a href="Introduction.html#Introduction" accesskey="u" rel="up">Introduction</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Character-offsets-1"></a>
+<h3 class="section">1.4 Character offsets</h3>
+
+<p>An <em>external document</em> produced by stand-off mode looks like this:
+</p>
+<div class="example">
+<pre class="example">(setq standoff-markup-read-function-dumped
+ (quote
+  ((&quot;ac06be81-d86e-4fe5-b84e-4952b1e571c9&quot;
+    &quot;http://beispiel.fernuni-hagen.de/ontologies/beispiel#beispiel&quot;
+    28095
+    28100
+    &quot;Dante&quot;)
+   (&quot;a29ca667-0f99-4933-b0aa-8a7b1c1929e9&quot;
+    &quot;http://beispiel.fernuni-hagen.de/ontologies/beispiel#konzept&quot;
+    28057
+    28070
+    &quot;Große Dichter&quot;)
+   ...)))
+
+(setq standoff-source-md5-dumped &quot;a2997fcd8c318048abf34889212c1982&quot;)
+</pre></div>
+
+<p>That&rsquo;s a representation of the external markup in so called
+s-expressions, which is used by the dummy back-end which simply dumps
+emacs lisp data into a file. There is also a JSON back-end. See for more info about representation formats and back-ends.
+</p>
+<p>All text spans from the source document, that where annotated, make up a
+list of markup elements, stored in the variable
+<code>standoff-markup-read-function-dumped</code>. Each markup element is
+delimited by paratheses and has positional arguments.
+</p>
+<p>The first positional arguments is made from 32 letters and digits,
+separted by &rsquo;-&rsquo; into 5 blocks, and is a universally unique identifier
+(UUID) of the markup element.
+</p>
+<p>The second positional argument, which has the form of a URI, gives the
+type or class of the markup element. In the first case, it&rsquo;s a
+&ldquo;beispiel&rdquo; (german for &ldquo;example&rdquo;) from the namespace
+<code>http://beispiel.fernuni-hagen.de/ontologies/beispiel</code>, in the
+second case it is &ldquo;konzept&rdquo; (german for &ldquo;term&rdquo;) from the same
+namespace.
+</p>
+<p>The next two positional arguments give the <em>charater offsets</em> of
+the start and end of the text span in the source document. Here, the
+annotated passage spans from character 28095 to 28100.
+</p>
+<p>The fifth positional entry is the string from the source document, that
+spans from the start to the end character offset. The latin capital
+letter <code>D</code> in <code>Dante</code> has position 28095, the <code>e</code> in the
+end of the name has position 28099.
+</p>
+<p>Further down there is the checksum for the source document. The checksum
+is calculated, when the document is opened. As soon as the source
+document is changed, the checksum changes and stand-off mode alarms you
+with an error, because the <em>character offsets</em> are likely to be
+incorrect now.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Conventions.html#Conventions" accesskey="n" rel="next">Conventions</a>, Previous: <a href="Common-terms.html#Common-terms" accesskey="p" rel="prev">Common terms</a>, Up: <a href="Introduction.html#Introduction" accesskey="u" rel="up">Introduction</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

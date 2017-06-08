@@ -10,11 +10,11 @@ standoff-*.tar
 standoff-config.el
 
 # Info files
+standoff-en.info
+standoff-en.pdf
 standoff-de.info
 standoff-de.pdf
-standoff-de
 standoff-praktikum.pdf
-standoff-praktikum
 *.aux
 *.cp
 *.dvi
@@ -26,6 +26,9 @@ standoff-praktikum
 *.toc
 *.tp
 *.vr
+*.vrs
+*.fns
+*.kys
 
 # Protege ontology catalogs
 catalog-v*.xml

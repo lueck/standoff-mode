@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Stand-Off Mode 0.4.2 Benutzerhandbuch (deutsch): Dieses Handbuch</title>
+
+<meta name="description" content="Stand-Off Mode 0.4.2 Benutzerhandbuch (deutsch): Dieses Handbuch">
+<meta name="keywords" content="Stand-Off Mode 0.4.2 Benutzerhandbuch (deutsch): Dieses Handbuch">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Inhaltsverzeichnis">
+<link href="Einfuhrung.html#Einf_00fchrung" rel="up" title="Einführung">
+<link href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" rel="next" title="Stand-Off Mode starten und beenden">
+<link href="Character-Offsets.html#Character-Offsets" rel="prev" title="Character Offsets">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.indentedblock {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style:oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nocodebreak {white-space:nowrap}
+span.nolinebreak {white-space:nowrap}
+span.roman {font-family:serif; font-weight:normal}
+span.sansserif {font-family:sans-serif; font-weight:normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+<a name="Dieses-Handbuch"></a>
+<div class="header">
+<p>
+Previous: <a href="Character-Offsets.html#Character-Offsets" accesskey="p" rel="prev">Character Offsets</a>, Nach oben: <a href="Einfuhrung.html#Einf_00fchrung" accesskey="u" rel="up">Einführung</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+</div>
+<hr>
+<a name="Dieses-Handbuch-1"></a>
+<h3 class="section">1.3 Dieses Handbuch</h3>
+
+<p>Dieses Handbuch liegt in drei Formaten vor: als PDF für den Druck, als
+HTML-Dokument und im sogenannten Info-Format, das Sie im Info-Browser
+von GNU Emacs ansehen können.
+</p>
+
+<p>Die Kommandos, d.h. Funktionen, von Stand-Off Mode werden im Handbuch
+durchweg in dreispaltigen Tabellen vorgestellt: die Tasten-Kombination
+für das Kommando in der ersten Spalte, der Eintrag im Stand-Off-Menü in
+der zweiten, und der Name des Kommandos in der dritten. So sind das
+vorliegende Benutzerhandbuch sowie eine Liste weiterer Handbücher
+folgendermaßen aufrufbar:
+</p>
+<table>
+<thead><tr><th width="8%">Tast.</th><th width="40%">Menü</th><th width="50%">Kommando</th></tr></thead>
+<tr><td width="8%"><kbd>?</kbd></td><td width="40%">&lsquo;<samp>Manual</samp>&rsquo;</td><td width="50%"><code>standoff-display-manual</code></td></tr>
+<tr><td width="8%"><kbd>C-h i</kbd></td><td width="40%">&lsquo;<samp>Help --&gt; More Manuals --&gt; All other (info)</samp>&rsquo;</td><td width="50%"><code>info</code></td></tr>
+</table>
+
+<p>Dieses Manual können Sie über die Taste <kbd>?</kbd> öffnen, vorausgesetzt
+der gerade aktive Buffer befindet sich in Stand-Off Mode. Alternativ
+können Sie den Eintrag &lsquo;<samp>Manual</samp>&rsquo; unter dem Menü-Punkt
+&lsquo;<samp>Stand-Off</samp>&rsquo; anklicken. Als weitere Alternative können Sie das
+Kommando <code>standoff-display-manual</code> interaktiv über seinen Namen
+ausführen.
+</p>
+<p>Alle installierten Manuale können Sie jederzeit über die
+Tasten-Kombination <kbd>C-h i</kbd> ansehen, also durch Halten der Taste
+<kbd><span class="key">CTRL</span></kbd> (= <kbd><span class="key">STRG</span></kbd>) und Drücken der Taste <tt class="key">h</tt>, und
+anschließendes Drücken der Taste <tt class="key">i</tt> (ohne dass <kbd><span class="key">CTRL</span></kbd>
+noch gehalten wird). Alternativ können Sie unter dem Menü-Punkt
+&lsquo;<samp>Help</samp>&rsquo; den Punkt &lsquo;<samp>More Manuals</samp>&rsquo; auswählen und darin wiederum
+&lsquo;<samp>All Other Manuals (info)</samp>&rsquo;. Als dritte Alternative können Sie das
+Kommando <code>info</code> interaktiv über seinen Namen aufrufen.
+</p>
+<p>Um in Emacs ein Kommando interaktiv über seinen Namen aufzurufen, geben
+Sie die Tastenkombination <kbd>M-x</kbd> gefolgt vom Namen des Kommandos,
+gefolgt von <kbd><span class="key">RET</span></kbd> (= Eingabetaste) ein, in diesem Fall also
+<kbd>M-x</kbd> <code>standoff-display-manual</code> <kbd><span class="key">RET</span></kbd>. Die der
+Tastenkombination <kbd>M-x</kbd> folgende Eingabe des Kommandonamens ist am
+unteren Ende des Emacs-Fensters, im sogenannten Minibuffer, mitlesbar.
+</p>
+<p><kbd>M-x</kbd> ist die Kombination aus Meta-Taste und <kbd>x</kbd>. Die Meta-Taste
+ist der zweite <em>modifier key</em> neben <kbd><span class="key">CTRL</span></kbd>. Auf
+herkömmlichen Tastaturen trägt die Meta-Taste die Aufschrift
+<kbd><span class="key">ALT</span></kbd>. <kbd>M-x</kbd> heißt also <kbd><span class="key">ALT</span></kbd> halten und dabei
+einmal <kbd>x</kbd> tippen. Ist auf der Tastatur die Taste <kbd><span class="key">ALT</span></kbd>
+nicht vorhanden, kann für die Meta-Kombination <kbd>M-</kbd> ersatzweise die
+Taste <kbd><span class="key">ESC</span></kbd> einmal kurz gedrückt werden (nicht halten).
+</p>
+<p>Nach der Aktivierung von Stand-Off Mode ist das Aufrufen eines Kommandos
+über seinen Namen bei den allerwenigsten Befehlen von Stand-Off Mode
+nötig. Nur solche Befehle, die riskant für Ihre Daten sind und die Sie
+nur anwenden sollten, wenn Sie genau wissen, was Sie tun, sind nicht
+über das Menü erreichbar.
+</p>
+
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Character-Offsets.html#Character-Offsets" accesskey="p" rel="prev">Character Offsets</a>, Nach oben: <a href="Einfuhrung.html#Einf_00fchrung" accesskey="u" rel="up">Einführung</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+</div>
+
+
+
+</body>
+</html>
