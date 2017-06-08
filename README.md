@@ -144,11 +144,6 @@ open that that document and type
 
 	M-x standoff-mode RET
 
-For configuration und usage see the info files (currently german
-only):
-
-	C-h i m stand-off RET
-
 Before working with stand-off mode, the back-end has to be
 choosen. Using it for the first time, you will be redirected to a
 customization dialog, when trying to create an annotation. For
@@ -163,9 +158,9 @@ line in your Emacs init file:
 ## Documentation ##
 
 There is an
-[english manual](http://lueck/github.io/standoff-mode/en/index.html)
+[english manual](http://lueck.github.io/standoff-mode/en/index.html)
 and a
-[german manual](http://lueck/github.io/standoff-mode/de/index.html).
+[german manual](http://lueck.github.io/standoff-mode/de/index.html).
 And there are
 [german installation instructions](http://beispiel.germanistik.rub.de/@@/doc/Emacs-Installation.pdf)
 for both, GNU Emacs and standoff-mode, addressing absolute beginners.
