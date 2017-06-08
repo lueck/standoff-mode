@@ -162,25 +162,13 @@ line in your Emacs init file:
 
 ## Documentation ##
 
-There is a manual in german language which is installed with the
-package und can be viewed with Emacs' info-browser. Type
-
-	C-h i m standoff RET
-
-An english manual will follow soon.
-
-The same documentation is available as
-PDF
-[here](http://beispiel.germanistik.rub.de/@@/doc/standoff-de.pdf). There
-is also a
-more
-[verbose version](http://beispiel.germanistik.rub.de/@@/doc/standoff-praktikum.pdf) of
-it, which addresses students of Fern-University of Hagen, Germany. And
-there
-are
-[installation instructions](http://beispiel.germanistik.rub.de/@@/doc/Emacs-Installation.pdf) for
-both, GNU Emacs and standoff-mode.
-
+There is an
+[english manual](http://lueck/github.io/standoff-mode/en/index.html)
+and a
+[german manual](http://lueck/github.io/standoff-mode/de/index.html).
+And there are
+[german installation instructions](http://beispiel.germanistik.rub.de/@@/doc/Emacs-Installation.pdf)
+for both, GNU Emacs and standoff-mode, addressing absolute beginners.
 
 ## License ##
 
