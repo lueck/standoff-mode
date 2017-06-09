@@ -13,7 +13,10 @@ ELPKG := standoff-api.el \
 	standoff-xml.el \
 	standoff-relations.el \
 	standoff-mode.el \
-	standoff-mode-pkg.el
+	standoff-mode-pkg.el \
+	standoff-en.info \
+	standoff-de.info \
+	dir
 
 DOC_HTML := docs/en/index.html docs/arb/index.html docs/de/index.html
 
