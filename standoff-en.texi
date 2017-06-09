@@ -207,10 +207,18 @@ You can clone the git repository like this:
 @example
 cd ~/src
 git clone https://github.com/lueck/standoff-mode
-make
+make package
 @end example
 
-(TODO: Provide more help.)
+This makes a package file @file{standoff-mode-<VERSION>.tar}. Now,
+install it:
+
+@example
+M-x package-install-file RET ~/src/standoff-mode/standoff-mode-<VERSION>.tar
+@end example
+
+You could also add @file{~src/standoff-mode/} to Emacs'
+@code{load-path}. Then it's not required to use @code{package} at all.
 
 
 @node Common terms, Character offsets, Installation, Introduction
@@ -488,7 +496,7 @@ Activate standoff mode for the file displayed in the current buffer.
 
 After opening a file, standoff mode can be activated by @kbd{M-x
 standoff-mode @kbd{RET}}.  @xref{Stand-Off mode for files of a specific
-type} to configure Emacs to always open files with a specific suffix in
+type}, to configure Emacs to always open files with a specific suffix in
 standoff mode.
 
 In standoff mode, the buffer is read-only. This absolutely makes sense,
