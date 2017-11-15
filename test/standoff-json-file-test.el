@@ -195,6 +195,37 @@ Tapete, den Bauer innerhalb der Windmuͤhle
     ;; tear down
     (standoff-json-test-teardown source-buffer)))
 
+(ert-deftest standoff-json-test-create-delete-create-read-relation ()
+  "A unittest for issue #3"
+  (let ((source-buffer (standoff-json-test-setup-source-buffer))
+	json-buffer
+	json-buffer-size1
+	json-buffer-size2
+	markup-id1
+	markup-id2
+	markup-id3
+	markup-id4
+	relation-id1
+	relation-id2)
+    (set-buffer source-buffer)
+    (setq json-buffer (standoff-json-file/get-json-buffer source-buffer))
+    ;; read relation before there are any
+    (should (= 0 (length (standoff-json-file/read-relations source-buffer))))
+    ;; create markup elements
+    (setq markup-id1 (standoff-json-file/create-markup source-buffer 23 42 "example"))
+    (setq markup-id2 (standoff-json-file/create-markup source-buffer 52 64 "marker"))
+    (setq markup-id3 (standoff-json-file/create-markup source-buffer 45 50 "example"))
+    ;; create a relation
+    (setq relation-id1 (standoff-json-file/create-relation source-buffer markup-id1 "hatMarker" markup-id2))
+    ;; delete it again
+    (standoff-json-file/delete-relation source-buffer nil nil nil relation-id1)
+    ;; create a new relation again
+    (setq relation-id1 (standoff-json-file/create-relation source-buffer markup-id1 "hatMarker" markup-id2))
+    ;; error on reading before fixing issue #3
+    (should (= 1 (length (standoff-json-file/read-relations source-buffer))))
+    ;; tear down
+    (standoff-json-test-teardown source-buffer)))
+
 (ert-deftest standoff-json-test-used-predicates ()
   :expected-result :failed
   (let ((source-buffer (standoff-json-test-setup-source-buffer))

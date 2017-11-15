@@ -216,7 +216,13 @@ SERIALIZED json string."
 	      ;; There are objects of this type already present.
 	      (progn
 		(goto-char insert-pos)
-		(insert ","))
+		;; Test if there is already a object. See issue #3
+		(re-search-backward "[^[:space:]]" nil t)
+		(if (equal (match-string 0) "}")
+		    (progn 
+		      (goto-char insert-pos)
+		      (insert ","))
+		  (goto-char insert-pos)))
 	    ;; No objects of this type present yet.
 	    (goto-char (point-max))
 	    (search-backward "}")
