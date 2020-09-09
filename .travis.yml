@@ -1,0 +1,15 @@
+language: c
+
+sudo: false
+
+branches:
+  only:
+  - master
+
+addons:
+  apt:
+    packages:
+    - emacs
+
+script:
+  - make test
