@@ -1,0 +1,15 @@
+## USAGE:
+## roqet -i sparql ranges.sparql -D annotations.ttl
+##
+## This will extract the UUID, start character, end character of every markup range.
+## Adding "-r csv" will return CSV output.
+
+PREFIX som: <http://github.com/lueck/standoff-mode/owl#>
+
+SELECT ?uuid, ?start, ?end
+{
+?range a som:markupRange .
+?range som:uuid ?uuid .
+?range som:sourceStart ?start .
+?range som:sourceEnd ?end .
+}
