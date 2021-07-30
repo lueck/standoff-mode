@@ -63,14 +63,13 @@
         ] .
 
 :RangeMap rr:predicateObjectMap [
-        rr:predicate som:sourceMd5sum ;
+        rr:predicate som:sourceDocument ;
         rr:objectMap [
-            #rml:reference "$($.md5sum)"
             rr:parentTriplesMap :FileMap ;
-            rr:joinCondition [
-                rr:child "@" ;
-                rr:parent "$.md5sum"
-                ]
+            #rr:joinCondition [
+            #    rr:child "@" ;
+            #    rr:parent "$.md5sum"
+            #    ]
             ]
         ] .
 
