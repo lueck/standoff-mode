@@ -1,5 +1,7 @@
 ## USAGE:
 # java -jar rmlmapper-<VERSION>-all.jar -m rml4json.ttl -s turtle
+#
+# this will convert annotation.json in the current directory
 
 @prefix rml: <http://semweb.mmlab.be/ns/rml#> .
 @prefix rr: <http://www.w3.org/ns/r2rml#> .
@@ -12,7 +14,7 @@
 
 :FileMap a rr:TriplesMap ;
     rml:logicalSource [
-        rml:source "/tmp/annotations.json" ; # TODO
+        rml:source "annotations.json" ; # TODO
         rml:referenceFormulation ql:JSONPath ;
         rml:iterator "$.md5sum" ;
         ] .
@@ -36,7 +38,7 @@
 
 :RangeMap a rr:TriplesMap ;
     rml:logicalSource [
-        rml:source "/tmp/annotations.json" ; # TODO
+        rml:source "annotations.json" ; # TODO
         rml:referenceFormulation ql:JSONPath ;
         rml:iterator "$.MarkupRanges[*]" ;
         ] .
@@ -105,7 +107,7 @@
 
 :RelationMap a rr:TriplesMap ;
     rml:logicalSource [
-        rml:source "/tmp/annotations.json" ; # TODO
+        rml:source "annotations.json" ; # TODO
         rml:referenceFormulation ql:JSONPath ;
         rml:iterator "$.Relations[*]" ;
         ] .
