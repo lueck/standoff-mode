@@ -8,7 +8,7 @@ USAGE: $0 DIR FILE_PATTERN
 This will copy each file matching FILE_PATTERN to DIR where the file
 name will be the md5 hash value.
 
-Example: $0 sources/*.TEI-P5.xml
+Example: $0 ~/triples/src ~/tagged/*.TEI-P5.xml
 EOF
 
     exit 1;
