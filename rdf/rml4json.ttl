@@ -48,6 +48,13 @@
         ] .
 
 :RangeMap rr:predicateObjectMap [
+        rr:predicate som:uuid ;
+        rr:objectMap [
+            rml:reference "markupRangeId" ;
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
         rr:predicate rdf:type ;
         rr:objectMap [ rr:constant som:markupRange ]
         ] .
@@ -119,6 +126,13 @@
 :RelationMap rr:predicateObjectMap [
         rr:predicate rdf:type ;
         rr:objectMap [ rr:constant som:relation ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:uuid ;
+        rr:objectMap [
+            rml:reference "relationId" ;
+            ]
         ] .
 
 :RelationMap rr:predicateObjectMap [
