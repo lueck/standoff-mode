@@ -1,0 +1,75 @@
+## USAGE:
+# java -jar rmlmapper-<VERSION>-all.jar -m rml4json.ttl -s turtle
+#
+# this will convert annotation.json in the current directory
+
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <http://github.com/lueck/standoff-mode/rml/tei#> .
+@prefix som: <http://github.com/lueck/standoff-mode/owl#> .
+@prefix tei: <http://www.tei-c.org/ns/1.0#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+
+:TeiMap a rr:TriplesMap ;
+    rml:logicalSource [
+        rml:source "ff97cb8a71544e035fbf538201b52d57" ; # TODO
+        rml:referenceFormulation ql:XPath ;
+        rml:iterator "//TEI/teiHeader" ;
+        ] .
+
+:TeiMap rr:subjectMap [
+        rr:template "file://../src/ff97cb8a71544e035fbf538201b52d57"
+        ] .
+
+:TeiMap rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [ rr:constant som:teiDocument ]
+        ] .
+        
+:TeiMap rr:predicateObjectMap [
+        rr:predicate som:md5sum ;
+        rr:objectMap [
+            rr:constant "ff97cb8a71544e035fbf538201b52d57"
+            ]
+        ] .
+
+:TeiMap rr:predicateObjectMap [
+        rr:predicate dc:identifier ;
+        rr:objectMap [
+            rml:reference "//publicationStmt//idno[@type = 'URN']" ;
+            ]
+        ] .        
+
+:TeiMap rr:predicateObjectMap [
+        rr:predicate dc:title ;
+        rr:objectMap [
+            rml:reference "fileDesc/titleStmt/title"
+            ]
+        ] .
+
+:TeiMap rr:predicateObjectMap [
+        rr:predicate dc:creator ;
+        rr:objectMap [
+            rml:reference "fileDesc/titleStmt/author | fileDesc/titleStmt/author/persName/@ref" ;
+            #rml:reference "concat(fileDesc/titleStmt/author/forename, ' ', fileDesc/titleStmt/author/surname)"
+            ]
+        ] .
+        
+:TeiMap rr:predicateObjectMap [
+        rr:predicate dc:source ;
+        rr:objectMap [
+            rml:reference "//sourceDesc/bibl" ;
+            ]
+        ] .
+        
+:TeiMap rr:predicateObjectMap [
+        rr:predicate dc:date ;
+        rr:objectMap [
+            rml:reference "//sourceDesc//date[@type = 'publication']" ;
+            rr:datatype xsd:integer ;
+            ]
+        ] .
