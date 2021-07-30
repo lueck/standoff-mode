@@ -18,7 +18,7 @@
         ] .
 
 :FileMap rr:subjectMap [
-        rr:template "file://src/{@}"
+        rr:template "file://../src/{@}"
         ] .
 
 :FileMap rr:predicateObjectMap [
