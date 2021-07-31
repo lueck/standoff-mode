@@ -1,0 +1,11 @@
+## This sets environment variables for the Makefile in ../rdf/ based
+## on the directory layout of "Praktikum im Archiv des Beispiels".
+
+[ -v ARB_DIR ] || (echo "Please set ARB_DIR environment variable using 'export ARB_DIR=<path>'" && return 1)
+
+echo "Setting variables..."
+export SOURCE_DIR=$ARB_DIR/Quelldokumente
+export MARKUP_DIR=$ARB_DIR/Annotationen
+export MD5_DIR=$ARB_DIR/triples/src
+export RANGES_DIR=$ARB_DIR/triples/ranges
+export TRIPLES=$ARB_DIR/triples/data.ttl
