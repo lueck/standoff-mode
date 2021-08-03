@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 BASE_DIR ?= .
 SOURCE_DIR ?= $(BASE_DIR)/src
 MARKUP_DIR ?= $(SOURCE_DIR)
