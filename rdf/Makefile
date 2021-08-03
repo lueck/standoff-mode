@@ -23,7 +23,7 @@ RANGES := $(shell find $(RANGES_DIR) -regextype sed -regex ".*/[a-fA-F0-9-]\{36\
 TCF := $(patsubst %,%.tcf,$(RANGES))
 
 WEBLICHT_URL ?= https://weblicht.sfs.uni-tuebingen.de/WaaS/api/1.0/chain/process
-WEBLICHT_CHAINS ?= weblicht/de/chain42891928686544276.xml
+WEBLICHT_CHAIN ?= weblicht/de/chain42891928686544276.xml
 
 
 all: meta markup_rdf markup_ranges_sh $(TRIPLES)
