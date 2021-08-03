@@ -68,17 +68,16 @@
 
 :RangeMap rr:predicateObjectMap [
         rr:predicate som:tag ;
-        rr:objectMap [ rml:reference "qualifiedName" ] # FIXME: make IRI
+        rr:objectMap [
+            rml:reference "qualifiedName" ;
+            rr:datatype rr:IRI
+            ] # FIXME: make IRI
         ] .
 
 :RangeMap rr:predicateObjectMap [
         rr:predicate som:sourceDocument ;
         rr:objectMap [
             rr:parentTriplesMap :FileMap ;
-            #rr:joinCondition [
-            #    rr:child "@" ;
-            #    rr:parent "$.md5sum"
-            #    ]
             ]
         ] .
 
@@ -146,7 +145,7 @@
         rr:predicate som:predicate ;
         rr:objectMap [
             rml:reference "predicate" ;
-            rr:datatype xsd:anyURI # FIXME
+            rr:datatype rr:IRI # FIXME
             ]
         ] .
 
