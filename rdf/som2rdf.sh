@@ -48,7 +48,7 @@ temp_in=$temp_dir/annotations.json
 # fix standoff-mode output
 sed "s/;/,/g" $infile > $temp_in
 
-sed "s*annotations.json*$temp_in*g" rml4json.ttl > $rmlfile
+sed "s#annotations.json#$temp_in#g" rml4json.ttl > $rmlfile
 
 java -jar $rmlmapper_jar -s $format -m "$rmlfile" -o $outfile
 
