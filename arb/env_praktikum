@@ -8,6 +8,7 @@ export SOURCE_DIR=$ARB_DIR/Quelldokumente
 export MARKUP_DIR=$ARB_DIR/Annotationen
 export MD5_DIR=$ARB_DIR/triples/src
 export RANGES_DIR=$ARB_DIR/triples/ranges
-export TRIPLES=$ARB_DIR/triples/data.ttl
+
+export DATABASE=$ARB_DIR/triples/data.ttl
 
 export LOCAL2PLAIN=./dta2txt.sed
