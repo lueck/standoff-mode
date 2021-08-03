@@ -1,0 +1,170 @@
+## USAGE:
+# java -jar rmlmapper-<VERSION>-all.jar -m rml4json.ttl -s turtle
+#
+# this will convert annotation.json in the current directory
+
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <http://github.com/lueck/standoff-mode/rml/> .
+@prefix som: <http://github.com/lueck/standoff-mode/owl#> .
+
+
+:FileMap a rr:TriplesMap ;
+    rml:logicalSource [
+        rml:source "annotations.json" ; # TODO
+        rml:referenceFormulation ql:JSONPath ;
+        rml:iterator "$.md5sum" ;
+        ] .
+
+:FileMap rr:subjectMap [
+        rr:template "file://../src/{@}"
+        ] .
+
+:FileMap rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [ rr:constant som:sourceDocument ]
+        ] .
+        
+:FileMap rr:predicateObjectMap [
+        rr:predicate som:md5sum ;
+        rr:objectMap [
+            rml:reference "@"
+            ]
+        ] .
+        
+
+:RangeMap a rr:TriplesMap ;
+    rml:logicalSource [
+        rml:source "annotations.json" ; # TODO
+        rml:referenceFormulation ql:JSONPath ;
+        rml:iterator "$.MarkupRanges[*]" ;
+        ] .
+
+:RangeMap rr:subjectMap [
+        rr:template "http://github.com/lueck/standoff-mode/annotation/{markupRangeId}"
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:uuid ;
+        rr:objectMap [
+            rml:reference "markupRangeId" ;
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [ rr:constant som:markupRange ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:markupElementId ;
+        rr:objectMap [
+            rr:template "http://github.com/lueck/standoff-mode/annotation/{markupElementId}"
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:tag ;
+        rr:objectMap [
+            rml:reference "qualifiedName" ;
+            rr:datatype rr:IRI
+            ] # FIXME: make IRI
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:sourceDocument ;
+        rr:objectMap [
+            rr:parentTriplesMap :FileMap ;
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:sourceStart ;
+        rr:objectMap [
+            rml:reference "sourceStart" ;
+            rr:datatype xsd:integer
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:sourceEnd ;
+        rr:objectMap [
+            rml:reference "sourceEnd" ;
+            rr:datatype xsd:integer
+            ]
+        ] .
+
+:RangeMap rr:predicateObjectMap [
+        rr:predicate som:annotator ;
+        rr:objectMap [ rml:reference "createdBy" ]
+        ] .
+
+:RangeMap rr:predicteObjectMap [
+        rr:predicate som:when ;
+        rr:objectMap [
+            rml:reference "createdAt" ; # FIXME
+            rr:datatype xsd:dateTime
+            ]
+        ] .
+
+
+:RelationMap a rr:TriplesMap ;
+    rml:logicalSource [
+        rml:source "annotations.json" ; # TODO
+        rml:referenceFormulation ql:JSONPath ;
+        rml:iterator "$.Relations[*]" ;
+        ] .
+
+:RelationMap rr:subjectMap [
+        rr:template "http://github.com/lueck/standoff-mode/annotation/{relationId}"
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [ rr:constant som:relation ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:uuid ;
+        rr:objectMap [
+            rml:reference "relationId" ;
+            ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:subject ;
+        rr:objectMap [
+            rr:template "http://github.com/lueck/standoff-mode/annotation/{subjectId}"
+            ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:predicate ;
+        rr:objectMap [
+            rml:reference "predicate" ;
+            rr:datatype rr:IRI # FIXME
+            ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:object ;
+        rr:objectMap [
+            rr:template "http://github.com/lueck/standoff-mode/annotation/{objectId}"
+            ]
+        ] .
+
+:RelationMap rr:predicateObjectMap [
+        rr:predicate som:annotator ;
+        rr:objectMap [ rml:reference "createdBy" ]
+        ] .
+
+:RelationMap rr:predicteObjectMap [
+        rr:predicate som:when ;
+        rr:objectMap [
+            rml:reference "createdAt" ; # FIXME
+            rr:datatype xsd:dateTime
+            ]
+        ] .
