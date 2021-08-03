@@ -9,7 +9,7 @@ with options:
   [-c | --chain FILE]             use a chain file.
                                   Defaults to chain-berl+ims.xml
 
-Send SRC file to WebLicht webservice and receive a annotations in Text
+Send SRC file to WebLicht webservice and receive annotations in Text
 Corpus Format (TCF).
 
 This is essantially a wrapper around curl. See
@@ -33,7 +33,7 @@ die()
 # make this script work even if called as a symlink:
 basedir=$(dirname $(readlink -f "$BASH_SOURCE"))
 
-chain=$basedir/chain-berl+ims.xml
+chain=$basedir/weblicht-chain.xml
 
 if [ -v $WEBLICHTKEY ]; then die "$USAGE" 2 1 ; fi
 
@@ -57,6 +57,7 @@ while true; do
     shift
 done
 
+[ -f $chain ] || die "ERROR: $chain: no such file" 2 1
 
 url="https://weblicht.sfs.uni-tuebingen.de/WaaS/api/1.0/chain/process"
 
