@@ -6,6 +6,8 @@ MARKUP_DIR ?= $(SOURCE_DIR)
 MD5_DIR ?= $(SOURCE_DIR)
 RANGES_DIR ?= $(BASE_DIR)/ranges # should contain nothing but ranges and derivates, see clean* rule!
 TRIPLES ?= $(BASE_DIR)/data.ttl
+LOCAL2PLAIN ?= cat
+
 
 SOURCE_SUFFIX ?= TEI-P5.xml
 SOURCE_DOCS ?= $(shell find $(SOURCE_DIR) -regextype sed -regex ".*\.$(SOURCE_SUFFIX)$$" -type f)
@@ -20,7 +22,8 @@ MD5_DOCS := $(shell find $(MD5_DIR) -regextype sed -regex ".*/[a-fA-F0-9]\{32\}"
 MD5_META := $(patsubst %,%.meta.ttl,$(MD5_DOCS))
 
 RANGES := $(shell find $(RANGES_DIR) -regextype sed -regex ".*/[a-fA-F0-9-]\{36\}" -type f)
-TCF := $(patsubst %,%.tcf,$(RANGES))
+RANGES_TXT := $(patsubst %,%.txt,$(RANGES))
+RANGES_TCF := $(patsubst %,%.tcf,$(RANGES))
 
 WEBLICHT_URL ?= https://weblicht.sfs.uni-tuebingen.de/WaaS/api/1.0/chain/process
 WEBLICHT_CHAIN ?= weblicht/de/chain42891928686544276.xml
@@ -54,11 +57,17 @@ markup_rdf: $(MARKUP_RDF)
 markup_ranges_sh: $(MARKUP_RANGES_SH)
 
 
-%.tcf:	%
+%.txt: %
+	./plain.sh $< | $(LOCAL2PLAIN) > $@
+
+.PHONY: txt
+txt: $(RANGES_TXT)
+
+%.tcf:	%.txt
 	weblicht/waas.sh -c $(WEBLICHT_CHAIN) $< > $@ 2> >(tee -a $@.log >&2)
 
 .PHONY: tcf
-tcf: $(TCF)
+tcf: $(RANGES_TCF)
 
 
 $(TRIPLES): $(MARKUP_RDF) $(MD5_META)
