@@ -8,46 +8,36 @@ any later version published by the Free Software Foundation; with no
 Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
 copy of the license is included in the section entitled "GNU Free
 Documentation License." -->
-<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
 <head>
-<title>Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Markup-Elemente</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Markup-Elemente (Stand-Off Mode 0.4.3 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels)</title>
 
-<meta name="description" content="Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Markup-Elemente">
-<meta name="keywords" content="Stand-Off Mode 0.4.2 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels: Markup-Elemente">
+<meta name="description" content="Markup-Elemente (Stand-Off Mode 0.4.3 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels)">
+<meta name="keywords" content="Markup-Elemente (Stand-Off Mode 0.4.3 Benutzerhandbuch zum Gebrauch im Praktikum beim Archiv des Beispiels)">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="makeinfo">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="index.html#Top" rel="start" title="Top">
-<link href="index.html#SEC_Contents" rel="contents" title="Inhaltsverzeichnis">
-<link href="index.html#Top" rel="up" title="Top">
-<link href="Erfassen.html#Erfassen" rel="next" title="Erfassen">
-<link href="Bereits-fruher-erfasstes-Markup-laden.html#Bereits-fr_00fcher-erfasstes-Markup-laden" rel="prev" title="Bereits früher erfasstes  Markup laden">
+<link href="index.html" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="Erfassen.html" rel="next" title="Erfassen">
+<link href="Bereits-fruher-erfasstes-Markup-laden.html" rel="prev" title="Bereits früher erfasstes  Markup laden">
 <style type="text/css">
 <!--
 a.summary-letter {text-decoration: none}
-blockquote.smallquotation {font-size: smaller}
+blockquote.indentedblock {margin-right: 0em}
 div.display {margin-left: 3.2em}
 div.example {margin-left: 3.2em}
-div.indentedblock {margin-left: 3.2em}
 div.lisp {margin-left: 3.2em}
-div.smalldisplay {margin-left: 3.2em}
-div.smallexample {margin-left: 3.2em}
-div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
-div.smalllisp {margin-left: 3.2em}
-kbd {font-style:oblique}
+kbd {font-style: oblique}
 pre.display {font-family: inherit}
 pre.format {font-family: inherit}
 pre.menu-comment {font-family: serif}
 pre.menu-preformatted {font-family: serif}
-pre.smalldisplay {font-family: inherit; font-size: smaller}
-pre.smallexample {font-size: smaller}
-pre.smallformat {font-family: inherit; font-size: smaller}
-pre.smalllisp {font-size: smaller}
-span.nocodebreak {white-space:nowrap}
-span.nolinebreak {white-space:nowrap}
-span.roman {font-family:serif; font-weight:normal}
-span.sansserif {font-family:sans-serif; font-weight:normal}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
 ul.no-bullet {list-style: none}
 -->
 </style>
@@ -55,15 +45,13 @@ ul.no-bullet {list-style: none}
 
 </head>
 
-<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
-<a name="Markup_002dElemente"></a>
-<div class="header">
+<body lang="en_US">
+<span id="Markup_002dElemente"></span><div class="header">
 <p>
-Next: <a href="Relationen.html#Relationen" accesskey="n" rel="next">Relationen</a>, Previous: <a href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" accesskey="p" rel="prev">Stand-Off Mode starten und beenden</a>, Nach oben: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+Next: <a href="Relationen.html" accesskey="n" rel="next">Relationen</a>, Previous: <a href="Stand_002dOff-Mode-starten-und-beenden.html" accesskey="p" rel="prev">Stand-Off Mode starten und beenden</a>, Up: <a href="index.html" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 <hr>
-<a name="Markup_002dElemente-1"></a>
-<h2 class="chapter">4 Markup-Elemente</h2>
+<span id="Markup_002dElemente-1"></span><h2 class="chapter">4 Markup-Elemente</h2>
 
 <p>Markup-Elemente sind die Grund-Bausteine der Text-Annotation. Mit ihnen
 wird eine Passage eines Textes ausgezeichnet. Alle anderen in den
@@ -111,22 +99,22 @@ stehen Ihnen folgende Markup-Typen zur Verfügung:
 
 
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="Erfassen.html#Erfassen" accesskey="1">Erfassen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Erfassen.html" accesskey="1">Erfassen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Hervorheben-und-Ausblenden.html#Hervorheben-und-Ausblenden" accesskey="2">Hervorheben und Ausblenden</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Hervorheben-und-Ausblenden.html" accesskey="2">Hervorheben und Ausblenden</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Navigieren.html#Navigieren" accesskey="3">Navigieren</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Navigieren.html" accesskey="3">Navigieren</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Loschen.html#L_00f6schen" accesskey="4">Löschen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Loschen.html" accesskey="4">Löschen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Diskontinuierliches-Markup.html#Diskontinuierliches-Markup" accesskey="5">Diskontinuierliches Markup</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Diskontinuierliches-Markup.html" accesskey="5">Diskontinuierliches Markup</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
 <div class="header">
 <p>
-Next: <a href="Relationen.html#Relationen" accesskey="n" rel="next">Relationen</a>, Previous: <a href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden" accesskey="p" rel="prev">Stand-Off Mode starten und beenden</a>, Nach oben: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Inhaltsverzeichnis" rel="contents">Inhalt</a>]</p>
+Next: <a href="Relationen.html" accesskey="n" rel="next">Relationen</a>, Previous: <a href="Stand_002dOff-Mode-starten-und-beenden.html" accesskey="p" rel="prev">Stand-Off Mode starten und beenden</a>, Up: <a href="index.html" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 
 
