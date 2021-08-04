@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Copyright (C) 2015 Christian Lück
+<!-- Copyright (C) 2015, 2021 Christian Lück
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -8,46 +8,36 @@ any later version published by the Free Software Foundation; with no
 Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
 copy of the license is included in the section entitled "GNU Free
 Documentation License." -->
-<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
 <head>
-<title>Stand-Off Mode 0.4.2 Manual (english): Back-Ends</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Back-Ends (Stand-Off Mode 0.4.2 Manual (english))</title>
 
-<meta name="description" content="Stand-Off Mode 0.4.2 Manual (english): Back-Ends">
-<meta name="keywords" content="Stand-Off Mode 0.4.2 Manual (english): Back-Ends">
+<meta name="description" content="Back-Ends (Stand-Off Mode 0.4.2 Manual (english))">
+<meta name="keywords" content="Back-Ends (Stand-Off Mode 0.4.2 Manual (english))">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="makeinfo">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="index.html#Top" rel="start" title="Top">
+<link href="index.html" rel="start" title="Top">
 <link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
-<link href="Configuration.html#Configuration" rel="up" title="Configuration">
-<link href="JSON-file-back_002dend.html#JSON-file-back_002dend" rel="next" title="JSON file back-end">
-<link href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type" rel="prev" title="Stand-Off mode for files of a specific type">
+<link href="Configuration.html" rel="up" title="Configuration">
+<link href="JSON-file-back_002dend.html" rel="next" title="JSON file back-end">
+<link href="Stand_002dOff-mode-for-files-of-a-specific-type.html" rel="prev" title="Stand-Off mode for files of a specific type">
 <style type="text/css">
 <!--
 a.summary-letter {text-decoration: none}
-blockquote.smallquotation {font-size: smaller}
+blockquote.indentedblock {margin-right: 0em}
 div.display {margin-left: 3.2em}
 div.example {margin-left: 3.2em}
-div.indentedblock {margin-left: 3.2em}
 div.lisp {margin-left: 3.2em}
-div.smalldisplay {margin-left: 3.2em}
-div.smallexample {margin-left: 3.2em}
-div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
-div.smalllisp {margin-left: 3.2em}
-kbd {font-style:oblique}
+kbd {font-style: oblique}
 pre.display {font-family: inherit}
 pre.format {font-family: inherit}
 pre.menu-comment {font-family: serif}
 pre.menu-preformatted {font-family: serif}
-pre.smalldisplay {font-family: inherit; font-size: smaller}
-pre.smallexample {font-size: smaller}
-pre.smallformat {font-family: inherit; font-size: smaller}
-pre.smalllisp {font-size: smaller}
-span.nocodebreak {white-space:nowrap}
-span.nolinebreak {white-space:nowrap}
-span.roman {font-family:serif; font-weight:normal}
-span.sansserif {font-family:sans-serif; font-weight:normal}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
 ul.no-bullet {list-style: none}
 -->
 </style>
@@ -55,15 +45,13 @@ ul.no-bullet {list-style: none}
 
 </head>
 
-<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
-<a name="Back_002dEnds"></a>
-<div class="header">
+<body lang="en_US">
+<span id="Back_002dEnds"></span><div class="header">
 <p>
-Next: <a href="Annotation-schema.html#Annotation-schema" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html#Configuration" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+Next: <a href="Annotation-schema.html" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 <hr>
-<a name="Back_002dEnds-1"></a>
-<h3 class="section">7.2 Back-Ends</h3>
+<span id="Back_002dEnds-1"></span><h3 class="section">7.2 Back-Ends</h3>
 
 <p>With standoff mode you have some options where to store you annotations
 and in which format.  Storing annotations is done by a <em>back-end</em>.
@@ -82,13 +70,13 @@ like LISP, in fact they are dumped Emacs-lisp expressions. The JSON rest
 back-end uses JSON to communicate with the database.
 </p>
 <dl>
-<dt><a name="index-standoff_002dbackend"></a>User Option: <strong>standoff-backend</strong></dt>
+<dt id="index-standoff_002dbackend">User Option: <strong>standoff-backend</strong></dt>
 <dd><p>Configuring, which back-end to use, is simple.  There are two ways: (1)
 Customize the user option <code>standoff-backend</code>.  You are
 automatically directed to the customization dialog if you try working
 with stand-off mode without a back-end.  (2) Edit your Emacs startup
 file by adding:
-<a name="index-standoff_002dbackend-1"></a>
+<span id="index-standoff_002dbackend-1"></span>
 </p>
 <div class="example">
 <pre class="example"><code>(setq standoff-backend 'standoff-json-file)</code>
@@ -107,18 +95,20 @@ thus must be quoted like a symbol.
 </p></dd></dl>
 
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="JSON-file-back_002dend.html#JSON-file-back_002dend" accesskey="1">JSON file back-end</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-file-back_002dend.html" accesskey="1">JSON file back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="JSON-object-keys.html#JSON-object-keys" accesskey="2">JSON object keys</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-object-keys.html" accesskey="2">JSON object keys</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Dummy-back_002dend.html#Dummy-back_002dend" accesskey="3">Dummy back-end</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Dummy-back_002dend.html" accesskey="3">Dummy back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conversion.html" accesskey="4">Conversion</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
 <div class="header">
 <p>
-Next: <a href="Annotation-schema.html#Annotation-schema" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html#Configuration" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+Next: <a href="Annotation-schema.html" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 
 
