@@ -29,7 +29,7 @@
 @end macro
 
 @copying
-Copyright @copyright{} 2015 Christian Lück
+Copyright @copyright{} 2015, 2021 Christian Lück
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -108,6 +108,7 @@ Back-Ends
 * JSON file back-end::
 * JSON object keys::
 * Dummy back-end::
+* Conversion::
 
 JSON object keys
 
@@ -737,6 +738,7 @@ thus must be quoted like a symbol.
 * JSON file back-end::
 * JSON object keys::
 * Dummy back-end::
+* Conversion::
 @end menu
 
 @node JSON file back-end, JSON object keys, Back-Ends, Back-Ends
@@ -877,7 +879,7 @@ The JSON key for meta data about the creation time. Defaults to @code{createdAt}
 
 
 
-@node Dummy back-end,  , JSON object keys, Back-Ends
+@node Dummy back-end,  Conversion, JSON object keys, Back-Ends
 @subsection Dummy back-end
 
 The dummy back-end is a very simple implementation of the API for
@@ -916,6 +918,15 @@ Whether or not to log time and user meta data when creating markup.  You
 can keep out big brother by setting this to @code{nil}.  Defaults to
 @code{t}.
 @end defopt
+
+@node Conversion,  , JSON object keys, Back-Ends
+@subsection Conversion
+
+Annotations stored in one backend format can be converted into an other
+backends format. E.g. if you switched from the dummy backend to the
+json-file backend, then you can convert your dumped annotations using
+@code{standoff-dumped-json/dumped-to-json}. You have to load the module
+@code{standoff-dumped-json} before.
 
 
 @node Annotation schema,  , Back-Ends, Configuration

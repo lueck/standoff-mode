@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Copyright (C) 2015 Christian Lück
+<!-- Copyright (C) 2015, 2021 Christian Lück
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -8,45 +8,35 @@ any later version published by the Free Software Foundation; with no
 Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
 copy of the license is included in the section entitled "GNU Free
 Documentation License." -->
-<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
 <head>
-<title>Stand-Off Mode 0.4.2 Manual (english): Top</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Top (Stand-Off Mode 0.4.2 Manual (english))</title>
 
-<meta name="description" content="Stand-Off Mode 0.4.2 Manual (english): Top">
-<meta name="keywords" content="Stand-Off Mode 0.4.2 Manual (english): Top">
+<meta name="description" content="Top (Stand-Off Mode 0.4.2 Manual (english))">
+<meta name="keywords" content="Top (Stand-Off Mode 0.4.2 Manual (english))">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="makeinfo">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="#Top" rel="start" title="Top">
 <link href="#SEC_Contents" rel="contents" title="Table of Contents">
 <link href="../dir/index.html" rel="up" title="(dir)">
-<link href="Introduction.html#Introduction" rel="next" title="Introduction">
+<link href="Introduction.html" rel="next" title="Introduction">
 <style type="text/css">
 <!--
 a.summary-letter {text-decoration: none}
-blockquote.smallquotation {font-size: smaller}
+blockquote.indentedblock {margin-right: 0em}
 div.display {margin-left: 3.2em}
 div.example {margin-left: 3.2em}
-div.indentedblock {margin-left: 3.2em}
 div.lisp {margin-left: 3.2em}
-div.smalldisplay {margin-left: 3.2em}
-div.smallexample {margin-left: 3.2em}
-div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
-div.smalllisp {margin-left: 3.2em}
-kbd {font-style:oblique}
+kbd {font-style: oblique}
 pre.display {font-family: inherit}
 pre.format {font-family: inherit}
 pre.menu-comment {font-family: serif}
 pre.menu-preformatted {font-family: serif}
-pre.smalldisplay {font-family: inherit; font-size: smaller}
-pre.smallexample {font-size: smaller}
-pre.smallformat {font-family: inherit; font-size: smaller}
-pre.smalllisp {font-size: smaller}
-span.nocodebreak {white-space:nowrap}
-span.nolinebreak {white-space:nowrap}
-span.roman {font-family:serif; font-weight:normal}
-span.sansserif {font-family:sans-serif; font-weight:normal}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
 ul.no-bullet {list-style: none}
 -->
 </style>
@@ -54,7 +44,7 @@ ul.no-bullet {list-style: none}
 
 </head>
 
-<body lang="en_US" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+<body lang="en_US">
 <h1 class="settitle" align="center">Stand-Off Mode 0.4.2 Manual (english)</h1>
 
 
@@ -64,71 +54,70 @@ ul.no-bullet {list-style: none}
 
 
 
-<a name="SEC_Contents"></a>
+<span id="SEC_Contents"></span>
 <h2 class="contents-heading">Table of Contents</h2>
 
 <div class="contents">
 
 <ul class="no-bullet">
-  <li><a name="toc-Introduction-1" href="Introduction.html#Introduction">1 Introduction</a>
+  <li><a id="toc-Introduction-1" href="Introduction.html#Introduction">1 Introduction</a>
   <ul class="no-bullet">
-    <li><a name="toc-Summary-1" href="Summary.html#Summary">1.1 Summary</a></li>
-    <li><a name="toc-Installation-1" href="Installation.html#Installation">1.2 Installation</a></li>
-    <li><a name="toc-Common-terms-1" href="Common-terms.html#Common-terms">1.3 Common terms</a></li>
-    <li><a name="toc-Character-offsets-1" href="Character-offsets.html#Character-offsets">1.4 Character offsets</a></li>
-    <li><a name="toc-Conventions-1" href="Conventions.html#Conventions">1.5 Conventions</a></li>
+    <li><a id="toc-Summary-1" href="Summary.html#Summary">1.1 Summary</a></li>
+    <li><a id="toc-Installation-1" href="Installation.html#Installation">1.2 Installation</a></li>
+    <li><a id="toc-Common-terms-1" href="Common-terms.html#Common-terms">1.3 Common terms</a></li>
+    <li><a id="toc-Character-offsets-1" href="Character-offsets.html#Character-offsets">1.4 Character offsets</a></li>
+    <li><a id="toc-Conventions-1" href="Conventions.html#Conventions">1.5 Conventions</a></li>
   </ul></li>
-  <li><a name="toc-Starting-and-quitting-stand_002doff-mode-1" href="Starting-and-quitting-stand_002doff-mode.html#Starting-and-quitting-stand_002doff-mode">2 Starting and quitting stand-off mode</a>
+  <li><a id="toc-Starting-and-quitting-stand_002doff-mode-1" href="Starting-and-quitting-stand_002doff-mode.html#Starting-and-quitting-stand_002doff-mode">2 Starting and quitting stand-off mode</a>
   <ul class="no-bullet">
-    <li><a name="toc-Activating-stand_002doff-mode-1" href="Activating-stand_002doff-mode.html#Activating-stand_002doff-mode">2.1 Activating stand-off mode</a></li>
-    <li><a name="toc-Readability-of-XML-source-documents-1" href="Readability-of-XML-source-documents.html#Readability-of-XML-source-documents">2.2 Readability of XML source documents</a></li>
-    <li><a name="toc-Performance-1" href="Performance.html#Performance">2.3 Performance</a></li>
-    <li><a name="toc-Saving-annotations-1" href="Saving-annotations.html#Saving-annotations">2.4 Saving annotations</a></li>
-    <li><a name="toc-Loading-annotations-1" href="Loading-annotations.html#Loading-annotations">2.5 Loading annotations</a></li>
+    <li><a id="toc-Activating-stand_002doff-mode-1" href="Activating-stand_002doff-mode.html#Activating-stand_002doff-mode">2.1 Activating stand-off mode</a></li>
+    <li><a id="toc-Readability-of-XML-source-documents-1" href="Readability-of-XML-source-documents.html#Readability-of-XML-source-documents">2.2 Readability of XML source documents</a></li>
+    <li><a id="toc-Performance-1" href="Performance.html#Performance">2.3 Performance</a></li>
+    <li><a id="toc-Saving-annotations-1" href="Saving-annotations.html#Saving-annotations">2.4 Saving annotations</a></li>
+    <li><a id="toc-Loading-annotations-1" href="Loading-annotations.html#Loading-annotations">2.5 Loading annotations</a></li>
   </ul></li>
-  <li><a name="toc-Markup-elements-1" href="Markup-elements.html#Markup-elements">3 Markup elements</a></li>
-  <li><a name="toc-Relations-1" href="Relations.html#Relations">4 Relations</a></li>
-  <li><a name="toc-Attributes-1" href="Attributes.html#Attributes">5 Attributes</a></li>
-  <li><a name="toc-Comments-1" href="Comments.html#Comments">6 Comments</a></li>
-  <li><a name="toc-Configuration-1" href="Configuration.html#Configuration">7 Configuration</a>
+  <li><a id="toc-Markup-elements-1" href="Markup-elements.html#Markup-elements">3 Markup elements</a></li>
+  <li><a id="toc-Relations-1" href="Relations.html#Relations">4 Relations</a></li>
+  <li><a id="toc-Attributes-1" href="Attributes.html#Attributes">5 Attributes</a></li>
+  <li><a id="toc-Comments-1" href="Comments.html#Comments">6 Comments</a></li>
+  <li><a id="toc-Configuration-1" href="Configuration.html#Configuration">7 Configuration</a>
   <ul class="no-bullet">
-    <li><a name="toc-Stand_002dOff-mode-for-files-of-a-specific-type-1" href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type">7.1 Stand-Off mode for files of a specific type</a></li>
-    <li><a name="toc-Back_002dEnds-1" href="Back_002dEnds.html#Back_002dEnds">7.2 Back-Ends</a>
+    <li><a id="toc-Stand_002dOff-mode-for-files-of-a-specific-type-1" href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type">7.1 Stand-Off mode for files of a specific type</a></li>
+    <li><a id="toc-Back_002dEnds-1" href="Back_002dEnds.html#Back_002dEnds">7.2 Back-Ends</a>
     <ul class="no-bullet">
-      <li><a name="toc-JSON-file-back_002dend-1" href="JSON-file-back_002dend.html#JSON-file-back_002dend">7.2.1 JSON file back-end</a></li>
-      <li><a name="toc-JSON-object-keys-1" href="JSON-object-keys.html#JSON-object-keys">7.2.2 JSON object keys</a>
+      <li><a id="toc-JSON-file-back_002dend-1" href="JSON-file-back_002dend.html#JSON-file-back_002dend">7.2.1 JSON file back-end</a></li>
+      <li><a id="toc-JSON-object-keys-1" href="JSON-object-keys.html#JSON-object-keys">7.2.2 JSON object keys</a>
       <ul class="no-bullet">
-        <li><a name="toc-JSON-keys-for-markup-ranges-1" href="JSON-keys-for-markup-ranges.html#JSON-keys-for-markup-ranges">7.2.2.1 JSON keys for markup ranges</a></li>
-        <li><a name="toc-JSON-keys-for-relations-1" href="JSON-keys-for-relations.html#JSON-keys-for-relations">7.2.2.2 JSON keys for relations</a></li>
-        <li><a name="toc-JSON-keys-for-attributes-1" href="JSON-keys-for-attributes.html#JSON-keys-for-attributes">7.2.2.3 JSON keys for attributes</a></li>
-        <li><a name="toc-JSON-keys-for-meta-data-1" href="JSON-keys-for-meta-data.html#JSON-keys-for-meta-data">7.2.2.4 JSON keys for meta data</a></li>
+        <li><a id="toc-JSON-keys-for-markup-ranges-1" href="JSON-keys-for-markup-ranges.html#JSON-keys-for-markup-ranges">7.2.2.1 JSON keys for markup ranges</a></li>
+        <li><a id="toc-JSON-keys-for-relations-1" href="JSON-keys-for-relations.html#JSON-keys-for-relations">7.2.2.2 JSON keys for relations</a></li>
+        <li><a id="toc-JSON-keys-for-attributes-1" href="JSON-keys-for-attributes.html#JSON-keys-for-attributes">7.2.2.3 JSON keys for attributes</a></li>
+        <li><a id="toc-JSON-keys-for-meta-data-1" href="JSON-keys-for-meta-data.html#JSON-keys-for-meta-data">7.2.2.4 JSON keys for meta data</a></li>
       </ul></li>
-      <li><a name="toc-Dummy-back_002dend-1" href="Dummy-back_002dend.html#Dummy-back_002dend">7.2.3 Dummy back-end</a></li>
+      <li><a id="toc-Dummy-back_002dend-1" href="Dummy-back_002dend.html#Dummy-back_002dend">7.2.3 Dummy back-end</a></li>
+      <li><a id="toc-Conversion-1" href="Conversion.html#Conversion">7.2.4 Conversion</a></li>
     </ul></li>
-    <li><a name="toc-Defining-an-annotation-schema" href="Annotation-schema.html#Annotation-schema">7.3 Defining an annotation schema</a>
+    <li><a id="toc-Defining-an-annotation-schema" href="Annotation-schema.html#Annotation-schema">7.3 Defining an annotation schema</a>
     <ul class="no-bullet">
-      <li><a name="toc-Strict-or-loose-handling-of-an-annotation-schema-1" href="Strict-or-loose-handling-of-an-annotation-schema.html#Strict-or-loose-handling-of-an-annotation-schema">7.3.1 Strict or loose handling of an annotation schema</a></li>
-      <li><a name="toc-Defining-a-schema-using-Emacs-lisp-1" href="Defining-a-schema-using-Emacs-lisp.html#Defining-a-schema-using-Emacs-lisp">7.3.2 Defining a schema using Emacs lisp</a></li>
-      <li><a name="toc-Generating-an-annotation-schema-from-OWL-1" href="Generating-an-annotation-schema-from-OWL.html#Generating-an-annotation-schema-from-OWL">7.3.3 Generating an annotation schema from OWL</a></li>
+      <li><a id="toc-Strict-or-loose-handling-of-an-annotation-schema-1" href="Strict-or-loose-handling-of-an-annotation-schema.html#Strict-or-loose-handling-of-an-annotation-schema">7.3.1 Strict or loose handling of an annotation schema</a></li>
+      <li><a id="toc-Defining-a-schema-using-Emacs-lisp-1" href="Defining-a-schema-using-Emacs-lisp.html#Defining-a-schema-using-Emacs-lisp">7.3.2 Defining a schema using Emacs lisp</a></li>
+      <li><a id="toc-Generating-an-annotation-schema-from-OWL-1" href="Generating-an-annotation-schema-from-OWL.html#Generating-an-annotation-schema-from-OWL">7.3.3 Generating an annotation schema from OWL</a></li>
     </ul></li>
   </ul></li>
-  <li><a name="toc-GNU-Free-Documentation-License-1" href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License">Appendix A GNU Free Documentation License</a></li>
+  <li><a id="toc-GNU-Free-Documentation-License-1" href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License">Appendix A GNU Free Documentation License</a></li>
 </ul>
 </div>
 
 
-<a name="Top"></a>
-<div class="header">
+<span id="Top"></span><div class="header">
 <p>
-Next: <a href="Introduction.html#Introduction" accesskey="n" rel="next">Introduction</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+Next: <a href="Introduction.html" accesskey="n" rel="next">Introduction</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 <hr>
-<a name="Stand_002dOff-Mode"></a>
-<h1 class="top">Stand-Off Mode</h1>
+<span id="Stand_002dOff-Mode"></span><h1 class="top">Stand-Off Mode</h1>
 
 <p>User Manual for Stand-Off Mode, version 0.4.2.
 </p>
-<p>Copyright &copy; 2015 Christian Lück
+<p>Copyright &copy; 2015, 2021 Christian Lück
 </p>
 <blockquote>
 <p>Permission is granted to copy, distribute and/or modify this document
@@ -139,97 +128,105 @@ copy of the license is included in the section entitled &ldquo;GNU Free
 Documentation License.&rdquo;
 </p></blockquote>
 
-
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="Introduction.html#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Introduction.html" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Starting-and-quitting-stand_002doff-mode.html#Starting-and-quitting-stand_002doff-mode" accesskey="2">Starting and quitting stand-off mode</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Starting-and-quitting-stand_002doff-mode.html" accesskey="2">Starting and quitting stand-off mode</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Markup-elements.html#Markup-elements" accesskey="3">Markup elements</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Markup-elements.html" accesskey="3">Markup elements</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Relations.html#Relations" accesskey="4">Relations</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Relations.html" accesskey="4">Relations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Attributes.html#Attributes" accesskey="5">Attributes</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Attributes.html" accesskey="5">Attributes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Comments.html#Comments" accesskey="6">Comments</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Comments.html" accesskey="6">Comments</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Configuration.html#Configuration" accesskey="7">Configuration</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Configuration.html" accesskey="7">Configuration</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License" accesskey="8">GNU Free Documentation License</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="GNU-Free-Documentation-License.html" accesskey="8">GNU Free Documentation License</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 </pre></th></tr><tr><th colspan="3" align="left" valign="top"><pre class="menu-comment"> &mdash; The Detailed Node Listing &mdash;
 
 Introduction
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Summary.html#Summary" accesskey="9">Summary</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Summary.html" accesskey="9">Summary</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Installation.html#Installation">Installation</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Installation.html">Installation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Common-terms.html#Common-terms">Common terms</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Common-terms.html">Common terms</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Character-offsets.html#Character-offsets">Character offsets</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Character-offsets.html">Character offsets</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Conventions.html#Conventions">Conventions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Conventions.html">Conventions</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 Starting and quitting stand-off mode
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Activating-stand_002doff-mode.html#Activating-stand_002doff-mode">Activating stand-off mode</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Activating-stand_002doff-mode.html">Activating stand-off mode</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Readability-of-XML-source-documents.html#Readability-of-XML-source-documents">Readability of XML source documents</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Readability-of-XML-source-documents.html">Readability of XML source documents</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Performance.html#Performance">Performance</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Performance.html">Performance</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Saving-annotations.html#Saving-annotations">Saving annotations</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Saving-annotations.html">Saving annotations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Loading-annotations.html#Loading-annotations">Loading annotations</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Loading-annotations.html">Loading annotations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 Configuration
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html#Stand_002dOff-mode-for-files-of-a-specific-type">Stand-Off mode for files of a specific type</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html">Stand-Off mode for files of a specific type</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Back_002dEnds.html#Back_002dEnds">Back-Ends</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Back_002dEnds.html">Back-Ends</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Annotation-schema.html#Annotation-schema">Annotation schema</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Annotation-schema.html">Annotation schema</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 Back-Ends
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="JSON-file-back_002dend.html#JSON-file-back_002dend">JSON file back-end</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="JSON-file-back_002dend.html">JSON file back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="JSON-object-keys.html#JSON-object-keys">JSON object keys</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-object-keys.html">JSON object keys</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Dummy-back_002dend.html#Dummy-back_002dend">Dummy back-end</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Dummy-back_002dend.html">Dummy back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conversion.html">Conversion</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 JSON object keys
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-markup-ranges.html#JSON-keys-for-markup-ranges">JSON keys for markup ranges</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-markup-ranges.html">JSON keys for markup ranges</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-relations.html#JSON-keys-for-relations">JSON keys for relations</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-relations.html">JSON keys for relations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-attributes.html#JSON-keys-for-attributes">JSON keys for attributes</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-attributes.html">JSON keys for attributes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-meta-data.html#JSON-keys-for-meta-data">JSON keys for meta data</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="JSON-keys-for-meta-data.html">JSON keys for meta data</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 Defining an annotation schema
 
-</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Strict-or-loose-handling-of-an-annotation-schema.html#Strict-or-loose-handling-of-an-annotation-schema">Strict or loose handling of an annotation schema</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Strict-or-loose-handling-of-an-annotation-schema.html">Strict or loose handling of an annotation schema</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Defining-a-schema-using-Emacs-lisp.html#Defining-a-schema-using-Emacs-lisp">Defining a schema using Emacs lisp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Defining-a-schema-using-Emacs-lisp.html">Defining a schema using Emacs lisp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="Generating-an-annotation-schema-from-OWL.html#Generating-an-annotation-schema-from-OWL">Generating an annotation schema from OWL</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="Generating-an-annotation-schema-from-OWL.html">Generating an annotation schema from OWL</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
 </pre></th></tr></table>
 
 <hr>
 <div class="header">
 <p>
-Next: <a href="Introduction.html#Introduction" accesskey="n" rel="next">Introduction</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+Next: <a href="Introduction.html" accesskey="n" rel="next">Introduction</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
 </div>
 
 

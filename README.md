@@ -5,10 +5,10 @@
 # standoff-mode #
 
 `standoff-mode` turns [GNU Emacs](http://www.gnu.org/software/emacs/)
-into a tagger and lets you create (semantic) annotations on texts
-in a stand-off manner. It is written for use in the field of digital
-humanities and the manual annotation of training data for named-entity
-recognition.
+into a tagger and lets you create (semantic) annotations on texts in a
+stand-off manner. It is written for use in the field of digital
+humanities and the manual annotation of training data for
+e.g. named-entity recognition.
 
 There are several tools for creating stand-off markup. Most of them
 need to be deployed on a server in a network environment, which may be
@@ -20,7 +20,10 @@ connecting a relational database is on the roadmap of development.
 Your annotation data don't get locked in with `standoff-mode`. There
 is a commandline program that internalizes your external markup into
 the source document again:
-[standoff-tools](https://github.com/lueck/standoff-tools).
+[standoff-tools](https://github.com/lueck/standoff-tools). You can
+then run e.g. XQueries against your annotated documents. There are
+also tools for generating RDF triples from your annotations. See the
+[`rdf`](rdf) folder!
 
 `standoff-mode` doesn't want to integrate everything under one
 cover. It's just a tagger, a tool for the manual annotation of
@@ -34,7 +37,7 @@ which may be of advantage for further processing.
 
 ## Stand-off Markup ##
 
-Stand-off markup is also known as external markup and means:
+Stand-off markup is also known as *external markup* and means:
 
 - Stand-off markup refers to a source document by some kind of
   pointers. `standoff-mode` uses character offsets.
@@ -46,6 +49,13 @@ Stand-off markup is also known as external markup and means:
 - The source document may contain markup too, called internal
   markup. Stand-Off Mode facilitates reading of XML source documents
   by hiding tags and showing glyphs for character references.
+
+- The crucial point about stand-off markup is the stability of the
+  source document: If it changes, the markup's pointers
+  fail. `standoff-mode` stores an MD5 hash of the source document
+  along with the external markup and will raise a warning if the
+  source document has changed.
+
 
 Cf. the
 [TEI/P5 guidelines on stand-off markup](http://www.tei-c.org/release/doc/tei-p5-doc/de/html/SA.html#SASO)
@@ -85,6 +95,8 @@ ontology.
   rest back-end` is under development and will store annotations in a
   database exposed through a restful webservice.
 
+- convert between backend formats
+
 - manual based on GNU Texinfo, English (still lacks some sections) and
   German
 
@@ -93,6 +105,9 @@ ontology.
   Switching between hide/show is a computationally expensive task for
   Emacs and may consume a minute of your time if you're working on a
   file with some hundred kBytes.)
+
+- tools for converting annotations into RDF triples, so that one can
+  run queries e.g. in SPARQL (see folder [`rdf`](rdf)!)
 
 ## Roadmap ##
 
@@ -168,6 +183,16 @@ for both, GNU Emacs and standoff-mode, addressing absolute beginners.
 ## License ##
 
 GPL 3
+
+## History
+
+`standoff-mode` was first developed for a project which needed
+annotations of examples in philosophical texts. It was required to
+markup ranges of text, tag them as `example`, `marker` (»e.g.«),
+`general term` etc. and to interrelate these ranges with a variety of
+predicates. See [`arb`](arb) for project-specific resources.
+
+
 
 <!--  LocalWords:  SQL RDF SPARQL OpenAnnotation roadmap TEI glyphs
  -->
