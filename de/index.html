@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Top (Stand-Off Mode 0.4.3 Benutzerhandbuch (deutsch))</title>
+
+<meta name="description" content="Top (Stand-Off Mode 0.4.3 Benutzerhandbuch (deutsch))">
+<meta name="keywords" content="Top (Stand-Off Mode 0.4.3 Benutzerhandbuch (deutsch))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="#Top" rel="start" title="Top">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="../dir/index.html" rel="up" title="(dir)">
+<link href="Einfuhrung.html" rel="next" title="Einführung">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US">
+<h1 class="settitle" align="center">Stand-Off Mode 0.4.3 Benutzerhandbuch (deutsch)</h1>
+
+
+
+
+
+
+
+
+<span id="SEC_Contents"></span>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="no-bullet">
+  <li><a id="toc-Einfuhrung" href="Einfuhrung.html#Einf_00fchrung">1 Einführung</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Stand_002dOff-Markup-1" href="Stand_002dOff-Markup.html#Stand_002dOff-Markup">1.1 Stand-Off Markup</a></li>
+    <li><a id="toc-Character-Offsets-1" href="Character-Offsets.html#Character-Offsets">1.2 Character Offsets</a></li>
+    <li><a id="toc-Dieses-Handbuch-1" href="Dieses-Handbuch.html#Dieses-Handbuch">1.3 Dieses Handbuch</a></li>
+  </ul></li>
+  <li><a id="toc-Stand_002dOff-Mode-starten-und-beenden-1" href="Stand_002dOff-Mode-starten-und-beenden.html#Stand_002dOff-Mode-starten-und-beenden">2 Stand-Off Mode starten und beenden</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Stand_002dOff-Mode-aktivieren-1" href="Stand_002dOff-Mode-aktivieren.html#Stand_002dOff-Mode-aktivieren">2.1 Stand-Off Mode aktivieren</a></li>
+    <li><a id="toc-Lesbarkeit-des-Buffers-1" href="Lesbarkeit-des-Buffers.html#Lesbarkeit-des-Buffers">2.2 Lesbarkeit des Buffers</a></li>
+    <li><a id="toc-Speichern-1" href="Speichern.html#Speichern">2.3 Speichern</a></li>
+    <li><a id="toc-Bereits-fruher-erfasstes-Markup-laden" href="Bereits-fruher-erfasstes-Markup-laden.html#Bereits-fr_00fcher-erfasstes-Markup-laden">2.4 Bereits früher erfasstes Markup laden</a></li>
+  </ul></li>
+  <li><a id="toc-Markup_002dElemente-1" href="Markup_002dElemente.html#Markup_002dElemente">3 Markup-Elemente</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Erfassen-1" href="Erfassen.html#Erfassen">3.1 Erfassen</a></li>
+    <li><a id="toc-Hervorheben-und-Ausblenden-1" href="Hervorheben-und-Ausblenden.html#Hervorheben-und-Ausblenden">3.2 Hervorheben und Ausblenden</a></li>
+    <li><a id="toc-Navigieren-1" href="Navigieren.html#Navigieren">3.3 Navigieren</a></li>
+    <li><a id="toc-Loschen" href="Loschen.html#L_00f6schen">3.4 Löschen</a></li>
+    <li><a id="toc-Diskontinuierliches-Markup-1" href="Diskontinuierliches-Markup.html#Diskontinuierliches-Markup">3.5 Diskontinuierliches Markup</a></li>
+  </ul></li>
+  <li><a id="toc-Relationen-1" href="Relationen.html#Relationen">4 Relationen</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Form-1" href="Form.html#Form">4.1 Form</a></li>
+    <li><a id="toc-Erfassen-2" href="Relationen-erfassen.html#Relationen-erfassen">4.2 Erfassen</a></li>
+    <li><a id="toc-Anzeigen" href="Relationen-anzeigen.html#Relationen-anzeigen">4.3 Anzeigen</a></li>
+    <li><a id="toc-Loschen-1" href="Relationen-loschen.html#Relationen-l_00f6schen">4.4 Löschen</a></li>
+  </ul></li>
+  <li><a id="toc-Attribute-1" href="Attribute.html#Attribute">5 Attribute</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Literal_002dAttribut-erfassen-1" href="Literal_002dAttribut-erfassen.html#Literal_002dAttribut-erfassen">5.1 Literal-Attribut erfassen</a></li>
+    <li><a id="toc-Anzeigen-1" href="Attribute-anzeigen.html#Attribute-anzeigen">5.2 Anzeigen</a></li>
+    <li><a id="toc-Attribute-loschen" href="Attribute-loschen.html#Attribute-l_00f6schen">5.3 Attribute löschen</a></li>
+  </ul></li>
+  <li><a id="toc-Kommentare-1" href="Kommentare.html#Kommentare">6 Kommentare</a></li>
+  <li><a id="toc-Konfiguration-1" href="Konfiguration.html#Konfiguration">7 Konfiguration</a></li>
+  <li><a id="toc-GNU-Free-Documentation-License-1" href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License">Appendix A GNU Free Documentation License</a></li>
+</ul>
+</div>
+
+
+<span id="Top"></span><div class="header">
+<p>
+Next: <a href="Einfuhrung.html" accesskey="n" rel="next">Einführung</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<span id="Stand_002dOff-Mode"></span><h1 class="top">Stand-Off Mode</h1>
+
+<p>Benutzerhandbuch für Stand-Off Mode, version 0.4.3.
+</p>
+<p>Copyright &copy; 2015 Christian Lück
+</p>
+<blockquote>
+<p>Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled &ldquo;GNU Free
+Documentation License.&rdquo;
+</p></blockquote>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Einfuhrung.html" accesskey="1">Einführung</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Stand_002dOff-Mode-starten-und-beenden.html" accesskey="2">Stand-Off Mode starten und beenden</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Markup_002dElemente.html" accesskey="3">Markup-Elemente</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Relationen.html" accesskey="4">Relationen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Attribute.html" accesskey="5">Attribute</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Kommentare.html" accesskey="6">Kommentare</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Konfiguration.html" accesskey="7">Konfiguration</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GNU-Free-Documentation-License.html" accesskey="8">GNU Free Documentation License</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+</pre></th></tr><tr><th colspan="3" align="left" valign="top"><pre class="menu-comment"> &mdash; The Detailed Node Listing &mdash;
+
+Einführung
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Stand_002dOff-Markup.html" accesskey="9">Stand-Off Markup</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Character-Offsets.html">Character Offsets</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Dieses-Handbuch.html">Dieses Handbuch</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Stand-Off Mode starten und beenden
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Stand_002dOff-Mode-aktivieren.html">Stand-Off Mode aktivieren</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Lesbarkeit-des-Buffers.html">Lesbarkeit des Buffers</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Speichern.html">Speichern</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Bereits-fruher-erfasstes-Markup-laden.html">Bereits früher erfasstes  Markup laden</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Markup-Elemente
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Erfassen.html">Erfassen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Hervorheben-und-Ausblenden.html">Hervorheben und Ausblenden</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Navigieren.html">Navigieren</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Loschen.html">Löschen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Diskontinuierliches-Markup.html">Diskontinuierliches Markup</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Relationen
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Form.html">Form</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Relationen-erfassen.html">Erfassen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Relationen-anzeigen.html">Anzeigen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Relationen-loschen.html">Löschen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Attribute
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Literal_002dAttribut-erfassen.html">Literal-Attribut erfassen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Attribute-anzeigen.html">Anzeigen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Attribute-loschen.html">Löschen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+</pre></th></tr></table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Einfuhrung.html" accesskey="n" rel="next">Einführung</a>, Previous: <a href="../dir/index.html" accesskey="p" rel="prev">(dir)</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

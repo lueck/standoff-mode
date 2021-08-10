@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015, 2021 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Generating an annotation schema from OWL (Stand-Off Mode 0.4.3 Manual (english))</title>
+
+<meta name="description" content="Generating an annotation schema from OWL (Stand-Off Mode 0.4.3 Manual (english))">
+<meta name="keywords" content="Generating an annotation schema from OWL (Stand-Off Mode 0.4.3 Manual (english))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Annotation-schema.html" rel="up" title="Annotation schema">
+<link href="GNU-Free-Documentation-License.html" rel="next" title="GNU Free Documentation License">
+<link href="Defining-a-schema-using-Emacs-lisp.html" rel="prev" title="Defining a schema using Emacs lisp">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US">
+<span id="Generating-an-annotation-schema-from-OWL"></span><div class="header">
+<p>
+Previous: <a href="Defining-a-schema-using-Emacs-lisp.html" accesskey="p" rel="prev">Defining a schema using Emacs lisp</a>, Up: <a href="Annotation-schema.html" accesskey="u" rel="up">Annotation schema</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<span id="Generating-an-annotation-schema-from-OWL-1"></span><h4 class="subsection">7.3.3 Generating an annotation schema from OWL</h4>
+
+<p>You can use the expressiveness of the web ontology language (OWL) to
+define your annotation schema.  standoff mode comes with some XSL style
+sheets for transforming OWL/XML into a schema definition in Emacs lisp
+which can be loaded by standoff mode.
+</p>
+<p>The main idea is, to use
+</p>
+<dl compact="compact">
+<dt><code>owl:Class</code></dt>
+<dd><p>to define the types of markup elements
+</p></dd>
+<dt><code>owl:ObjectProperty</code></dt>
+<dd><p>to define the predicates for relations
+</p></dd>
+<dt><code>owl:DatatypeProperty</code></dt>
+<dd><p>to define the attributes for markup elements
+</p></dd>
+<dt><code>rdfs:label</code></dt>
+<dd><p>to define labels on all such definitions.  These labels are displayed in
+the UI of standoff mode instead of the IRIs.  You can also
+internationalize your OWL labels using the <code>xml:lang</code>
+attribute. The transformation will pick the label in the right language,
+when you pass a parameter to the style sheet processor.
+</p></dd>
+</dl>
+
+<p>There are three style sheets and a file with a few OWL definitions:
+</p>
+<dl compact="compact">
+<dt><samp>mistake-owl4config.xsl</samp></dt>
+<dd><p>As expressed in the name, this style sheet mistakes the semantics of the
+OWL, namely in the context of relations. It uses <code>rdfs:domain</code> and
+<code>rdfs:range</code> to restrict a predicate to a combination of
+<code>rdfs:domain</code> as markup type of the object and <code>rdfs:range</code> as
+the markup type of the subject.  Strictly speaking, this does not make
+sense, but is rather redundant:  These constructs are for reasoning, not
+for restriction.  But it might serve you well.
+</p>
+</dd>
+<dt><samp>owl4config.xsl</samp></dt>
+<dd><p>This style sheet introduces annotation properties to restrict predicates
+of relations to certain combinations of markup types of subject and
+object while following the rules of OWL.  These annotations are defined
+in <samp>standoff.owl</samp>.
+</p>
+</dd>
+<dt><samp>standoff.owl</samp></dt>
+<dd><p><code>http://github.com/lueck/standoff-mode/owl#allowedSubject</code> can be
+used to define allowed subject type for a relation predicate. 
+<code>http://github.com/lueck/standoff-mode/owl#allowedObject</code> can be
+used to define allowed object type for a relation predicate.
+<code>http://github.com/lueck/standoff-mode/owl#face</code> is also defined,
+and lets you define a highlighting face for a markup type.
+</p>
+</dd>
+<dt><samp>owl2manual.xsl</samp></dt>
+<dd><p>This generates a TeX file from OWL which can be used to generate a PDF
+of your annotation schema.  The OWL annotation properties defined in
+<samp>standoff.owl</samp> are evaluated, so that the restrictions expressed
+with them go into the document.
+</p></dd>
+</dl>
+
+<p>See the <a href="http://github.com/lueck/standoff-mode/arb/">http://github.com/lueck/standoff-mode/arb/</a> for an example
+schema definition using OWL and <samp>standoff.owl</samp>: <samp>arb.owl</samp>
+defines an schema for annotating examples in scholar texts about
+aesthetics in the 18th century Germany.  Generate a Emacs lisp schema
+with german labels e.g. by running this command in a terminal:
+</p>
+<div class="example">
+<pre class="example">xsltproc --output standoff-arb-schema.el \
+--param config-file \&quot;standoff-arb-schema.el\&quot; \
+--param lang \&quot;de\&quot; \
+--param provide \&quot;true\&quot; \
+owl2config.xsl \
+arb.owl
+</pre></div>
+
+<p>Put the following line into your Emacs init file, in order to load the
+schema in generated <samp>standoff-arb-schema.el</samp>:
+</p>
+<div class="example">
+<pre class="example">;; set how restrictive markup types and predicates and attribute
+;; keys are handled depending on presence of annotation schema
+(if (featurep 'standoff-arb-schema)
+ (setq standoff-markup-type-require-match t
+       standoff-predicate-require-match t
+       standoff-literal-key-require-match t)
+ (setq standoff-markup-type-require-match 'confirm
+       standoff-predicate-require-match 'confirm
+       standoff-literal-key-require-match 'confirm))
+</pre></div>
+
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Defining-a-schema-using-Emacs-lisp.html" accesskey="p" rel="prev">Defining a schema using Emacs lisp</a>, Up: <a href="Annotation-schema.html" accesskey="u" rel="up">Annotation schema</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

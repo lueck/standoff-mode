@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 2015, 2021 Christian Lück
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+copy of the license is included in the section entitled "GNU Free
+Documentation License." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Back-Ends (Stand-Off Mode 0.4.3 Manual (english))</title>
+
+<meta name="description" content="Back-Ends (Stand-Off Mode 0.4.3 Manual (english))">
+<meta name="keywords" content="Back-Ends (Stand-Off Mode 0.4.3 Manual (english))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Configuration.html" rel="up" title="Configuration">
+<link href="JSON-file-back_002dend.html" rel="next" title="JSON file back-end">
+<link href="Stand_002dOff-mode-for-files-of-a-specific-type.html" rel="prev" title="Stand-Off mode for files of a specific type">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en_US">
+<span id="Back_002dEnds"></span><div class="header">
+<p>
+Next: <a href="Annotation-schema.html" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<span id="Back_002dEnds-1"></span><h3 class="section">7.2 Back-Ends</h3>
+
+<p>With standoff mode you have some options where to store you annotations
+and in which format.  Storing annotations is done by a <em>back-end</em>.
+Before working with standoff mode, it is required to choose a back-end.
+</p>
+<p>The annotations can be stored in a file on the local disk or in a
+central database.  The <em>JSON file back-end</em> and the dummy back-end
+store them locally on disk.  The <em>JSON rest back-end</em> (under
+development) stores them in a database communicating via a restful
+web-service.
+</p>
+<p>The JSON file back-end stores the annotations in JSON format, and the
+names of keys of the JSON objects are configurable. The dummy back-end
+stores the annotations as s-expressions known from programming languages
+like LISP, in fact they are dumped Emacs-lisp expressions. The JSON rest
+back-end uses JSON to communicate with the database.
+</p>
+<dl>
+<dt id="index-standoff_002dbackend">User Option: <strong>standoff-backend</strong></dt>
+<dd><p>Configuring, which back-end to use, is simple.  There are two ways: (1)
+Customize the user option <code>standoff-backend</code>.  You are
+automatically directed to the customization dialog if you try working
+with stand-off mode without a back-end.  (2) Edit your Emacs startup
+file by adding:
+<span id="index-standoff_002dbackend-1"></span>
+</p>
+<div class="example">
+<pre class="example"><code>(setq standoff-backend 'standoff-json-file)</code>
+</pre></div>
+
+<p>for using the JSON file back-end, or
+</p>
+<div class="example">
+<pre class="example"><code>(setq standoff-backend 'standoff-dummy)</code>
+</pre></div>
+
+<p>for using the dummy back-end.
+</p>
+<p>Note, that the type of <code>standoff-backend</code> must be a feature, and
+thus must be quoted like a symbol.
+</p></dd></dl>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="JSON-file-back_002dend.html" accesskey="1">JSON file back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="JSON-object-keys.html" accesskey="2">JSON object keys</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Dummy-back_002dend.html" accesskey="3">Dummy back-end</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conversion.html" accesskey="4">Conversion</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Annotation-schema.html" accesskey="n" rel="next">Annotation schema</a>, Previous: <a href="Stand_002dOff-mode-for-files-of-a-specific-type.html" accesskey="p" rel="prev">Stand-Off mode for files of a specific type</a>, Up: <a href="Configuration.html" accesskey="u" rel="up">Configuration</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>
