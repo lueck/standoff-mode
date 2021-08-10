@@ -18,6 +18,9 @@ jobs:
       - name: install texinfo
         run: sudo apt-get install texinfo
 
+      - name: create directories for docs
+        run: mkdir -p public/en public/de
+
       - name: generate english html docs
         run: makeinfo --html --output=public/en/ standoff-en.texi
 
