@@ -12,4 +12,4 @@ texi files. Use
 to generate the docs.
 
 Update:
-The docs now should be generated with github actions..
+The docs now should be generated with github actions...
