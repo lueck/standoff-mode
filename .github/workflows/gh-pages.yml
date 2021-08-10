@@ -1,0 +1,34 @@
+name: GitHub Pages
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - *.texi
+      - docs/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - uses: checkout@v2
+
+      - name: install texinfo
+        run: sudo apt-get install texinfo
+
+      - name: generate english html docs
+        run: makeinfo --html --output=public/en/ standoff-en.texi
+
+      - name: generate german html docs
+        run: makeinfo --html --output=public/de/ standoff-de.texi
+
+      - name: copy index
+        run: cp docs/index.html public
+
+      - name: Deploy to Github pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
