@@ -1,6 +1,6 @@
 ;;; standoff-json-file.el --- JSON file backend for standoff-mode.
 
-;; Copyright (C) 2017 Christian Lück
+;; Copyright (C) 2017, 2021 Christian Lück
 
 ;; Author: Christian Lück <christian.lueck@ruhr-uni-bochum.de>
 ;; URL: https://github.com/lueck/standoff-mode
@@ -227,7 +227,7 @@ SERIALIZED json string."
 	    (goto-char (point-max))
 	    (search-backward "}")
 	    ;; FIXME: get back to non-whitespace
-	    (insert ";\n\n\"" object-type "\": []\n")
+	    (insert ",\n\n\"" object-type "\": []\n")
 	    (search-backward "]")
 	    (standoff-json-file/add-position pos-insert-key (point))
 	    (search-backward "[")
