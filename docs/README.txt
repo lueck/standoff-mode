@@ -10,3 +10,6 @@ texi files. Use
 	make html
 
 to generate the docs.
+
+Update:
+The docs now should be generated with github actions.
