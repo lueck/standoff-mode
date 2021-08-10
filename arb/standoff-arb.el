@@ -1,10 +1,18 @@
 ;;; standoff-arb.el --- config file for Archiv des Beispiels research project.
 
-;;; Code
+;;; Commentary:
 
+;; Configuration for Archiv des Beispiels.  The file
+;; standoff-arb-schema.el must still be generated.  Enter this files
+;; directory and run `make`!
+
+;;; Code:
+
+;;;; Für Praktikum aktivieren!
+;;(setq standoff-backend 'standoff-json-file)
 ;;(require 'standoff-mode)
-
-(add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
+;;(require 'standoff-dumped-json)
+;;(add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
 
 (eval-after-load "standoff-mode"
   '(progn
@@ -152,4 +160,4 @@
 
     ))
 
-;;; standoff-arb.el ends here.
+;;; standoff-arb.el ends here
