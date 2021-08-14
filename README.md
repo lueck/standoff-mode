@@ -180,6 +180,23 @@ And there are
 [german installation instructions](http://beispiel.germanistik.rub.de/@@/doc/Emacs-Installation.pdf)
 for both, GNU Emacs and standoff-mode, addressing absolute beginners.
 
+### Tipps ###
+
+Merge annotations on the same source document that are stored in
+multiple JSON files:
+
+```
+jq -s '.[0].MarkupRanges=([.[].MarkupRanges]|flatten) | .[0].Relations=([.[].Relations]|flatten) | .[0].Literals=([.[].Literals]|flatten) | .[0]' annotations1.json annotations2.json annotations3.json ...
+```
+
+Update the `createdBy` property of all annotations in a JSON file:
+
+```
+jq '((.MarkupRanges , .Relations , .Literals) | .[] | .createdBy) |= "SOMEONE"' annotations.json
+```
+
+
+
 ## License ##
 
 GPL 3
