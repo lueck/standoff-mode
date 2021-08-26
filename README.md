@@ -22,8 +22,8 @@ is a commandline program that internalizes your external markup into
 the source document again:
 [standoff-tools](https://github.com/lueck/standoff-tools). You can
 then run e.g. XQueries against your annotated documents. There are
-also tools for generating RDF triples from your annotations. See the
-[`rdf`](rdf) folder!
+also [tools for generating RDF
+triples](https://github.com/lueck/standoff-rdf) from your annotations.
 
 `standoff-mode` doesn't want to integrate everything under one
 cover. It's just a tagger, a tool for the manual annotation of
@@ -107,7 +107,8 @@ ontology.
   file with some hundred kBytes.)
 
 - tools for converting annotations into RDF triples, so that one can
-  run queries e.g. in SPARQL (see folder [`rdf`](rdf)!)
+  run queries e.g. in SPARQL (see folder
+  [`standoff-rdf`](https://github.com/lueck/standoff-rdf)!)
 
 ## Roadmap ##
 
