@@ -9,10 +9,10 @@
 ;;; Code:
 
 ;;;; Für Praktikum aktivieren!
-;;(setq standoff-backend 'standoff-json-file)
-;;(require 'standoff-mode)
-;;(require 'standoff-dumped-json)
-;;(add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
+(setq standoff-backend 'standoff-json-file)
+(require 'standoff-mode)
+(require 'standoff-dumped-json)
+(add-to-list 'auto-mode-alist '("\\.TEI-P5.xml$" . standoff-mode))
 
 (eval-after-load "standoff-mode"
   '(progn
