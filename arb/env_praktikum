@@ -9,6 +9,8 @@ export MARKUP_DIR=$ARB_DIR/Annotationen
 export MD5_DIR=$ARB_DIR/triples/src
 export RANGES_DIR=$ARB_DIR/triples/ranges
 
-export DATABASE=$ARB_DIR/triples/data.ttl
+export DATABASE_DIR=$ARB_DIR/triples/database
 
 export LOCAL2PLAIN=./dta2txt.sed
+
+export TEXT_LANGUAGE=de
